@@ -1,0 +1,10 @@
+.head_part {
+    text-align: center;
+    background: rgb(0, 183, 255);
+    height: 50px;
+}
+
+.nav_part {
+    background: black;
+    height: 20px;
+}
