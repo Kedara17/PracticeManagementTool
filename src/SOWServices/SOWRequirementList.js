@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Checkbox, ListItemText, Select, MenuItem, Table, InputLabel, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
+import { Autocomplete, Checkbox, ListItemText, Select, MenuItem, Table, InputLabel, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
@@ -11,6 +11,7 @@ function SOWRequirementList() {
     const [SOWs, setSOWs] = useState([]);
     const [Designations, setDesignations] = useState([]);
     const [technologies, setTechnologies] = useState([]);
+    const [formSubmitted, setFormSubmitted] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [open, setOpen] = useState(false);
@@ -141,6 +142,7 @@ function SOWRequirementList() {
     };
 
     const handleSave = async () => {
+        setFormSubmitted(true); 
         let validationErrors = {};
 
         // Name field validation
@@ -204,12 +206,11 @@ function SOWRequirementList() {
                 setErrors((prevErrors) => ({ ...prevErrors, designation: "" }));
             }
         }
-
-        if (name === "technologies") {
+        if (name === "technology") {
             if (value) {
-                setErrors((prevErrors) => ({ ...prevErrors, technologies: "" }));
+                setErrors((prevErrors) => ({ ...prevErrors, technology: "" }));
             }
-        }
+        }  
         if (name === "teamSize") {
             if (value) {
                 setErrors((prevErrors) => ({ ...prevErrors, teamSize: "" }));
@@ -432,24 +433,40 @@ function SOWRequirementList() {
                     </Select>
                     {errors.designation && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.designation}</Typography>}
                     <InputLabel id="demo-simple-select-label">Technology</InputLabel>
-                    <Select
-                        label="Technologies"
-                        //  placeholder="Technologies"
-                        name="technologies"
+                    <Autocomplete
                         multiple
-                        value={currentSOWRequirement.technology || []}
-                        onChange={handleTechnologyChange}
-                        renderValue={(selected) => selected.join(', ')}
-                        fullWidth
-                    >
-                        {technologies.map((tech) => (
-                            <MenuItem key={tech.id} value={tech.name}>
-                                <Checkbox checked={Array.isArray(currentSOWRequirement.technology) && currentSOWRequirement.technology.indexOf(tech.name) > -1} />
-                                <ListItemText primary={tech.name} />
-                            </MenuItem>
-                        ))}
-                    </Select>
+                        id="technologies-autocomplete"
+                        options={technologies.map((tech) => tech.name)} // Extract the names of technologies
+                        value={currentSOWRequirement.technology}
+                        onChange={(event, newValue) => {
+                            handleChange({
+                                target: {
+                                    name: 'technology',
+                                    value: newValue,
+                                },
+                            });
+                        }}
+                        renderInput={(params) => (
+                            <TextField
+                                {...params}
+                                variant="outlined"
+                                placeholder="Select technologies"
+                                fullWidth
+                                error={!!errors.technology && formSubmitted} 
+                            />
+                        )}
+                        renderOption={(props, option, { selected }) => (
+                            <li {...props}>
+                                <Checkbox
+                                    style={{ marginRight: 8 }}
+                                    checked={selected}
+                                />
+                                <ListItemText primary={option} />
+                            </li>
+                        )}
+                    />
                     {errors.technology && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.technology}</Typography>}
+
                     <InputLabel>TeamSize</InputLabel>
                     <TextField
                     type='number'

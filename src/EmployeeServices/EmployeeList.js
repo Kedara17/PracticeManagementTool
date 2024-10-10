@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { styled, ListItemText, Checkbox, Select, MenuItem, Table, InputLabel, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment, FormHelperText, Autocomplete } from '@mui/material';
+import { ListItemText, Checkbox, Select, MenuItem, Table, InputLabel, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment, FormHelperText, Autocomplete } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
@@ -46,8 +46,7 @@ function EmployeeList() {
 
     const [order, setOrder] = useState('asc'); // Order of sorting: 'asc' or 'desc'
     const [orderBy, setOrderBy] = useState('createdDate'); // Column to sort by
-    const [searchQuery, setSearchQuery] = useState(''); // State for search query
-    const [validationErrors, setValidationErrors] = useState({}); // State for validation errors
+    const [searchQuery, setSearchQuery] = useState(''); // State for search query  
     const [errors, setErrors] = useState({
         name: '',
         designation: '',
@@ -62,7 +61,7 @@ function EmployeeList() {
         profile: '',
         phoneNo: '',
         role: '',
-        technology: []
+        technology: ''
     }
     );
 
@@ -234,166 +233,67 @@ function EmployeeList() {
         setConfirmOpen(false);
     };
 
-    // Validation logic for the form
-    const validateForm = () => {
-        let errors = {};
-
-        // Regex for validating the name field
-        const nameValidationRegex = /^[a-zA-Z\s]+$/;
-        if (!currentEmployee.name) {
-            errors.name = "Name is required";
-        } else if (!nameValidationRegex.test(currentEmployee.name)) {
-            errors.name = "Name should only contain letters and spaces";
-        }
-
-        if (!currentEmployee.designation) {
-            errors.designation = "Designation is required";
-        }
-
-        // Validate Employee ID
-        const employeeID = currentEmployee.employeeID?.trim() || ''; // Default to empty string if undefined or null
-
-        if (!employeeID) {
-            errors.employeeID = "Employee ID is required"; // Check if Employee ID is empty or just whitespace
-        } else if (!/^\d+$/.test(employeeID)) {
-            errors.employeeID = "Employee ID must contain digits only"; // Validate for numeric values
-        } else if (Employees.some(emp => emp.employeeID === employeeID && emp.id !== currentEmployee.id)) {
-            errors.employeeID = "Employee ID must be unique"; // Check for uniqueness
-        }
-
-        // Email validation
-        const emailPattern = /^[a-zA-Z0-9._%+-]+@miraclesoft\.com$/;  // Email must end with @miraclesoft.com
-        const emailId = currentEmployee.emailId || '';  // Ensure emailId is a string
-        if (!emailId.trim()) {
-            errors.emailId = "Email ID is required";  // Check if Email ID is empty
-        } else if (!emailPattern.test(emailId)) {
-            errors.emailId = "Email ID must be in the format @miraclesoft.com";  // Validate email format
-        } else if (
-            Employees.some(emp => emp.emailId === emailId && emp.id !== currentEmployee.id)) {
-            errors.emailId = "Email ID must be unique";  // Check for uniqueness
-        }
-
-        // Designation validation
-        if (!currentEmployee.department) {
-            errors.department = "Department is required";  // Check if Department is not selected
-        }
-
-        // Technology validation
-        if (!currentEmployee.technology || currentEmployee.technology.length === 0) {
-            errors.technology = "Technology is required";  // Check if Technology is not selected
-        }
-
-        // Reporting validation
-        if (!currentEmployee.reportingTo) {
-            errors.reportingTo = "Reporting is required";  // Check if Department is not selected
-        }
-
-        // Role validation
-        if (!currentEmployee.role) {
-            errors.role = "Role is required";  // Check if Department is not selected
-        }
-
-        // Password validation
-        const password = currentEmployee.password || '';  // Ensure password is a string
-        if (!password.trim()) {
-            errors.password = "Password is required";  // Check if Password is empty
-        } else if (password.length < 8) {
-            errors.password = "Password must be at least 8 characters long";  // Minimum length requirement
-        } else if (!/[a-zA-Z]/.test(password) || !/\d/.test(password) || !/^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(password)
-        ) {
-            errors.password = "Password must contain both letters and numbers";  // Check for letters and numbers
-        }
-
-        // Phone number validation pattern (digits only)
-        const phonePattern = /^\d+$/;  // Phone number must contain digits only
-        const phoneNo = currentEmployee.phoneNo?.trim() || '';  // Ensure phone number is trimmed and not null/undefined
-
-        if (!phoneNo) {
-            errors.phoneNo = "Phone number is required";  // Check if Phone number is empty
-        } else if (!phonePattern.test(phoneNo)) {
-            errors.phoneNo = "Phone number must contain digits only";  // Validate phone number for numeric values
-        } else if (Employees.some(emp => emp.phoneNo === phoneNo && emp.id !== currentEmployee.id)) {
-            errors.phoneNo = "Phone number must be unique";  // Ensure phone number is unique
-        } else if (phoneNo.length !== 10) {
-            errors.phoneNo = "Invalid Phone number";  // Ensure phone number is exactly 10 digits
-        }
-
-        // Joining Date validation
-        const joiningDate = currentEmployee.joiningDate || '';
-        if (!joiningDate) {
-            errors.joiningDate = 'Joining Date is required'; // Check if Joining Date is not selected
-        }
-        // Relieving Date validation
-        const relievingDate = currentEmployee.relievingDate || '';
-        if (!relievingDate) {
-            errors.relievingDate = 'Relieving Date is required'; // Check if Relieving Date is not selected
-        }
-        // Check if joining and relieving dates are the same
-        if (joiningDate && relievingDate && dayjs(joiningDate).isSame(dayjs(relievingDate), 'day')) {
-            errors.joiningDate = "Joining date and relieving date cannot be the same"; // Add validation error
-            errors.relievingDate = "Joining date and relieving date cannot be the same"; // Add validation error
-        }
-        // Check if relieving date is before joining date
-        if (joiningDate && relievingDate && dayjs(relievingDate).isBefore(dayjs(joiningDate), 'day')) {
-            errors.relievingDate = "Relieving date cannot be before joining date"; // Add validation error
-        }
-        // Check if joining date is after relieving date
-        if (joiningDate && relievingDate && dayjs(joiningDate).isAfter(dayjs(relievingDate), 'day')) {
-            errors.joiningDate = "Joining date cannot be after relieving date"; // Add validation error
-        }
-
-        // Projection Validation
-        const projectionPattern = /^[a-zA-Z\s]+$/;
-        const projection = currentEmployee.projection || '';
-        if (!projection.trim()) {
-            errors.projection = "Projection is required";
-        } else if (!projectionPattern.test(projection)) {
-            errors.projection = "Projection must contain only letters and spaces";
-        } else if (
-            Employees.some(emp =>
-                emp.projection === projection && emp.id !== currentEmployee.id
-            )
-        ) {
-            errors.projection = "Projection must be unique";
-        }
-
-        // === File Validation for Profile Field ===
-        const file = selectedFile;
-
-        if (!file) {
-            errors.profile = "Profile file (PDF or DOC) is required"; // File is required
-        } else {
-            const fileType = file.type; // Get the MIME type
-            const fileSize = file.size; // Get the file size in bytes
-
-            // Check file type (allow only PDF and DOC/DOCX)
-            if (!['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'].includes(fileType)) {
-                errors.profile = "Only PDF or DOC files are allowed";
-            }
-
-            // Check file size for PDFs (1KB - 30MB)
-            if (fileType === 'application/pdf' && (fileSize < 1024 || fileSize > 30 * 1024 * 1024)) {
-                errors.profile = "PDF file size must be between 1KB and 30MB";
-            }
-
-            // Check file size for DOC/DOCX (1KB - 50MB)
-            if ((fileType === 'application/msword' || fileType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') &&
-                (fileSize < 1024 || fileSize > 50 * 1024 * 1024)) {
-                errors.profile = "DOC file size must be between 1KB and 50MB";
-            }
-        }
-        setValidationErrors(errors);
-
-        // Return true if no errors
-        return Object.keys(errors).length === 0;
-    };
-
     const handleSave = async () => {
+
+        let validationErrors = {};
+
+        // Name field validation
+        if (!currentEmployee.name) {
+            validationErrors.name = "Name  is required";
+        } else if (Employees.some(emp => emp.name.toLowerCase() === currentEmployee.name.toLowerCase() && emp.id !== currentEmployee.id)) {
+            validationErrors.name = "Name must be unique";
+        }
+        // Department field validation 
+        if (!currentEmployee.designation) {
+            validationErrors.designation = "Designation is required";
+        }
+        if (!currentEmployee.employeeID) {
+            validationErrors.employeeID = "EmployeeID is required";
+        }
+        if (!currentEmployee.emailId) {
+            validationErrors.emailId = "EmailId is required";
+        }
+        if (!currentEmployee.department) {
+            validationErrors.department = "Department is required";
+        }
+        if (!currentEmployee.reportingTo) {
+            validationErrors.reportingTo = "ReportingTo is required";
+        }
+        if (!currentEmployee.joiningDate) {
+            validationErrors.joiningDate = "JoiningDate is required";
+        }
+        if (!currentEmployee.relievingDate) {
+            validationErrors.relievingDate = "RelievingDate is required";
+        }
+        if (!currentEmployee.projection) {
+            validationErrors.projection = "Projection is required";
+        }
+        if (!currentEmployee.password) {
+            validationErrors.password = "Password is required";
+        }
+        if (!currentEmployee.profile) {
+            validationErrors.profile = "Profile is required";
+        }
+        if (!currentEmployee.phoneNo) {
+            validationErrors.phoneNo = "PhoneNo is required";
+        }
+        if (!currentEmployee.role) {
+            validationErrors.role = "Role is required";
+        }
+        if (!currentEmployee.technology || currentEmployee.technology.length === 0) {
+            validationErrors.technology = "Technology is required";
+        }
+
+        // If there are validation errors, update the state and prevent save
+        if (Object.keys(validationErrors).length > 0) {
+            setErrors(validationErrors);
+            return;
+        }
+
+        // Clear any previous errors if validation passes
+        setErrors({});
+
         try {
-            // Validate the form before saving
-            if (!validateForm()) {
-                return; // If validation fails, stop execution
-            }
             let profilePath = currentEmployee.profile; // Existing profile path (for updates)
             // If a new file is selected, upload it
             if (selectedFile) {
@@ -440,28 +340,38 @@ function EmployeeList() {
         }
     };
 
-    const handleFileChange = (event) => {
-        const file = event.target.files[0]; // Get the first selected file
-        setSelectedFile(file); // Update state with the selected file
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        setSelectedFile(file);
+
+        // Remove the profile error automatically when the file is selected
+        if (file) {
+            setErrors((prevErrors) => ({
+                ...prevErrors,
+                profile: undefined, // Clear the error for profile
+            }));
+        }
+    };
+
+    const handleNameChange = (e) => {
+        const { value } = e.target;
+        // Use a regular expression to remove any non-alphabetic characters
+        const filteredValue = value.replace(/[^A-Za-z\s]/g, '');
+        // Update the state with the filtered value
+        setCurrentEmployee({ ...currentEmployee, name: filteredValue });
+
+        if (filteredValue.trim()) {
+            setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
+        }
+        // Clear the title error if valid
+        else {
+            setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
+        }
     };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setCurrentEmployee({ ...currentEmployee, [name]: value });
-        if (name === "name") {
-            // Check if the title is empty or only whitespace
-            if (!value.trim()) {
-                setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
-            }
-            // Check for uniqueness
-            else if (Employees.some(emp => emp.name.toLowerCase() === value.toLowerCase() && emp.id !== currentEmployee.id)) {
-                setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
-            }
-            // Clear the title error if valid
-            else {
-                setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
-            }
-        }
 
         if (name === "designation") {
             if (value) {
@@ -473,7 +383,6 @@ function EmployeeList() {
                 setErrors((prevErrors) => ({ ...prevErrors, employeeID: "" }));
             }
         }
-
         if (name === "emailId") {
             if (value) {
                 setErrors((prevErrors) => ({ ...prevErrors, emailId: "" }));
@@ -504,6 +413,11 @@ function EmployeeList() {
                 setErrors((prevErrors) => ({ ...prevErrors, projection: "" }));
             }
         }
+        if (name === "password") {
+            if (value) {
+                setErrors((prevErrors) => ({ ...prevErrors, password: "" }));
+            }
+        }
         if (name === "phoneNo") {
             if (value) {
                 setErrors((prevErrors) => ({ ...prevErrors, phoneNo: "" }));
@@ -519,18 +433,22 @@ function EmployeeList() {
                 setErrors((prevErrors) => ({ ...prevErrors, role: "" }));
             }
         }
+        if (name === "technology") {
+            if (value) {
+                setErrors((prevErrors) => ({ ...prevErrors, technology: "" }));
+            }
+        }
     };
 
     const handleClose = () => {
         setCurrentEmployee({ name: '', designation: '', employeeId: '', emailId: '', department: '', reportingTo: '', joiningDate: '', relievingDate: '', projection: '', password: '', profile: '', phoneNo: '', role: '', technology: [] }); // Reset the department fields
-        setErrors({ name: '', designation: '', employeeId: '', emailId: '', department: '', reportingTo: '', joiningDate: '', relievingDate: '', projection: '', password: '', profile: '', phoneNo: '', role: '', technology: [] }); // Reset the error state
+        setErrors({ name: '', designation: '', employeeId: '', emailId: '', department: '', reportingTo: '', joiningDate: '', relievingDate: '', projection: '', password: '', profile: '', phoneNo: '', role: '', technology: '' }); // Reset the error state
         setOpen(false); // Close the dialog
     };
 
     const handlePageChange = (event, newPage) => {
         setPage(newPage);
     };
-
     const handleRowsPerPageChange = (event) => {
         setRowsPerPage(parseInt(event.target.value, 10));
         setPage(0);
@@ -554,6 +472,9 @@ function EmployeeList() {
             ...prevEmployee,
             joiningDate: newDate ? newDate.toISOString() : "",
         }));
+        if (newDate) {
+            setErrors((prevErrors) => ({ ...prevErrors, joiningDate: "" }));
+        }
     };
 
     const handleRelievingDateChange = (newDate) => {
@@ -561,19 +482,10 @@ function EmployeeList() {
             ...prevEmployee,
             relievingDate: newDate ? newDate.toISOString() : "",
         }));
+        if (newDate) {
+            setErrors((prevErrors) => ({ ...prevErrors, relievingDate: "" }));
+        }
     };
-
-    const handleTechnologyChange = (event) => {
-        const { value } = event.target;
-        setCurrentEmployee({
-            ...currentEmployee,
-            technology: typeof value === 'string' ? value.split(',') : value  // Handle multiple selection
-        });
-    };
-
-    // const VisuallyHiddenInput = styled("input")({
-    //     width: 1,
-    // });
 
     if (loading) {
         return <p>Loading...</p>;
@@ -823,26 +735,25 @@ function EmployeeList() {
             <Dialog open={open} onClose={() => setOpen(false)}>
                 <DialogTitle>{currentEmployee.id ? 'Update Employee' : 'Add Employee'}</DialogTitle>
                 <DialogContent>
+                    <InputLabel>Name</InputLabel>
                     <TextField
                         margin="dense"
-                        label="Name"
                         name="name"
                         value={currentEmployee.name}
-                        onChange={handleChange}
-                        error={!!validationErrors.name}
+                        onChange={handleNameChange}
                         fullWidth
+                        error={!!errors.name}
+                        helperText={errors.name}
+                        inputProps={{ maxlength: 50 }}
                     />
-                    <FormHelperText error={!!validationErrors.name}>
-                        {validationErrors.name}
-                    </FormHelperText>
                     <InputLabel>Designation</InputLabel>
                     <Select
                         margin="dense"
                         name="designation"
                         value={currentEmployee.designation}
                         onChange={handleChange}
-                        error={!!validationErrors.designation}
                         fullWidth
+                        error={!!errors.designation}
                     >
                         {designations.map((designation) => (
                             <MenuItem key={designation.id} value={designation.name}>
@@ -850,42 +761,36 @@ function EmployeeList() {
                             </MenuItem>
                         ))}
                     </Select>
-                    <FormHelperText error={!!validationErrors.designation}>
-                        {validationErrors.designation}
-                    </FormHelperText>
+                    {errors.designation && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.designation}</Typography>}
+                    <InputLabel>EmployeeID</InputLabel>
                     <TextField
                         type='number'
                         margin="dense"
-                        label="EmployeeID"
                         name="employeeID"
                         value={currentEmployee.employeeID}
                         onChange={handleChange}
-                        error={!!validationErrors.employeeID}
                         fullWidth
+                        error={!!errors.employeeID}
+                        helperText={errors.employeeID}
                     />
-                    <FormHelperText error={!!validationErrors.employeeID}>
-                        {validationErrors.employeeID}
-                    </FormHelperText>
+                    <InputLabel>Email</InputLabel>
                     <TextField
                         margin="dense"
-                        label="Email"
                         name="emailId"
                         value={currentEmployee.emailId}
                         onChange={handleChange}
-                        error={!!validationErrors.emailId}
                         fullWidth
+                        error={!!errors.emailId}
+                        helperText={errors.emailId}
                     />
-                    <FormHelperText error={!!validationErrors.emailId}>
-                        {validationErrors.emailId}
-                    </FormHelperText>
                     <InputLabel>Department</InputLabel>
                     <Select
                         margin="dense"
                         name="department"
                         value={currentEmployee.department}
                         onChange={handleChange}
-                        error={!!validationErrors.department}
                         fullWidth
+                        error={!!errors.department}
                     >
                         {departments.map((department) => (
                             <MenuItem key={department.id} value={department.name}>
@@ -893,35 +798,15 @@ function EmployeeList() {
                             </MenuItem>
                         ))}
                     </Select>
-                    <FormHelperText error={!!validationErrors.department}>
-                        {validationErrors.department}
-                    </FormHelperText>
-                    {/* <InputLabel id="demo-simple-select-label">Technology</InputLabel>
-                    <Select
-                        label="Technologies"
-                        //  placeholder="Technologies"
-                        name="technologies"
-                        multiple
-                        value={currentEmployee.technology || []}
-                        onChange={handleTechnologyChange}
-                        renderValue={(selected) => selected.join(', ')}
-                        fullWidth
-                    >
-                        {technologies.map((tech) => (
-                            <MenuItem key={tech.id} value={tech.name}>
-                                <Checkbox checked={Array.isArray(currentEmployee.technology) && currentEmployee.technology.indexOf(tech.name) > -1} />
-                                <ListItemText primary={tech.name} />
-                            </MenuItem>
-                        ))}
-                    </Select> */}
+                    {errors.department && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.department}</Typography>}                   
                     <InputLabel id="demo-simple-select-label">Technology</InputLabel>
                     <Autocomplete
                         multiple
                         id="technologies-autocomplete"
-                        options={technologies.map((tech) => tech.name)} // Extract the names of technologies
+                        options={technologies.map((tech) => tech.name)} 
                         value={currentEmployee.technology}
                         onChange={(event, newValue) => {
-                            handleTechnologyChange({
+                            handleChange({
                                 target: {
                                     name: 'technology',
                                     value: newValue,
@@ -934,6 +819,7 @@ function EmployeeList() {
                                 variant="outlined"
                                 placeholder="Select technologies"
                                 fullWidth
+                                error={!!errors.technology}
                             />
                         )}
                         renderOption={(props, option, { selected }) => (
@@ -946,24 +832,7 @@ function EmployeeList() {
                             </li>
                         )}
                     />
-                    <FormHelperText error={!!validationErrors.technology}>
-                        {validationErrors.technology}
-                    </FormHelperText>
-
-                    {/* <InputLabel>ReportingTo</InputLabel>
-                    <Select
-                        margin="dense"
-                        name="reportingTo"
-                        value={currentEmployee.reportingTo}
-                        onChange={handleChange}
-                        fullWidth
-                    >
-                        {reportingTo.map((report) => (
-                            <MenuItem key={report.id} value={report.name}>
-                                {report.name}
-                            </MenuItem>
-                        ))}
-                    </Select> */}
+                    {errors.technology && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.technology}</Typography>}
                     <InputLabel>ReportingTo</InputLabel>
                     <Autocomplete
                         options={reportingTo}
@@ -976,27 +845,23 @@ function EmployeeList() {
                                     value: newValue ? newValue.name : ''
                                 }
                             };
-                            handleChange(customEvent); // Maintain existing handleChange logic
+                            handleChange(customEvent);
                         }}
                         renderInput={(params) => (
                             <TextField
                                 {...params}
                                 margin="dense"
                                 name="reportingTo"
-                                error={!!validationErrors.reportingTo}
+                                error={!!errors.reportingTo}
                                 fullWidth
                             />
                         )}
                         isOptionEqualToValue={(option, value) => option.name === value.name} // Ensure correct option is selected
                     />
-
-                    <FormHelperText error={!!validationErrors.reportingTo}>
-                        {validationErrors.reportingTo}
-                    </FormHelperText>
-
+                    {errors.reportingTo && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.reportingTo}</Typography>}
+                    <InputLabel>Joining Date</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                            label="Joining Date"
                             value={currentEmployee.joiningDate ? dayjs(currentEmployee.joiningDate) : null}
                             onChange={handleJoiningDateChange}
                             renderInput={(params) => (
@@ -1004,13 +869,10 @@ function EmployeeList() {
                             )}
                         />
                     </LocalizationProvider>
-                    <FormHelperText error={!!validationErrors.joiningDate}>
-                        {validationErrors.joiningDate}
-                    </FormHelperText>
-
+                    {errors.joiningDate && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.joiningDate}</Typography>}
+                    <InputLabel>Relieving Date</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                            label="Relieving Date"
                             value={currentEmployee.relievingDate ? dayjs(currentEmployee.relievingDate) : null}
                             onChange={handleRelievingDateChange}
                             renderInput={(params) => (
@@ -1018,64 +880,48 @@ function EmployeeList() {
                             )}
                         />
                     </LocalizationProvider>
-                    <FormHelperText error={!!validationErrors.relievingDate}>
-                        {validationErrors.relievingDate}
-                    </FormHelperText>
-
+                    {errors.relievingDate && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.relievingDate}</Typography>}
+                    <InputLabel>Projection</InputLabel>
                     <TextField
                         margin="dense"
-                        label="Projection"
                         name="projection"
                         value={currentEmployee.projection}
                         onChange={handleChange}
-                        error={!!validationErrors.projection}
                         fullWidth
+                        error={!!errors.projection}
+                        helperText={errors.projection}
                     />
-                    <FormHelperText error={!!validationErrors.projection}>
-                        {validationErrors.projection}
-                    </FormHelperText>
+                    <InputLabel>Password</InputLabel>
                     <TextField
                         type='password'
                         margin="dense"
-                        label="Password"
                         name="password"
                         value={currentEmployee.password}
                         onChange={handleChange}
-                        error={!!validationErrors.password}
                         fullWidth
+                        error={!!errors.password}
+                        helperText={errors.password}
                     />
-                    <FormHelperText error={!!validationErrors.password}>
-                        {validationErrors.password}
-                    </FormHelperText>
+                    <InputLabel>PhoneNumber</InputLabel>
                     <TextField
-                        type='number'
+                        // type='number'
                         margin="dense"
-                        label="PhoneNumber"
                         name="phoneNo"
                         value={currentEmployee.phoneNo}
                         onChange={handleChange}
-                        error={!!validationErrors.phoneNo}
                         fullWidth
+                        error={!!errors.phoneNo}
+                        helperText={errors.phoneNo}
+                        inputProps={{ maxLength: 10 }}
                     />
-                    <FormHelperText error={!!validationErrors.phoneNo}>
-                        {validationErrors.phoneNo}
-                    </FormHelperText>
-                    {/* <TextField
-                        margin="dense"
-                        label="Profile"
-                        name="profile"
-                        value={currentEmployee.profile}
-                        onChange={handleChange}
-                        fullWidth
-                    /> */}
                     <InputLabel>Role</InputLabel>
                     <Select
                         margin="dense"
                         name="role"
                         value={currentEmployee.role}
                         onChange={handleChange}
-                        error={!!validationErrors.role}
                         fullWidth
+                        error={!!errors.role}
                     >
                         {roles.map((role) => (
                             <MenuItem key={role.id} value={role.roleName}>
@@ -1083,37 +929,21 @@ function EmployeeList() {
                             </MenuItem>
                         ))}
                     </Select>
-                    <FormHelperText error={!!validationErrors.role}>
-                        {validationErrors.role}
-                    </FormHelperText>
-                    {/* <Button
-                        component="label"
-                        variant="contained"
-                        startIcon={<CloudUploadIcon />}
-                    >
-                        Upload files
-                        <VisuallyHiddenInput
-                            type="file"
-                            onChange={(event) => console.log(event.target.files)}
-                            multiple
-                        />
-                    </Button> */}
+                    {errors.role && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.role}</Typography>}                    
+                    <InputLabel>Profile</InputLabel>
                     <TextField
                         type="file"
                         margin="dense"
                         name="profile"
                         // value={currentEmployee.profile}
-                        onChange={(e) => setSelectedFile(e.target.files[0])}
+                        onChange={handleFileChange}
                         fullWidth
-                        required={!currentEmployee.id} // Make it required when adding a new employee
+                        required={!currentEmployee.id} 
+                        error={!!errors.profile}
+                        helperText={errors.profile}
                     />
-                    <FormHelperText error={!!validationErrors.profile}>
-                        {validationErrors.profile}
-                    </FormHelperText>
-
                 </DialogContent>
                 <DialogActions>
-                    {/* <Button onClick={() => setOpen(false)}>Cancel</Button> */}
                     <Button onClick={handleClose}>Cancel</Button>
                     <Button onClick={handleSave} color="primary">
                         {currentEmployee.id ? 'Update' : 'Save'}
