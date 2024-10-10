@@ -160,25 +160,25 @@ function InterviewList() {
 
         // Name field validation
         if (!currentInterview.sowRequirement.trim()) {
-            validationErrors.sowRequirement = "Please select a sowRequirement";
+            validationErrors.sowRequirement = "SowRequirement is required";
         }
         if (!currentInterview.name) {
-            validationErrors.name = "Please select a name";
+            validationErrors.name = "Name is required";
         }
         if (!currentInterview.interviewDate) {
-            validationErrors.interviewDate = "Please select a interviewDate";
+            validationErrors.interviewDate = "InterviewDate is required";
         }
         if (!currentInterview.yearsOfExperience) {
-            validationErrors.yearsOfExperience = "Please select a yearsOfExperience";
+            validationErrors.yearsOfExperience = "YearsOfExperience is required";
         }
         if (!currentInterview.status) {
-            validationErrors.status = "Please select a status";
+            validationErrors.status = "Status is required";
         }
         if (!currentInterview.on_Boarding) {
-            validationErrors.on_Boarding = "Please select a on_Boarding";
+            validationErrors.on_Boarding = "On_Boarding is required";
         }
         if (!currentInterview.recruiter) {
-            validationErrors.recruiter = "Please select a recruiter";
+            validationErrors.recruiter = "Recruiter is required";
         }
 
         // If there are validation errors, update the state and prevent save
@@ -513,9 +513,9 @@ function InterviewList() {
                         ))}
                     </Select>
                     {errors.sowRequirement && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.sowRequirement}</Typography>}
+                    <InputLabel>Name</InputLabel>
                     <TextField
                         margin="dense"
-                        label="Name"
                         name="name"
                         value={currentInterview.name}
                         onChange={handleChange}
@@ -523,9 +523,9 @@ function InterviewList() {
                         error={!!errors.name} // Display error if exists
                         helperText={errors.name}
                     />
+                    <InputLabel>InterviewDate</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                            label="InterviewDate"
                             value={currentInterview.interviewDate ? dayjs(currentInterview.interviewDate) : null}
                             onChange={handleInterviewDateChange}
                             renderInput={(params) => (
@@ -534,9 +534,9 @@ function InterviewList() {
                         />
                         {errors.interviewDate && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.interviewDate}</Typography>}
                     </LocalizationProvider>
+                    <InputLabel>YearsOfExperience</InputLabel>
                     <TextField
                         margin="dense"
-                        label="YearsOfExperience"
                         name="yearsOfExperience"
                         value={currentInterview.yearsOfExperience}
                         onChange={handleChange}
@@ -560,9 +560,9 @@ function InterviewList() {
                         ))}
                     </Select>
                     {errors.status && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.status}</Typography>}
+                    <InputLabel>On_Boarding</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                            label="On_Boarding"
                             value={currentInterview.on_Boarding ? dayjs(currentInterview.on_Boarding) : null}
                             onChange={handleOnBoardingDateChange}
                             renderInput={(params) => (

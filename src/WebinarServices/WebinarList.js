@@ -134,23 +134,23 @@ function WebinarList() {
 
         // Title field validation
         if (!currentWebinar.title.trim()) {
-            validationErrors.title = "Webinar title cannot be empty or whitespace";
+            validationErrors.title = "Title is required";
         } else if (Webinars.some(web => web.title.toLowerCase() === currentWebinar.title.toLowerCase() && web.id !== currentWebinar.id)) {
-            validationErrors.title = "Webinar title must be unique";
+            validationErrors.title = "Title must be unique";
         }
 
         // Speaker field validation
         if (!currentWebinar.speaker) {
-            validationErrors.speaker = "Please select a speaker";
+            validationErrors.speaker = "Speaker is required";
         }
         if (!currentWebinar.status) {
-            validationErrors.status = "Please select a status";
+            validationErrors.status = "Status is required";
         }
         if (!currentWebinar.webinarDate) {
-            validationErrors.WebinarDate = "Please select a WebinarDate";
+            validationErrors.WebinarDate = "WebinarDate is required";
         }
         if (!currentWebinar.numberOfAudience) {
-            validationErrors.numberOfAudience = "Please select a numberOfAudience";
+            validationErrors.numberOfAudience = "NumberOfAudience is required";
         }
 
         // If there are validation errors, update the state and prevent save
@@ -189,24 +189,30 @@ function WebinarList() {
 
     };
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setCurrentWebinar({ ...currentWebinar, [name]: value });
-        if (name === "title") {
-            // Check if the title is empty or only whitespace
-            if (!value.trim()) {
-                setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
-            }
-            // Check for uniqueness
+    const handleNameChange = (e) => {
+        const { value } = e.target;    
+        // Use a regular expression to remove any non-alphabetic characters
+        const filteredValue = value.replace(/[^A-Za-z\s]/g, '');    
+        // Update the state with the filtered value
+        setCurrentWebinar({ ...currentWebinar, title: filteredValue });
+        
+        if (filteredValue.trim()) {
+                    setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
+                }                
+                // Check for uniqueness
             else if (Webinars.some(web => web.title.toLowerCase() === value.toLowerCase() && web.id !== currentWebinar.id)) {
                 setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
             }
-            // Clear the title error if valid
+        // Clear the title error if valid
             else {
                 setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
-            }
-        }
+            }        
+    };
 
+        const handleChange = (e) => {
+        const { name, value } = e.target;
+        setCurrentWebinar({ ...currentWebinar, [name]: value });
+        
         if (name === "speaker") {
             // Clear the speaker error if the user selects a value
             if (value) {
@@ -445,15 +451,16 @@ function WebinarList() {
             <Dialog open={open} onClose={() => setOpen(false)}>
                 <DialogTitle>{currentWebinar.id ? 'Update Webinar' : 'Add Webinar'}</DialogTitle>
                 <DialogContent>
+                    <InputLabel>Title</InputLabel>
                     <TextField
                         margin="dense"
-                        label="Title"
                         name="title"
                         value={currentWebinar.title}
-                        onChange={handleChange}
+                        onChange={handleNameChange}
                         fullWidth
                         error={!!errors.title}
                         helperText={errors.title}
+                        inputProps={{maxlength: 200}}
                     />
                     <InputLabel>Speaker</InputLabel>
                     <Select
@@ -488,9 +495,9 @@ function WebinarList() {
                         ))}
                     </Select>
                     {errors.status && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.status}</Typography>}
+                    <InputLabel>WebinarDate</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                            label="WebinarDate"
                             value={currentWebinar.webinarDate ? dayjs(currentWebinar.webinarDate) : null}
                             onChange={handleWebinarDateChange}
                             fullWidth
@@ -499,10 +506,10 @@ function WebinarList() {
                         />
                     </LocalizationProvider>
                     {errors.WebinarDate && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.WebinarDate}</Typography>}
+                    <InputLabel>NumberOfAudience</InputLabel>
                     <TextField
                         type='number'
                         margin="dense"
-                        label="NumberOfAudience"
                         name="numberOfAudience"
                         value={currentWebinar.numberOfAudience}
                         onChange={handleChange}

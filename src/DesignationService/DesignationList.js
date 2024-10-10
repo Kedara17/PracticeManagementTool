@@ -4,7 +4,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 import PaginationComponent from '../Components/PaginationComponent'; // Import your PaginationComponent
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
+import { InputLabel, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
 
 function DesignationList() {
     const [designations, setDesignations] = useState([]);
@@ -96,9 +96,9 @@ function DesignationList() {
 
         // Name field validation
         if (!currentDesignation.name.trim()) {
-            validationErrors.name = "Designation name cannot be empty or whitespace";
+            validationErrors.name = "Designation is required";
         } else if (designations.some(dep => dep.name.toLowerCase() === currentDesignation.name.toLowerCase() && dep.id !== currentDesignation.id)) {
-            validationErrors.name = "Designation name must be unique";
+            validationErrors.name = "Name must be unique";
         }
 
         // If there are validation errors, update the state and prevent save
@@ -139,24 +139,30 @@ function DesignationList() {
         setOpen(false);
     };
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setCurrentDesignation({ ...currentDesignation, [name]: value });
-        if (name === "name") {
-            // Check if the name is empty or only whitespace
-            if (!value.trim()) {
-                setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
-            }
-            // Check for uniqueness
+    const handleNameChange = (e) => {
+        const { value } = e.target;    
+        // Use a regular expression to remove any non-alphabetic characters
+        const filteredValue = value.replace(/[^A-Za-z\s]/g, '');    
+        // Update the state with the filtered value
+        setCurrentDesignation({ ...currentDesignation, name: filteredValue });
+        
+        if (filteredValue.trim()) {
+                    setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
+                }                
+                // Check for uniqueness
             else if (designations.some(des => des.name.toLowerCase() === value.toLowerCase() && des.id !== currentDesignation.id)) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
             }
-            // Clear the name error if valid
+        // Clear the title error if valid
             else {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
-            }
-        }
+            }        
     };
+    
+    // const handleChange = (e) => {
+    //     const { name, value } = e.target;
+    //     setCurrentDesignation({ ...currentDesignation, [name]: value });       
+    // };
 
     const handleClose = () => {
         setCurrentDesignation({ name: '' }); // Reset the department fields
@@ -316,15 +322,16 @@ function DesignationList() {
             <Dialog open={open} onClose={() => setOpen(false)}>
                 <DialogTitle>{currentDesignation.id ? 'Update Designation' : 'Add Designation'}</DialogTitle>
                 <DialogContent>
+                <InputLabel>Name</InputLabel>
                     <TextField
-                        margin="dense"
-                        label="Name"
+                        margin="dense"                       
                         name="name"
                         value={currentDesignation.name}
-                        onChange={handleChange}
+                        onChange={handleNameChange}
                         fullWidth
                         error={!!errors.name} // Display error if exists
                         helperText={errors.name}
+                        inputProps={{maxlength: 50}}
                     />
                 </DialogContent>
                 <DialogActions>

@@ -20,6 +20,23 @@ const LoginPage = (props) => {
         return password.length >= 3; // Password must be at least 6 characters
     };
 
+    const handleEmailChange = (e) => {
+        setEmail(e.target.value);
+        // Remove the error when user starts typing
+        if (emailError) {
+            setEmailError('');
+        }
+    };
+   
+    // Handle password input change
+    const handlePasswordChange = (e) => {
+        setPassword(e.target.value);
+        // Remove the error when user starts typing
+        if (passwordError) {
+            setPasswordError('');
+        }
+    };
+
     const handleSubmit = async (event) => {
         event.preventDefault();
 
@@ -29,12 +46,18 @@ const LoginPage = (props) => {
         setEmailError('');
         setPasswordError('');
         setError('');
-        // Validate email
-        if (!validateEmail(email)) {
+        if(!email) {
+            setEmailError('Username is required.')
+            isValid = false;
+        }else if  (!validateEmail(email)) {
             setEmailError('Invalid email format.');
             isValid = false;
         }
-        // Validate password
+
+        if(!password){
+            setPasswordError('Password is required.')
+            isValid = false;
+        }else
         if (!validatePassword(password)) {
             setPasswordError('Password must be at least 4 characters.');
             isValid = false;
@@ -91,7 +114,7 @@ const LoginPage = (props) => {
                         autoComplete="username"
                         autoFocus
                         value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        onChange={handleEmailChange}
                         error={Boolean(emailError)}
                         helperText={emailError}
                     />
@@ -105,7 +128,7 @@ const LoginPage = (props) => {
                         id="password"
                         autoComplete="current-password"
                         value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        onChange={handlePasswordChange}
                         error={Boolean(passwordError)}
                         helperText={passwordError}
                     />

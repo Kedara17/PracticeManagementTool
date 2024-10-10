@@ -4,7 +4,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 import PaginationComponent from '../Components/PaginationComponent'; // Import your PaginationComponent
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
+import { InputLabel, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
 
 function DepartmentList() {
     const [departments, setDepartments] = useState([]);
@@ -97,9 +97,9 @@ function DepartmentList() {
 
         // Name field validation
         if (!currentDepartment.name.trim()) {
-            validationErrors.name = "Department name cannot be empty or whitespace";
-        } else if (departments.some(dep => dep.name.toLowerCase() === currentDepartment.name.toLowerCase() && dep.id !== currentDepartment.id)) {
-            validationErrors.name = "Department name must be unique";
+            validationErrors.name = "Name is required";
+        }  else if (departments.some(dep => dep.name.toLowerCase() === currentDepartment.name.toLowerCase() && dep.id !== currentDepartment.id)) {
+            validationErrors.name = "Name must be unique";
         }
 
         // If there are validation errors, update the state and prevent save
@@ -137,24 +137,30 @@ function DepartmentList() {
 
     };
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setCurrentDepartment({ ...currentDepartment, [name]: value });
-        if (name === "name") {
-            // Check if the title is empty or only whitespace
-            if (!value.trim()) {
-                setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
-            }
-            // Check for uniqueness
+    const handleNameChange = (e) => {
+        const { value } = e.target;    
+        // Use a regular expression to remove any non-alphabetic characters
+        const filteredValue = value.replace(/[^A-Za-z\s]/g, '');    
+        // Update the state with the filtered value
+        setCurrentDepartment({ ...currentDepartment, name: filteredValue });
+        
+        if (filteredValue.trim()) {
+                    setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
+                }                
+                // Check for uniqueness
             else if (departments.some(dep => dep.name.toLowerCase() === value.toLowerCase() && dep.id !== currentDepartment.id)) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
             }
-            // Clear the title error if valid
+        // Clear the title error if valid
             else {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
-            }
-        }
+            }        
     };
+
+    // const handleChange = (e) => {
+    //     const { name, value } = e.target;
+    //     setCurrentDepartment({ ...currentDepartment, [name]: value });       
+    // };
 
     const handleClose = () => {
         setCurrentDepartment({ name: '' }); // Reset the department fields
@@ -316,15 +322,16 @@ function DepartmentList() {
             <Dialog open={open} onClose={() => setOpen(false)}>
                 <DialogTitle>{currentDepartment.id ? 'Update Department' : 'Add Department'}</DialogTitle>
                 <DialogContent>
+                <InputLabel>Name</InputLabel>
                     <TextField
-                        margin="dense"
-                        label="Name"
+                        margin="dense"                       
                         name="name"
                         value={currentDepartment.name}
-                        onChange={handleChange}
+                        onChange={handleNameChange}
                         fullWidth
                         error={!!errors.name} // Display error if exists
                         helperText={errors.name}
+                        inputProps={{maxlength: 50}}
                     />
                 </DialogContent>
                 <DialogActions>

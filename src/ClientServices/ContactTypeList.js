@@ -99,9 +99,9 @@ function ContactTypeList() {
 
         // Name field validation
         if (!currentContactType.typeName.trim()) {
-            validationErrors.typeName = "TypeName cannot be empty or whitespace";
+            validationErrors.typeName = "TypeName is required";
         } else if (contactTypes.some(cont => cont.typeName.toLowerCase() === currentContactType.typeName.toLowerCase() && cont.id !== currentContactType.id)) {
-            validationErrors.typeName = "TypeName name must be unique";
+            validationErrors.typeName = "TypeName must be unique";
         }
 
         // If there are validation errors, update the state and prevent save
@@ -144,24 +144,30 @@ function ContactTypeList() {
 
     };
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setCurrentContactType({ ...currentContactType, [name]: value });
-        if (name === "typeName") {
-            // Check if the title is empty or only whitespace
-            if (!value.trim()) {
+    const handleNameChange = (e) => {
+        const { value } = e.target;    
+        // Use a regular expression to remove any non-alphabetic characters
+        const filteredValue = value.replace(/[^A-Za-z\s]/g, '');    
+        // Update the state with the filtered value
+        setCurrentContactType({ ...currentContactType, typeName: filteredValue });
+        
+        if (filteredValue.trim()) {
+                    setErrors((prevErrors) => ({ ...prevErrors, typeName: "" }));
+                }                
+                // Check for uniqueness
+            else if (contactTypes.some(cont => cont.name.toLowerCase() === value.toLowerCase() && cont.id !== currentContactType.id)) {
                 setErrors((prevErrors) => ({ ...prevErrors, typeName: "" }));
             }
-            // Check for uniqueness
-            else if (contactTypes.some(cont => cont.client === value && cont.id !== currentContactType.id)) {
-                setErrors((prevErrors) => ({ ...prevErrors, typeName: "" }));
-            }
-            // Clear the title error if valid
+        // Clear the title error if valid
             else {
                 setErrors((prevErrors) => ({ ...prevErrors, typeName: "" }));
-            }
-        }
+            }        
     };
+
+    // const handleChange = (e) => {
+    //     const { name, value } = e.target;
+    //     setCurrentContactType({ ...currentContactType, [name]: value });        
+    // };
 
     const handleClose = () => {
         setCurrentContactType({ name: '' }); // Reset the department fields
@@ -322,13 +328,13 @@ function ContactTypeList() {
                 <DialogContent>
                     <TextField
                         margin="dense"
-                        label="TypeName"
                         name="typeName"
                         value={currentContactType.typeName}
-                        onChange={handleChange}
+                        onChange={handleNameChange}
                         fullWidth
                         error={!!errors.typeName} // Display error if exists
                         helperText={errors.typeName}
+                        inputProps={{maxlength: 50}}
                     />
                 </DialogContent>
                 <DialogActions>

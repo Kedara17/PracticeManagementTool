@@ -139,28 +139,28 @@ function ClientList() {
 
         // Name field validation
         if (!currentClient.name.trim()) {
-            validationErrors.name = "Client name cannot be empty or whitespace";
+            validationErrors.name = "Name is required";
         } else if (Clients.some(cli => cli.name.toLowerCase() === currentClient.name.toLowerCase() && cli.id !== currentClient.id)) {
-            validationErrors.name = "Client name must be unique";
+            validationErrors.name = "Name must be unique";
         }
 
         if (!currentClient.lineofBusiness) {
-            validationErrors.lineofBusiness = "Please select a lineofBusiness";
+            validationErrors.lineofBusiness = "LineofBusiness is required";
         }
         if (!currentClient.salesEmployee) {
-            validationErrors.salesEmployee = "Please select a salesEmployee";
+            validationErrors.salesEmployee = "SalesEmployee is required";
         }
         if (!currentClient.country) {
-            validationErrors.country = "Please select a country";
+            validationErrors.country = "Country is required";
         }
         if (!currentClient.city) {
-            validationErrors.city = "Please select a city";
+            validationErrors.city = "City is required";
         }
         if (!currentClient.state) {
-            validationErrors.state = "Please select a state";
+            validationErrors.state = "State is required";
         }
         if (!currentClient.address) {
-            validationErrors.address = "Please select a address";
+            validationErrors.address = "Address is required";
         }
 
         // If there are validation errors, update the state and prevent save
@@ -198,24 +198,30 @@ function ClientList() {
 
     };
 
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setCurrentClient({ ...currentClient, [name]: value });
-        if (name === "name") {
-            // Check if the title is empty or only whitespace
-            if (!value.trim()) {
-                setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
-            }
-            // Check for uniqueness
+    const handleNameChange = (e) => {
+        const { value } = e.target;    
+        // Use a regular expression to remove any non-alphabetic characters
+        const filteredValue = value.replace(/[^A-Za-z\s]/g, '');    
+        // Update the state with the filtered value
+        setCurrentClient({ ...currentClient, name: filteredValue });
+        
+        if (filteredValue.trim()) {
+                    setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
+                }                
+                // Check for uniqueness
             else if (Clients.some(cli => cli.name.toLowerCase() === value.toLowerCase() && cli.id !== currentClient.id)) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
             }
-            // Clear the title error if valid
+        // Clear the title error if valid
             else {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
-            }
-        }
+            }        
+    };
 
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setCurrentClient({ ...currentClient, [name]: value });
+       
         if (name === "lineofBusiness") {
             // Clear the lineofBusiness error if the user selects a value
             if (value) {
@@ -472,25 +478,27 @@ function ClientList() {
             <Dialog open={open} onClose={() => setOpen(false)}>
                 <DialogTitle>{currentClient.id ? 'Update Client' : 'Add Client'}</DialogTitle>
                 <DialogContent>
+                    <InputLabel>Name</InputLabel>
                     <TextField
-                        margin="dense"
-                        label="Name"
+                        margin="dense"                        
                         name="name"
                         value={currentClient.name}
-                        onChange={handleChange}
+                        onChange={handleNameChange}
                         fullWidth
                         error={!!errors.name} // Display error if exists
                         helperText={errors.name}
+                        inputProps={{maxlength: 50}}
                     />
+                    <InputLabel>LineofBusiness</InputLabel>
                     <TextField
                         margin="dense"
-                        label="LineofBusiness"
                         name="lineofBusiness"
                         value={currentClient.lineofBusiness}
                         onChange={handleChange}
                         fullWidth
                         error={!!errors.lineofBusiness} // Display error if exists
                         helperText={errors.lineofBusiness}
+                        inputProps={{maxlength: 50}}
                     />
                     <InputLabel>SalesEmployee</InputLabel>
                     <Select
@@ -500,6 +508,7 @@ function ClientList() {
                         onChange={handleChange}
                         fullWidth
                         error={!!errors.salesEmployee}
+                        inputProps={{maxlength: 50}}
                     >
                         {employees.map((employee) => (
                             <MenuItem key={employee.id} value={employee.name}>
@@ -508,9 +517,9 @@ function ClientList() {
                         ))}
                     </Select>
                     {errors.salesEmployee && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.salesEmployee}</Typography>}
+                    <InputLabel>Country</InputLabel>
                     <TextField
                         margin="dense"
-                        label="Country"
                         name="country"
                         value={currentClient.country}
                         onChange={handleChange}
@@ -518,9 +527,9 @@ function ClientList() {
                         error={!!errors.country} // Display error if exists
                         helperText={errors.country}
                     />
+                    <InputLabel>City</InputLabel>
                     <TextField
                         margin="dense"
-                        label="City"
                         name="city"
                         value={currentClient.city}
                         onChange={handleChange}
@@ -528,9 +537,9 @@ function ClientList() {
                         error={!!errors.city} // Display error if exists
                         helperText={errors.city}
                     />
+                    <InputLabel>State</InputLabel>
                     <TextField
                         margin="dense"
-                        label="State"
                         name="state"
                         value={currentClient.state}
                         onChange={handleChange}
@@ -538,9 +547,9 @@ function ClientList() {
                         error={!!errors.state} // Display error if exists
                         helperText={errors.state}
                     />
+                    <InputLabel>Address</InputLabel>
                     <TextField
                         margin="dense"
-                        label="Address"
                         name="address"
                         value={currentClient.address}
                         onChange={handleChange}

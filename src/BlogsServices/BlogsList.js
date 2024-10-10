@@ -150,22 +150,22 @@ function BlogsList() {
 
         // Title field validation
         if (!currentBlogs.title.trim()) {
-            validationErrors.title = "Please add the Blogs title";
+            validationErrors.title = "Title is required";
         }
         if (!currentBlogs.author) {
-            validationErrors.author = "Please select a author";
+            validationErrors.author = "Author is required";
         }
         if (!currentBlogs.status) {
-            validationErrors.status = "Please select a status";
+            validationErrors.status = "Status is required";
         }
         if (!currentBlogs.targetDate) {
-            validationErrors.targetDate = "Please select a targetDate";
+            validationErrors.targetDate = "TargetDate is required";
         }
         if (!currentBlogs.completedDate) {
-            validationErrors.completedDate = "Please select a completedDate";
+            validationErrors.completedDate = "CompletedDate is required";
         }
         if (!currentBlogs.publishedDate) {
-            validationErrors.publishedDate = "Please select a publishedDate";
+            validationErrors.publishedDate = "PublishedDate is required";
         }
 
         // If there are validation errors, update the state and prevent save
@@ -213,26 +213,27 @@ function BlogsList() {
                 });
         }
         setOpen(false);
+    };
 
+    const handleTitleChange = (e) => {
+        const { value } = e.target;
+        // Use a regular expression to remove any non-alphabetic characters
+        const filteredValue = value.replace(/[^A-Za-z\s]/g, '');
+        // Update the state with the filtered value
+        setCurrentBlogs({ ...currentBlogs, title: filteredValue });
+
+        if (filteredValue.trim()) {
+            setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
+        }
+        // Clear the title error if valid
+        else {
+            setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
+        }
     };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setCurrentBlogs({ ...currentBlogs, [name]: value });
-        if (name === "title") {
-            // Check if the title is empty or only whitespace
-            if (!value.trim()) {
-                setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
-            }
-            // Check for uniqueness
-            else if (blogs.some(web => web.title.toLowerCase() === value.toLowerCase() && web.id !== currentBlogs.id)) {
-                setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
-            }
-            // Clear the title error if valid
-            else {
-                setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
-            }
-        }
 
         if (name === "author") {
             if (value) {
@@ -519,12 +520,13 @@ function BlogsList() {
             <Dialog open={open} onClose={() => setOpen(false)}>
                 <DialogTitle>{currentBlogs.id ? 'Update Blogs' : 'Add Blogs'}</DialogTitle>
                 <DialogContent>
+                    <InputLabel>Title</InputLabel>
                     <TextField
+                        //   type='text'
                         margin="dense"
-                        label="Title"
                         name="title"
                         value={currentBlogs.title}
-                        onChange={handleChange}
+                        onChange={handleTitleChange}
                         fullWidth
                         error={!!errors.title}
                         helperText={errors.title} />
@@ -532,7 +534,6 @@ function BlogsList() {
                     <Select
                         margin="dense"
                         name="author"
-                        label="Author"
                         value={currentBlogs.employee}
                         onChange={handleChange}
                         fullWidth
@@ -548,7 +549,6 @@ function BlogsList() {
                     <InputLabel>Status</InputLabel>
                     <Select
                         margin="dense"
-                        label="Status"
                         name="status"
                         value={currentBlogs.status}
                         onChange={handleChange}
@@ -562,10 +562,9 @@ function BlogsList() {
                         ))}
                     </Select>
                     {errors.status && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.status}</Typography>}
-
+                    <InputLabel>TargetDate</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                            label="TargetDate"
                             value={currentBlogs.targetDate ? dayjs(currentBlogs.targetDate) : null}
                             onChange={handleTargetDateChange}
                             renderInput={(params) => (
@@ -575,9 +574,9 @@ function BlogsList() {
                         />
                     </LocalizationProvider>
                     {errors.targetDate && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.targetDate}</Typography>}
+                    <InputLabel>CompletedDate</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                            label="CompletedDate"
                             value={currentBlogs.completedDate ? dayjs(currentBlogs.completedDate) : null}
                             onChange={handleCompletedDateChange}
                             renderInput={(params) => (
@@ -587,9 +586,9 @@ function BlogsList() {
                         />
                     </LocalizationProvider>
                     {errors.completedDate && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.completedDate}</Typography>}
+                    <InputLabel>PublishedDate</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                            label="PublishedDate"
                             value={currentBlogs.publishedDate ? dayjs(currentBlogs.publishedDate) : null}
                             onChange={handlePublishedDateChange}
                             renderInput={(params) => (
