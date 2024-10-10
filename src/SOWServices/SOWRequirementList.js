@@ -145,16 +145,16 @@ function SOWRequirementList() {
 
         // Name field validation
         if (!currentSOWRequirement.sow.trim()) {
-            validationErrors.sow = "Please select a sow";
+            validationErrors.sow = "Sow is required";
         }
         if (!currentSOWRequirement.designation) {
-            validationErrors.designation = "Please select a designation";
+            validationErrors.designation = "Designation is required";
         }
-        if (!currentSOWRequirement.technologies) {
-            validationErrors.technologies = "Please select a technologies";
+        if (!currentSOWRequirement.technology || currentSOWRequirement.technology.length === 0) {
+            validationErrors.technology = "Technology is required";
         }
         if (!currentSOWRequirement.teamSize) {
-            validationErrors.teamSize = "Please select a teamSize";
+            validationErrors.teamSize = "TeamSize is required";
         }
 
         // If there are validation errors, update the state and prevent save
@@ -449,9 +449,11 @@ function SOWRequirementList() {
                             </MenuItem>
                         ))}
                     </Select>
+                    {errors.technology && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.technology}</Typography>}
+                    <InputLabel>TeamSize</InputLabel>
                     <TextField
+                    type='number'
                         margin="dense"
-                        label="TeamSize"
                         name="teamSize"
                         value={currentSOWRequirement.teamSize}
                         onChange={handleChange}

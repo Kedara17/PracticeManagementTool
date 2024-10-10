@@ -134,10 +134,10 @@ function SOWProposedTeamList() {
 
         // Name field validation
         if (!currentSOWProposedTeam.sowRequirement.trim()) {
-            validationErrors.sowRequirement = "Please select a sowRequirement";
+            validationErrors.sowRequirement = "SowRequirement is required";
         }
         if (!currentSOWProposedTeam.employee) {
-            validationErrors.employee = "Please select a employee";
+            validationErrors.employee = "Employee is required";
         }
 
         // If there are validation errors, update the state and prevent save

@@ -118,7 +118,7 @@ function ClientContactList() {
 
         // Name field validation
         if (!currentClientContact.contactValue.trim()) {
-            validationErrors.contactValue = "ContactValue cannot be empty or whitespace";
+            validationErrors.contactValue = "ContactValue is required";
         } else if (ClientContact.some(conval => conval.contactValue.toLowerCase() === currentClientContact.contactValue.toLowerCase() && conval.id !== currentClientContact.id)) {
             validationErrors.contactValue = "ContactValue must be unique";
         }
@@ -127,7 +127,7 @@ function ClientContactList() {
         }
 
         if (!currentClientContact.contactType.trim()) {
-            validationErrors.contactType = "contactType cannot be empty or whitespace";
+            validationErrors.contactType = "contactType is required";
         } else if (ClientContact.some(conval => conval.contactType === currentClientContact.contactType && conval.id !== currentClientContact.id)) {
             validationErrors.contactType = "contactType must be unique";
         }
@@ -136,7 +136,7 @@ function ClientContactList() {
         }
 
         if (!currentClientContact.client) {
-            validationErrors.client = "Please select a client";
+            validationErrors.client = "Client is required";
         }
 
         // If there are validation errors, update the state and prevent save
@@ -416,25 +416,27 @@ function ClientContactList() {
                         ))}
                     </Select>
                     {errors.client && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.client}</Typography>}
+                    <InputLabel>ContactValue</InputLabel>
                     <TextField
                         margin="dense"
-                        label="ContactValue"
                         name="contactValue"
                         value={currentClientContact.contactValue}
                         onChange={handleChange}
                         fullWidth
                         error={!!errors.contactValue} // Display error if exists
                         helperText={errors.contactValue}
+                        inputProps={{maxlength: 50}}
                     />
+                    <InputLabel>ContactType</InputLabel>
                     <TextField
                         margin="dense"
-                        label="ContactType"
                         name="contactType"
                         value={currentClientContact.contactType}
                         onChange={handleChange}
                         fullWidth
                         error={!!errors.contactType} // Display error if exists
                         helperText={errors.contactType}
+                        inputProps={{maxlength: 50}}
                     />
                 </DialogContent>
                 <DialogActions>

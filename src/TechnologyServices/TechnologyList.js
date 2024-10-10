@@ -5,7 +5,6 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 import PaginationComponent from '../Components/PaginationComponent'; // Import your PaginationComponent
-import ProjectList from '../ProjectServices/ProjectList';
 
 function TechnologyList() {
     const [technologies, setTechnologies] = useState([]);
@@ -115,14 +114,14 @@ function TechnologyList() {
 
         // Name field validation
         if (!currentTechnology.name.trim()) {
-            validationErrors.name = "Technology name cannot be empty or whitespace";
+            validationErrors.name = "Name is required";
         } else if (technologies.some(tech => tech.name.toLowerCase() === currentTechnology.name.toLowerCase() && tech.id !== currentTechnology.id)) {
-            validationErrors.name = "Technology name must be unique";
+            validationErrors.name = "Name must be unique";
         }
 
         // Department field validation 
         if (!currentTechnology.department) {
-            validationErrors.department = "Please select a department";
+            validationErrors.department = "Department is required";
         }
 
         // If there are validation errors, update the state and prevent save
@@ -158,24 +157,30 @@ function TechnologyList() {
         setOpen(false);
     };
 
+    const handleNameChange = (e) => {
+        const { value } = e.target;    
+        // Use a regular expression to remove any non-alphabetic characters
+        const filteredValue = value.replace(/[^A-Za-z\s]/g, '');    
+        // Update the state with the filtered value
+        setCurrentTechnology({ ...currentTechnology, name: filteredValue });
+        
+        if (filteredValue.trim()) {
+                    setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
+                }                
+                // Check for uniqueness
+            else if (technologies.some(tech => tech.name.toLowerCase() === value.toLowerCase() && tech.id !== currentTechnology.id)) {
+                setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
+            }
+        // Clear the title error if valid
+            else {
+                setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
+            }        
+    };
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setCurrentTechnology({ ...currentTechnology, [name]: value });
-        if (name === "name") {
-            // Check if the title is empty or only whitespace
-            if (!value.trim()) {
-                setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
-            }
-            // Check for uniqueness
-            else if (technologies.some(tech => tech.client === value && tech.id !== currentTechnology.id)) {
-                setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
-            }
-            // Clear the title error if valid
-            else {
-                setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
-            }
-        }
-
+       
         if (name === "department") {
             if (value) {
                 setErrors((prevErrors) => ({ ...prevErrors, department: "" }));
@@ -352,15 +357,16 @@ function TechnologyList() {
             <Dialog open={open} onClose={() => setOpen(false)}>
                 <DialogTitle>{currentTechnology.id ? 'Update Technology' : 'Add Technology'}</DialogTitle>
                 <DialogContent>
+                <InputLabel>Name</InputLabel>
                     <TextField
                         margin="dense"
-                        name="name"
-                        label="Technology Name"
+                        name="name"                     
                         value={currentTechnology.name}
-                        onChange={handleChange}
+                        onChange={handleNameChange}
                         fullWidth
                         error={!!errors.name} // Display error if exists
                         helperText={errors.name}
+                        inputProps={{maxlength: 50}}
                     />
                     <InputLabel>Department</InputLabel>
                     <Select

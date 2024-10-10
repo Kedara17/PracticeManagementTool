@@ -161,25 +161,25 @@ function SOWList() {
         //     validationErrors.client = "Please select a Project";
         // }
         if (!currentSOW.title) {
-            validationErrors.title = "Please select a title";
+            validationErrors.title = "Title is required";
         }
         if (!currentSOW.client) {
-            validationErrors.client = "Please select a client";
+            validationErrors.client = "Client is required";
         }
         if (!currentSOW.project) {
-            validationErrors.project = "Please select a project";
+            validationErrors.project = "Project is required";
         }
         if (!currentSOW.preparedDate) {
-            validationErrors.preparedDate = "Please select a preparedDate";
+            validationErrors.preparedDate = "PreparedDate is required";
         }
         if (!currentSOW.submittedDate) {
-            validationErrors.submittedDate = "Please select a submittedDate";
+            validationErrors.submittedDate = "SubmittedDate is required";
         }
         if (!currentSOW.status) {
-            validationErrors.status = "Please select a status";
+            validationErrors.status = "Status is required";
         }
         if (!currentSOW.comments) {
-            validationErrors.comments = "Please select a comments";
+            validationErrors.comments = "Comments is required";
         }
 
         // If there are validation errors, update the state and prevent save
@@ -222,6 +222,22 @@ function SOWList() {
 
     };
 
+    const handleNameChange = (e) => {
+        const { value } = e.target;    
+        // Use a regular expression to remove any non-alphabetic characters
+        const filteredValue = value.replace(/[^A-Za-z\s]/g, '');    
+        // Update the state with the filtered value
+        setCurrentSOW({ ...currentSOW, title: filteredValue });
+        
+        if (filteredValue.trim()) {
+                    setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
+                }                                
+        // Clear the title error if valid
+            else {
+                setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
+            }        
+    };
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setCurrentSOW({ ...currentSOW, [name]: value });
@@ -230,11 +246,11 @@ function SOWList() {
                 setErrors((prevErrors) => ({ ...prevErrors, client: "" }));
             }
         }
-        if (name === "title") {
-            if (value) {
-                setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
-            }
-        }
+        // if (name === "title") {
+        //     if (value) {
+        //         setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
+        //     }
+        // }
         if (name === "project") {
             if (value) {
                 setErrors((prevErrors) => ({ ...prevErrors, project: "" }));
@@ -500,15 +516,16 @@ function SOWList() {
             <Dialog open={open} onClose={() => setOpen(false)}>
                 <DialogTitle>{currentSOW.id ? 'Update SOW' : 'Add SOW'}</DialogTitle>
                 <DialogContent>
+                    <InputLabel>Title</InputLabel>
                     <TextField
                         margin="dense"
-                        label="Title"
                         name="title"
                         value={currentSOW.title}
-                        onChange={handleChange}
+                        onChange={handleNameChange}
                         fullWidth
                         error={!!errors.title}
                         helperText={errors.title}
+                        inputProps={{maxlength: 200}}
                     />
                     <InputLabel>Client</InputLabel>
                     <Select
@@ -542,9 +559,9 @@ function SOWList() {
                         ))}
                     </Select>
                     {errors.project && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.project}</Typography>}
+                    <InputLabel>PreparedDate</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                            label="PreparedDate"
                             value={currentSOW.preparedDate ? dayjs(currentSOW.preparedDate) : null}
                             onChange={handlePreparedDateChange}
                             renderInput={(params) => (
@@ -553,9 +570,9 @@ function SOWList() {
                         />
                         {errors.preparedDate && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.preparedDate}</Typography>}
                     </LocalizationProvider>
+                    <InputLabel>SubmittedDate</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                            label="SubmittedDate"
                             value={currentSOW.submittedDate ? dayjs(currentSOW.submittedDate) : null}
                             onChange={handleSubmittedDateChange}
                             renderInput={(params) => (
@@ -580,9 +597,9 @@ function SOWList() {
                         ))}
                     </Select>
                     {errors.status && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.status}</Typography>}
+                    <InputLabel>Comments</InputLabel>
                     <TextField
                         margin="dense"
-                        label="Comments"
                         name="comments"
                         value={currentSOW.comments}
                         onChange={handleChange}

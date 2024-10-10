@@ -177,37 +177,37 @@ function ProjectList() {
 
         // Name field validation
         if (!currentProject.projectName.trim()) {
-            validationErrors.projectName = "Project name cannot be empty or whitespace";
+            validationErrors.projectName = "ProjectName is required";
         } else if (Projects.some(pro => pro.projectName.toLowerCase() === currentProject.projectName.toLowerCase() && pro.id !== currentProject.id)) {
-            validationErrors.projectName = "Project name must be unique";
+            validationErrors.projectName = "ProjectName must be unique";
         }
 
         if (!currentProject.client) {
-            validationErrors.client = "Please select a client";
+            validationErrors.client = "Client is required";
         }
         if (!currentProject.technicalProjectManager) {
-            validationErrors.technicalProjectManager = "Please select a technicalProjectManager";
+            validationErrors.technicalProjectManager = "TechnicalProjectManager is required";
         }
         if (!currentProject.salesContact) {
-            validationErrors.salesContact = "Please select a salesContact";
+            validationErrors.salesContact = "SalesContact is required";
         }
         if (!currentProject.pmo) {
-            validationErrors.pmo = "Please select a pmo";
+            validationErrors.pmo = "Pmo is required";
         }
         if (!currentProject.sowSubmittedDate) {
-            validationErrors.sowSubmittedDate = "Please select a sowSubmittedDate";
+            validationErrors.sowSubmittedDate = "SowSubmittedDate is required";
         }
         if (!currentProject.sowSignedDate) {
-            validationErrors.sowSignedDate = "Please select a sowSignedDate";
+            validationErrors.sowSignedDate = "SowSignedDate is required";
         }
         if (!currentProject.sowValidTill) {
-            validationErrors.sowValidTill = "Please select a sowValidTill";
+            validationErrors.sowValidTill = "SowValidTill is required";
         }
         if (!currentProject.sowLastExtendedDate) {
-            validationErrors.sowLastExtendedDate = "Please select a sowLastExtendedDate";
+            validationErrors.sowLastExtendedDate = "SowLastExtendedDate is required";
         }
-        if (!currentProject.technology) {
-            validationErrors.technology = "Please select a technology";
+        if (!currentProject.technology || currentProject.technology.length === 0) {
+            validationErrors.technology = "Technology is required";
         }
 
         // If there are validation errors, update the state and prevent save
@@ -258,24 +258,44 @@ function ProjectList() {
 
     };
 
+    const handleNameChange = (e) => {
+        const { value } = e.target;    
+        // Use a regular expression to remove any non-alphabetic characters
+        const filteredValue = value.replace(/[^A-Za-z\s]/g, '');    
+        // Update the state with the filtered value
+        setCurrentProject({ ...currentProject, projectName: filteredValue });
+        
+        if (filteredValue.trim()) {
+                    setErrors((prevErrors) => ({ ...prevErrors, projectName: "" }));
+                }                
+                // Check for uniqueness
+            else if (Projects.some(pro => pro.projectName.toLowerCase() === value.toLowerCase() && pro.id !== currentProject.id)) {
+                setErrors((prevErrors) => ({ ...prevErrors, projectName: "" }));
+            }
+        // Clear the title error if valid
+            else {
+                setErrors((prevErrors) => ({ ...prevErrors, projectName: "" }));
+            }        
+    };
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setCurrentProject({ ...currentProject, [name]: value });
 
-        if (name === "projectName") {
-            // Check if the title is empty or only whitespace
-            if (!value.trim()) {
-                setErrors((prevErrors) => ({ ...prevErrors, projectName: "" }));
-            }
-            // Check for uniqueness
-            else if (Projects.some(pro => pro.projectName.toLowerCase() === value.toLowerCase() && pro.id !== currentProject.id)) {
-                setErrors((prevErrors) => ({ ...prevErrors, projectName: "" }));
-            }
-            // Clear the title error if valid
-            else {
-                setErrors((prevErrors) => ({ ...prevErrors, projectName: "" }));
-            }
-        }
+        // if (name === "projectName") {
+        //     // Check if the title is empty or only whitespace
+        //     if (!value.trim()) {
+        //         setErrors((prevErrors) => ({ ...prevErrors, projectName: "" }));
+        //     }
+        //     // Check for uniqueness
+        //     else if (Projects.some(pro => pro.projectName.toLowerCase() === value.toLowerCase() && pro.id !== currentProject.id)) {
+        //         setErrors((prevErrors) => ({ ...prevErrors, projectName: "" }));
+        //     }
+        //     // Clear the title error if valid
+        //     else {
+        //         setErrors((prevErrors) => ({ ...prevErrors, projectName: "" }));
+        //     }
+        // }
 
         if (name === "client") {
             if (value) {
@@ -625,27 +645,24 @@ function ProjectList() {
                         ))}
                     </Select>
                     {errors.client && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.client}</Typography>}
+                    <InputLabel>ProjectName</InputLabel>
                     <TextField
                         margin="dense"
-                        label="ProjectName"
                         name="projectName"
                         value={currentProject.projectName}
-                        onChange={handleChange}
+                        onChange={handleNameChange}
                         fullWidth
                         error={!!errors.projectName} // Display error if exists
                         helperText={errors.projectName}
                     />
                     <InputLabel id="demo-simple-select-label">Technology</InputLabel>
                     <Select
-                        label="Technology"
-                        //  placeholder="Technologies"
                         name="technology"
                         multiple
                         value={currentProject.technology}
                         onChange={handleTechnologyChange}
                         renderValue={(selected) => selected.join(', ')}
-                        fullWidth
-                        error={!!errors.technology}
+                        fullWidth                       
                     >
                         {Technologies.map((tech) => (
                             <MenuItem key={tech.id} value={tech.name}>
@@ -703,52 +720,55 @@ function ProjectList() {
                         ))}
                     </Select>
                     {errors.pmo && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.pmo}</Typography>}
+                    <InputLabel>SOWSubmittedDate</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
-                        <DatePicker
-                            label="SOWSubmittedDate"
+                        <DatePicker                          
                             value={currentProject.sowSubmittedDate ? dayjs(currentProject.sowSubmittedDate) : null}
                             onChange={handleSowSubmittedDateChange}
                             fullWidth
-                            // renderInput={(params) => (
-                            //     <TextField {...params} fullWidth margin="dense" />
-                            // )}
-                            slots={{ textField: (params) => <TextField {...params} fullWidth margin="dense" error={!!errors.sowSubmittedDate} /> }}
+                            renderInput={(params) => (
+                                <TextField {...params} fullWidth margin="dense" />
+                            )}
+                            // slots={{ textField: (params) => <TextField {...params} fullWidth margin="dense" error={!!errors.sowSubmittedDate} /> }}
                         />
                     </LocalizationProvider>
                     {errors.sowSubmittedDate && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.sowSubmittedDate}</Typography>}
+                    <InputLabel>SOWSignedDate</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                            label="SOWSignedDate"
                             value={currentProject.sowSignedDate ? dayjs(currentProject.sowSignedDate) : null}
                             onChange={handleSowSignedDateChange}
                             fullWidth
-                            slots={{ textField: (params) => <TextField {...params} fullWidth margin="dense" error={!!errors.sowSignedDate} /> }}
-
+                            renderInput={(params) => (
+                                <TextField {...params} fullWidth margin="dense" />
+                            )}                            
                         />
                     </LocalizationProvider>
                     {errors.sowSignedDate && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.sowSignedDate}</Typography>}
+                    <InputLabel>SOWValidTill</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                            label="SOWValidTill"
                             value={currentProject.sowValidTill ? dayjs(currentProject.sowValidTill) : null}
                             onChange={handleSowValidTillDateChange}
                             fullWidth
-                            slots={{ textField: (params) => <TextField {...params} fullWidth margin="dense" error={!!errors.sowValidTill} /> }}
-
+                            renderInput={(params) => (
+                                <TextField {...params} fullWidth margin="dense" />
+                            )}
                         />
                     </LocalizationProvider>
                     {errors.sowValidTill && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.sowValidTill}</Typography>}
+                    <InputLabel>SOWLastExtendedDate</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                            label="SOWLastExtendedDate"
                             value={currentProject.sowLastExtendedDate ? dayjs(currentProject.sowLastExtendedDate) : null}
                             onChange={handleSowLastExtendedDateChange}
-                            fullWidth
-                            slots={{ textField: (params) => <TextField {...params} fullWidth margin="dense" error={!!errors.sowLastExtendedDate} /> }}
-
+                            fullWidth                            
+                            renderInput={(params) => (
+                                <TextField {...params} fullWidth margin="dense" />
+                            )}
                         />
                     </LocalizationProvider>
-                    {errors.sowLastExtendedDate && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.sowValisowLastExtendedDatedTill}</Typography>}                </DialogContent>
+                    {errors.sowLastExtendedDate && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.sowLastExtendedDate}</Typography>}                </DialogContent>
                 <DialogActions>
                     <Button onClick={handleClose}>Cancel</Button>
                     <Button onClick={handleSave} color="primary">

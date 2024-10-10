@@ -136,16 +136,16 @@ function ProjectEmployeeList() {
 
         // Name field validation
         if (!currentProjectEmployee.project.trim()) {
-            validationErrors.project = "Please select a Project";
+            validationErrors.project = "Project is required";
         }
         if (!currentProjectEmployee.employee) {
-            validationErrors.employee = "Please select a employee";
+            validationErrors.employee = "Employee is required";
         }
         if (!currentProjectEmployee.startDate) {
-            validationErrors.startDate = "Please select a startDate";
+            validationErrors.startDate = "StartDate is required";
         }
         if (!currentProjectEmployee.endDate) {
-            validationErrors.endDate = "Please select a endDate";
+            validationErrors.endDate = "EndDate is required";
         }
 
         // If there are validation errors, update the state and prevent save
@@ -449,9 +449,9 @@ function ProjectEmployeeList() {
                         ))}
                     </Select>
                     {errors.employee && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.employee}</Typography>}
+                    <InputLabel>StartDate</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                            label="StartDate"
                             value={currentProjectEmployee.startDate ? dayjs(currentProjectEmployee.startDate) : null}
                             onChange={handleStartDateChange}
                             fullWidth
@@ -461,9 +461,9 @@ function ProjectEmployeeList() {
                         />
                     </LocalizationProvider>
                     {errors.startDate && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.startDate}</Typography>}
+                    <InputLabel>EndDate</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                            label="EndDate"
                             value={currentProjectEmployee.endDate ? dayjs(currentProjectEmployee.endDate) : null}
                             onChange={handleEndDateChange}
                             fullWidth

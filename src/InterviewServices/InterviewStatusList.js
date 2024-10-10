@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment, InputLabel } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
@@ -94,7 +94,7 @@ function InterviewStatusList() {
         let validationErrors = {};
 
         if (!currentInterviewStatus.status.trim()) {
-            validationErrors.status = "Please select a status";
+            validationErrors.status = "Status is required";
         }
 
         // If there are validation errors, update the state and prevent save
@@ -302,15 +302,16 @@ function InterviewStatusList() {
             <Dialog open={open} onClose={() => setOpen(false)}>
                 <DialogTitle>{currentInterviewStatus.id ? 'Update InterviewStatus' : 'Add InterviewStatus'}</DialogTitle>
                 <DialogContent>
+                    <InputLabel>Status</InputLabel>
                     <TextField
                         margin="dense"
-                        label="Status"
                         name="status"
                         value={currentInterviewStatus.status}
                         onChange={handleChange}
                         fullWidth
                         error={!!errors.status}
                         helperText={errors.status}
+                        inputProps={{maxlength: 50}}
                     />
                 </DialogContent>
                 <DialogActions>
