@@ -19,7 +19,7 @@ function DepartmentList() {
         name: ''
     });
 
-    const [order, setOrder] = useState('asc'); // Order of sorting: 'asc' or 'desc'
+    const [order, setOrder] = useState('desc'); // Order of sorting: 'asc' or 'desc'
     const [orderBy, setOrderBy] = useState('createdDate'); // Column to sort by
     const [searchQuery, setSearchQuery] = useState(''); // State for search query
     const [errors, setErrors] = useState({
@@ -30,7 +30,6 @@ function DepartmentList() {
     useEffect(() => {
         const fetchDepartments = async () => {
             try {
-                // const deptResponse = await axios.get('http://localhost:5560/api/department');
                 const deptResponse = await axios.get('http://172.17.31.61:5160/api/department');
                 setDepartments(deptResponse.data);
             } catch (error) {
@@ -43,19 +42,27 @@ function DepartmentList() {
     }, []);
 
     const handleSort = (property) => {
-        const isAsc = orderBy === property && order === 'asc';
-        setOrder(isAsc ? 'desc' : 'asc');
+        const isAsc = orderBy === property && order === 'desc';
+        setOrder(isAsc ? 'asc' : 'desc');
         setOrderBy(property);
     };
 
     const sortedDepartments = [...departments].sort((a, b) => {
-        const valueA = a[orderBy] || '';
-        const valueB = b[orderBy] || '';
+        const valueA = a[orderBy] ?? ''; // Using nullish coalescing to handle null/undefined
+        const valueB = b[orderBy] ?? '';
 
         if (typeof valueA === 'string' && typeof valueB === 'string') {
-            return order === 'asc' ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
+            return order === 'desc'
+                ? valueB.localeCompare(valueA)
+                : valueA.localeCompare(valueB);
+        } else if (valueA instanceof Date && valueB instanceof Date) {
+            return order === 'desc'
+                ? valueB - valueA
+                : valueA - valueB;
         } else {
-            return order === 'asc' ? (valueA > valueB ? 1 : -1) : (valueB > valueA ? 1 : -1);
+            return order === 'desc'
+                ? (valueA > valueB ? 1 : -1)
+                : (valueB > valueA ? 1 : -1);
         }
     });
 
@@ -79,8 +86,6 @@ function DepartmentList() {
     };
 
     const handleDelete = (id) => {
-        // axios.delete(`http://localhost:5560/api/Department/${id}`)
-        // axios.delete(`http://172.17.31.61:5160/api/department/${id}`)
         axios.patch(`http://172.17.31.61:5160/api/department/${id}`)
             .then(response => {
                 setDepartments(departments.filter(dept => dept.id !== id));
@@ -92,7 +97,7 @@ function DepartmentList() {
         setConfirmOpen(false);
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         let validationErrors = {};
 
         // Name field validation
@@ -112,15 +117,9 @@ function DepartmentList() {
         setErrors({});
 
         if (currentDepartment.id) {
-            // axios.put(`http://localhost:5560/api/Department/${currentDepartment.id}`, currentDepartment)
-            axios.put(`http://172.17.31.61:5160/api/department/${currentDepartment.id}`, currentDepartment)
-                .then(response => {
-                    setDepartments(departments.map(dept => dept.id === currentDepartment.id ? response.data : dept));
-                })
-                .catch(error => {
-                    console.error('There was an error updating the Department!', error);
-                    setError(error);
-                });
+            await axios.put(`http://172.17.31.61:5160/api/department/${currentDepartment.id}`, currentDepartment)
+            const deptResponse1 = await axios.get('http://172.17.31.61:5160/api/department');
+            setDepartments(deptResponse1.data);
 
         } else {
             // axios.post('http://localhost:5560/api/Department', currentDepartment)
@@ -231,7 +230,7 @@ function DepartmentList() {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'name'}
-                                    direction={orderBy === 'name' ? order : 'asc'}
+                                    direction={orderBy === 'name' ? order : 'desc'}
                                     onClick={() => handleSort('name')}
                                 >
                                     <b>Name</b>
@@ -241,7 +240,7 @@ function DepartmentList() {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'isActive'}
-                                    direction={orderBy === 'isActive' ? order : 'asc'}
+                                    direction={orderBy === 'isActive' ? order : 'desc'}
                                     onClick={() => handleSort('isActive')}
                                 >
                                     <b>Is Active</b>
@@ -250,7 +249,7 @@ function DepartmentList() {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'createdBy'}
-                                    direction={orderBy === 'createdBy' ? order : 'asc'}
+                                    direction={orderBy === 'createdBy' ? order : 'desc'}
                                     onClick={() => handleSort('createdBy')}
                                 >
                                     <b>Created By</b>
@@ -259,7 +258,7 @@ function DepartmentList() {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'createdDate'}
-                                    direction={orderBy === 'createdDate' ? order : 'asc'}
+                                    direction={orderBy === 'createdDate' ? order : 'desc'}
                                     onClick={() => handleSort('createdDate')}
                                 >
                                     <b>Created Date</b>
@@ -268,7 +267,7 @@ function DepartmentList() {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'updatedBy'}
-                                    direction={orderBy === 'updatedBy' ? order : 'asc'}
+                                    direction={orderBy === 'updatedBy' ? order : 'desc'}
                                     onClick={() => handleSort('updatedBy')}
                                 >
                                     <b>Updated By</b>
@@ -277,14 +276,14 @@ function DepartmentList() {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'updatedDate'}
-                                    direction={orderBy === 'updatedDate' ? order : 'asc'}
+                                    direction={orderBy === 'updatedDate' ? order : 'desc'}
                                     onClick={() => handleSort('updatedDate')}
                                 >
                                     <b>Updated Date</b>
                                 </TableSortLabel>
                             </TableCell>
                             <TableCell
-                            
+
                             ><b>Actions</b></TableCell>
                         </TableRow>
                     </TableHead>
@@ -298,7 +297,7 @@ function DepartmentList() {
                                 <TableCell>{Department.createdBy}</TableCell>
                                 <TableCell>{new Date(Department.createdDate).toLocaleString()}</TableCell>
                                 <TableCell>{Department.updatedBy || 'N/A'}</TableCell>
-                                <TableCell>{new Date(Department.updatedDate).toLocaleString()}</TableCell>
+                                <TableCell>{Department.updatedDate || 'N/A'}</TableCell>
                                 <TableCell >
                                     <IconButton onClick={() => handleUpdate(Department)}>
                                         <EditIcon color="primary" />
