@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { ListItemText, Checkbox, Select, MenuItem, Table, InputLabel, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
+import { Autocomplete, ListItemText, Checkbox, Select, MenuItem, Table, InputLabel, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
@@ -22,6 +22,7 @@ function ProjectList() {
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [deleteTechId, setDeleteTechId] = useState(null);
     const [page, setPage] = useState(0);
+    const [formSubmitted, setFormSubmitted] = useState(false);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [currentProject, setCurrentProject] = useState({
         client: '',
@@ -94,8 +95,6 @@ function ProjectList() {
                 setError(error);
             }
         };
-
-
         fetchProjects();
         fetchClient();
         fetchEmployees();
@@ -173,6 +172,7 @@ function ProjectList() {
     };
 
     const handleSave = () => {
+        setFormSubmitted(true);
         let validationErrors = {};
 
         // Name field validation
@@ -207,8 +207,8 @@ function ProjectList() {
             validationErrors.sowLastExtendedDate = "SowLastExtendedDate is required";
         }
         if (!currentProject.technology || currentProject.technology.length === 0) {
-            validationErrors.technology = "Technology is required";
-        }
+            validationErrors.technology = "Technology is required";                  
+             }
 
         // If there are validation errors, update the state and prevent save
         if (Object.keys(validationErrors).length > 0) {
@@ -255,7 +255,6 @@ function ProjectList() {
                 });
         }
         setOpen(false);
-
     };
 
     const handleNameChange = (e) => {
@@ -281,21 +280,6 @@ function ProjectList() {
     const handleChange = (e) => {
         const { name, value } = e.target;
         setCurrentProject({ ...currentProject, [name]: value });
-
-        // if (name === "projectName") {
-        //     // Check if the title is empty or only whitespace
-        //     if (!value.trim()) {
-        //         setErrors((prevErrors) => ({ ...prevErrors, projectName: "" }));
-        //     }
-        //     // Check for uniqueness
-        //     else if (Projects.some(pro => pro.projectName.toLowerCase() === value.toLowerCase() && pro.id !== currentProject.id)) {
-        //         setErrors((prevErrors) => ({ ...prevErrors, projectName: "" }));
-        //     }
-        //     // Clear the title error if valid
-        //     else {
-        //         setErrors((prevErrors) => ({ ...prevErrors, projectName: "" }));
-        //     }
-        // }
 
         if (name === "client") {
             if (value) {
@@ -342,13 +326,13 @@ function ProjectList() {
             if (value) {
                 setErrors((prevErrors) => ({ ...prevErrors, technology: "" }));
             }
-        }
+        } 
     };
 
     const handleClose = () => {
         setCurrentProject({ client: '', projectName: '', technicalProjectManager: '', salesContact: '', pmo: '', sowSubmittedDate: '', sowSignedDate: '', sowValidTill: '', sowLastExtendedDate: '', technology: [] }); // Reset the department fields        
         setErrors({ client: '', projectName: '', technicalProjectManager: '', salesContact: '', pmo: '', sowSubmittedDate: '', sowSignedDate: '', sowValidTill: '', sowLastExtendedDate: '', technology: [] }); // Reset the error state
-        setOpen(false); // Close the dialog
+        setOpen(false); 
     };
 
     const handlePageChange = (event, newPage) => {
@@ -372,7 +356,6 @@ function ProjectList() {
     const handleConfirmYes = () => {
         handleDelete(deleteTechId);
     };
-
 
     const handleSowSubmittedDateChange = (newDate) => {
         setCurrentProject((prevSow) => ({
@@ -413,13 +396,7 @@ function ProjectList() {
             setErrors((prevErrors) => ({ ...prevErrors, sowLastExtendedDate: "" }));
         }
     };
-    const handleTechnologyChange = (event) => {
-        const { value } = event.target;
-        setCurrentProject({
-            ...currentProject,
-            technology: typeof value === 'string' ? value.split(',') : value  // Handle multiple selection
-        });
-    };
+    
     if (loading) {
         return <p>Loading...</p>;
     }
@@ -617,7 +594,6 @@ function ProjectList() {
                         ))}
                     </TableBody>
                 </Table>
-                {/* Pagination Component */}
                 <PaginationComponent
                     count={filteredProjects.length}
                     page={page}
@@ -652,25 +628,42 @@ function ProjectList() {
                         value={currentProject.projectName}
                         onChange={handleNameChange}
                         fullWidth
-                        error={!!errors.projectName} // Display error if exists
+                        error={!!errors.projectName} 
                         helperText={errors.projectName}
                     />
-                    <InputLabel id="demo-simple-select-label">Technology</InputLabel>
-                    <Select
-                        name="technology"
+                   <InputLabel id="demo-simple-select-label">Technology</InputLabel>
+                    <Autocomplete
                         multiple
+                        id="technologies-autocomplete"
+                        options={Technologies.map((tech) => tech.name)} 
                         value={currentProject.technology}
-                        onChange={handleTechnologyChange}
-                        renderValue={(selected) => selected.join(', ')}
-                        fullWidth                       
-                    >
-                        {Technologies.map((tech) => (
-                            <MenuItem key={tech.id} value={tech.name}>
-                                <Checkbox checked={currentProject.technology.indexOf(tech.name) > -1} />
-                                <ListItemText primary={tech.name} />
-                            </MenuItem>
-                        ))}
-                    </Select>
+                        onChange={(event, newValue) => {
+                            handleChange({
+                                target: {
+                                    name: 'technology',
+                                    value: newValue,
+                                },
+                            });
+                        }}
+                        renderInput={(params) => (
+                            <TextField
+                                {...params}
+                                variant="outlined"
+                                placeholder="Select technologies"
+                                fullWidth
+                                error={!!errors.technology && formSubmitted}
+                            />
+                        )}
+                        renderOption={(props, option, { selected }) => (
+                            <li {...props}>
+                                <Checkbox
+                                    style={{ marginRight: 8 }}
+                                    checked={selected}
+                                />
+                                <ListItemText primary={option} />
+                            </li>
+                        )}
+                    />                   
                     {errors.technology && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.technology}</Typography>}
                     <InputLabel>SalesContact</InputLabel>
                     <Select
