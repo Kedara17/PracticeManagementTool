@@ -123,14 +123,9 @@ function DepartmentList() {
 
         } else {
             // axios.post('http://localhost:5560/api/Department', currentDepartment)
-            axios.post('http://172.17.31.61:5160/api/department', currentDepartment)
-                .then(response => {
-                    setDepartments([...departments, response.data]);
-                })
-                .catch(error => {
-                    console.error('There was an error adding the Department!', error);
-                    setError(error);
-                });
+            await axios.post('http://172.17.31.61:5160/api/department', currentDepartment)
+            const deptResponse = await axios.get('http://172.17.31.61:5160/api/department');
+            setDepartments(deptResponse.data);
         }
         setOpen(false);
 
