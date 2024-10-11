@@ -21,48 +21,70 @@ function LoginPage() {
 
     const validatePassword = (password) => {
         return password.length >= 3; // Password must be at least 6 characters
-    };
+  };
+  const handleEmailChange = (e) => {
+    setEmail(e.target.value);
+    // Remove the error when user starts typing
+    if (emailError) {
+      setEmailError('');
+    }
+  };
 
-    const handleSubmit = async (event) => {
-        event.preventDefault();
+  // Handle password input change
+  const handlePasswordChange = (e) => {
+    setPassword(e.target.value);
+    // Remove the error when user starts typing
+    if (passwordError) {
+      setPasswordError('');
+    }
+  };
 
-        let isValid = true;
+  const handleSubmit = async (event) => {
+    event.preventDefault();
 
-        // Clear previous errors
-        setEmailError('');
-        setPasswordError('');
-        setError('');
-        // Validate email
-        if (!validateEmail(email)) {
-            setEmailError('Invalid email format.');
-            isValid = false;
-        }
-        // Validate password
-        if (!validatePassword(password)) {
-            setPasswordError('Password must be at least 4 characters.');
-            isValid = false;
-        }
-        if (!isValid) {
-            return; // Stop the form submission if validation fails
-        }
-        try {
-            //const response = await axios.post(`http://localhost:5107/api/Login?emailId=${email}&password=${password}`);
-            const response = await axios.post(`http://172.17.31.61:5107/api/Login?emailId=${email}&password=${password}`);
-            if (response.status === 200) {
-                localStorage.setItem('oauth2', response.data.token);
-                localStorage.setItem('userRole', response.data.role);
+    let isValid = true;
 
-                // Now you can retrieve the role
-                const userRole = response.data.role;
-                console.log('User role:', userRole);
+    // Clear previous errors
+    setEmailError('');
+    setPasswordError('');
+    setError('');
+    if (!email) {
+      setEmailError('Email is required.')
+      isValid = false;
+    } else if (!validateEmail(email)) {
+      setEmailError('Invalid email format.');
+      isValid = false;
+    }
 
-                navigate('/home');
-            }
-        } catch (err) {
-            setError('Invalid Email or password.');
-            console.error('Login error:', err);
-        }
-    };
+    if (!password) {
+      setPasswordError('Password is required.')
+      isValid = false;
+    } else
+      if (!validatePassword(password)) {
+        setPasswordError('Password must be at least 4 characters.');
+        isValid = false;
+      }
+    if (!isValid) {
+      return; // Stop the form submission if validation fails
+    }
+    try {
+      //const response = await axios.post(`http://localhost:5107/api/Login?emailId=${email}&password=${password}`);
+      const response = await axios.post(`http://172.17.31.61:5107/api/Login?emailId=${email}&password=${password}`);
+      if (response.status === 200) {
+        localStorage.setItem('oauth2', response.data.token);
+        localStorage.setItem('userRole', response.data.role);
+
+        // Now you can retrieve the role
+        const userRole = response.data.role;
+        console.log('User role:', userRole);
+
+        navigate('/home');
+      }
+    } catch (err) {
+      setError('Invalid Email or password.');
+      console.error('Login error:', err);
+    }
+  };
 
   return (
     <div>
@@ -163,12 +185,12 @@ function LoginPage() {
                 required
                 fullWidth
                 id="email"
-                placeholder="Username"
+                placeholder="Email"
                 name="email"
-                autoComplete="username"
+                autoComplete="email"
                 autoFocus
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={handleEmailChange}
                 error={Boolean(emailError)}
                 helperText={emailError}
                 InputProps={{
@@ -192,7 +214,7 @@ function LoginPage() {
                 id="password"
                 autoComplete="current-password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={handlePasswordChange}
                 error={Boolean(passwordError)}
                 helperText={passwordError}
                 InputProps={{
