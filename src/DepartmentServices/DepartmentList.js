@@ -30,7 +30,6 @@ function DepartmentList() {
     useEffect(() => {
         const fetchDepartments = async () => {
             try {
-                // const deptResponse = await axios.get('http://localhost:5560/api/department');
                 const deptResponse = await axios.get('http://172.17.31.61:5160/api/department');
                 setDepartments(deptResponse.data);
             } catch (error) {
@@ -87,8 +86,6 @@ function DepartmentList() {
     };
 
     const handleDelete = (id) => {
-        // axios.delete(`http://localhost:5560/api/Department/${id}`)
-        // axios.delete(`http://172.17.31.61:5160/api/department/${id}`)
         axios.patch(`http://172.17.31.61:5160/api/department/${id}`)
             .then(response => {
                 setDepartments(departments.filter(dept => dept.id !== id));
@@ -120,16 +117,7 @@ function DepartmentList() {
         setErrors({});
 
         if (currentDepartment.id) {
-            // axios.put(`http://localhost:5560/api/Department/${currentDepartment.id}`, currentDepartment)
-            // axios.put(`http://172.17.31.61:5160/api/department/${currentDepartment.id}`, currentDepartment)
-            //     .then(response => {
-            //         setDepartments(departments.map(dept => dept.id === currentDepartment.id ? response.data : dept));
-            //     })
-            //     .catch(error => {
-            //         console.error('There was an error updating the Department!', error);
-            //         setError(error);
-            //     });
-            const deptResponse = await axios.put(`http://172.17.31.61:5160/api/department/${currentDepartment.id}`, currentDepartment)
+            await axios.put(`http://172.17.31.61:5160/api/department/${currentDepartment.id}`, currentDepartment)
             const deptResponse1 = await axios.get('http://172.17.31.61:5160/api/department');
             setDepartments(deptResponse1.data);
 
