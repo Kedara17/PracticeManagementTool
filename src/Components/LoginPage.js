@@ -118,12 +118,16 @@ function LoginPage() {
             p: 3,
           }}
         >
-          <Box>
+          <Box sx={{
+            '& > *': {
+                textAlign: 'center'
+            }
+          }}>
             <Typography variant="h4" sx={{ color: 'white', mb: 2 }}>
-              Practice Management Tool
+               Practice <br/>Management Tool
             </Typography>
             <Typography variant="h6" sx={{ color: 'white' }}>
-              Miracle's Comprehensive Practice Planner
+               Miracle's Comprehensive Practice Activity Planner and Tracker
             </Typography>
           </Box>
         </Grid>

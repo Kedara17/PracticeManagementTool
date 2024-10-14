@@ -38,14 +38,12 @@ import ProtectedRoute from './ProtectedRoute'; // Ensure this is correct
 //import EmployeeLoginPage from './EmployeeLoginPage';
 //import AdminLoginPage from './AdminLoginPage';
 
-
 function Routing() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<LoginPage />} />
-        <Route path="/home" element={<ProtectedRoute> <Home /></ProtectedRoute>} />
-
+        <Route path="/home" element={<ProtectedRoute> <Home /></ProtectedRoute>} />   
       </Routes>
     </BrowserRouter>
   );
