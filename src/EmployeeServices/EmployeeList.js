@@ -69,7 +69,7 @@ function EmployeeList() {
         const fetchEmployees = async () => {
             try {
                 // const empResponse = await axios.get('http://localhost:5033/api/Employee');
-                const empResponse = await axios.get('http://172.17.31.61:5033/api/employee');
+                const empResponse = await axios.get('http://172.17.31.61:5033/api/Employee');
                 setEmployees(empResponse.data);
             } catch (error) {
                 console.error('There was an error fetching the employees!', error);
@@ -81,7 +81,7 @@ function EmployeeList() {
         const fetchReportingTo = async () => {
             try {
                 // const repoResponse = await axios.get('http://localhost:5033/api/Employee');
-                const repoResponse = await axios.get('http://172.17.31.61:5033/api/employee');
+                const repoResponse = await axios.get('http://172.17.31.61:5033/api/Employee');
                 setReporting(repoResponse.data);
             } catch (error) {
                 console.error('There was an error fetching the repoting!', error);
@@ -222,7 +222,7 @@ function EmployeeList() {
     const handleDelete = (id) => {
         // axios.delete(`http://localhost:5033/api/Employee/${id}`)
         // axios.delete(`http://172.17.31.61:5033/api/employee/${id}`)
-        axios.patch(`http://172.17.31.61:5033/api/employee/${id}`)
+        axios.patch(`http://172.17.31.61:5033/api/Employee/${id}`)
             .then(response => {
                 setEmployees(Employees.filter(tech => tech.id !== id));
             })
@@ -249,6 +249,16 @@ function EmployeeList() {
         }
         if (!currentEmployee.employeeID) {
             validationErrors.employeeID = "EmployeeID is required";
+        } else if (!currentEmployee.employeeID.length < 4) {
+            validationErrors.employeeID = "EmployeeID must be at least 4 characters";
+        } else if (!currentEmployee.employeeID.length > 8) {
+            validationErrors.employeeID = "EmployeeID must be at most 8 characters";
+        } else if (Employees.some(emp => emp.employeeID.toLowerCase() === currentEmployee.employeeID.toLowerCase() && emp.id !== currentEmployee.id)) {
+            validationErrors.employeeID = "EmployeeID must be unique";
+        }
+        // Check if emailId is empty
+        if (!currentEmployee.emailId) {
+            validationErrors.emailId = "Email is required";
         }
         if (!currentEmployee.emailId) {
             validationErrors.emailId = "EmailId is required";
@@ -271,8 +281,11 @@ function EmployeeList() {
         if (!currentEmployee.password) {
             validationErrors.password = "Password is required";
         }
-        if (!currentEmployee.profile) {
-            validationErrors.profile = "Profile is required";
+        // if (!currentEmployee.profile) {
+        //     validationErrors.profile = "Profile is required";
+        // }
+        if (!currentEmployee.profile || errors.profile) {
+            validationErrors.profile = "Please select a valid PDF or DOC file";
         }
         if (!currentEmployee.phoneNo) {
             validationErrors.phoneNo = "PhoneNo is required";
@@ -301,7 +314,7 @@ function EmployeeList() {
                 formData.append('profile', selectedFile);
                 formData.append('id', "");
 
-                const uploadResponse = await axios.post('http://localhost:5733/api/Employee/uploadFile', formData, {
+                const uploadResponse = await axios.post('http://172.17.31.61:5033/api/Employee/uploadFile', formData, {
                     headers: {
                         'Content-Type': 'multipart/form-data',
                     },
@@ -340,39 +353,39 @@ function EmployeeList() {
         }
     };
 
-    const handleFileChange = (e) => {
-        const file = e.target.files[0];
-        setSelectedFile(file);
+    // const handleFileChange = (e) => {
+    //     const file = e.target.files[0];
+    //     setSelectedFile(file);
 
-        // Remove the profile error automatically when the file is selected
-        if (file) {
-            setErrors((prevErrors) => ({
-                ...prevErrors,
-                profile: undefined, // Clear the error for profile
-            }));
-        }
-    };
-
-    const handleNameChange = (e) => {
-        const { value } = e.target;
-        // Use a regular expression to remove any non-alphabetic characters
-        const filteredValue = value.replace(/[^A-Za-z\s]/g, '');
-        // Update the state with the filtered value
-        setCurrentEmployee({ ...currentEmployee, name: filteredValue });
-
-        if (filteredValue.trim()) {
-            setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
-        }
-        // Clear the title error if valid
-        else {
-            setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
-        }
-    };
+    //     // Remove the profile error automatically when the file is selected
+    //     if (file) {
+    //         setErrors((prevErrors) => ({
+    //             ...prevErrors,
+    //             profile: undefined, // Clear the error for profile
+    //         }));
+    //     }
+    // };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setCurrentEmployee({ ...currentEmployee, [name]: value });
 
+        let validationErrors = { ...errors };
+
+        if (name === "name") {
+            // Check if the title is empty or only whitespace
+            if (!value.trim()) {
+                setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
+            }
+            // Check for uniqueness
+            else if (Employees.some(emp => emp.name.toLowerCase() === value.toLowerCase() && emp.id !== currentEmployee.id)) {
+                setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
+            }
+            // Clear the title error if valid
+            else {
+                setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
+            }
+        }
         if (name === "designation") {
             if (value) {
                 setErrors((prevErrors) => ({ ...prevErrors, designation: "" }));
@@ -384,8 +397,16 @@ function EmployeeList() {
             }
         }
         if (name === "emailId") {
-            if (value) {
-                setErrors((prevErrors) => ({ ...prevErrors, emailId: "" }));
+            if (!value.endsWith("@miraclesoft.com")) {
+                setErrors((prevErrors) => ({
+                    ...prevErrors,
+                    emailId: "Email must end with @miraclesoft.com"
+                }));
+            } else {
+                setErrors((prevErrors) => ({
+                    ...prevErrors,
+                    emailId: "" // Clear error if the email is valid
+                }));
             }
         }
         if (name === "department") {
@@ -413,19 +434,74 @@ function EmployeeList() {
                 setErrors((prevErrors) => ({ ...prevErrors, projection: "" }));
             }
         }
+        // if (name === "password") {
+        //     if (value) {
+        //         setErrors((prevErrors) => ({ ...prevErrors, password: "" }));
+        //     }
+        // }
+        // Password validation
         if (name === "password") {
-            if (value) {
-                setErrors((prevErrors) => ({ ...prevErrors, password: "" }));
+            // Updated regex for password validation
+            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{8,}$/;
+            if (!value) {
+                validationErrors.password = "Password is required"; // Check if empty
+            } else if (!passwordRegex.test(value)) {
+                validationErrors.password = "Password must contain at least 1 uppercase, 1 lowercase, 1 special character and be at least 8 characters long";
+            } else {
+                validationErrors.password = ""; // Clear error if password is valid
             }
         }
         if (name === "phoneNo") {
-            if (value) {
-                setErrors((prevErrors) => ({ ...prevErrors, phoneNo: "" }));
+            const numericValue = value.replace(/\D/g, ''); // Remove non-numeric characters
+
+            // Update the phoneNo field only if it's less than or equal to 10 digits
+            if (numericValue.length <= 10) {
+                setCurrentEmployee((prevEmployee) => ({
+                    ...prevEmployee,
+                    [name]: numericValue
+                }));
+                // If a valid number is entered, remove the error message
+                if (numericValue) {
+                    setErrors((prevErrors) => ({
+                        ...prevErrors,
+                        phoneNo: "" // Clear the error if valid numeric input is provided
+                    }));
+                }
             }
         }
+        // if (name === "profile") {
+        //     if (value) {
+        //         setErrors((prevErrors) => ({ ...prevErrors, profile: "" }));
+        //     }
+        // }
         if (name === "profile") {
-            if (value) {
-                setErrors((prevErrors) => ({ ...prevErrors, profile: "" }));
+            const file = e.target.files[0];
+
+            if (file) {
+                const fileType = file.type;
+
+                // Check if the file type is either PDF or DOC/DOCX
+                if (fileType === "application/pdf" ||
+                    fileType === "application/msword" ||
+                    fileType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+
+                    setCurrentEmployee((prevEmployee) => ({
+                        ...prevEmployee,
+                        profile: file
+                    }));
+
+                    // Remove error when valid file is selected
+                    setErrors((prevErrors) => ({
+                        ...prevErrors,
+                        profile: "" // Clear error for profile
+                    }));
+                } else {
+                    // Set error if an invalid file type is selected
+                    setErrors((prevErrors) => ({
+                        ...prevErrors,
+                        profile: "Please select a PDF or DOC file"
+                    }));
+                }
             }
         }
         if (name === "role") {
@@ -740,7 +816,11 @@ function EmployeeList() {
                         margin="dense"
                         name="name"
                         value={currentEmployee.name}
-                        onChange={handleNameChange}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            if (/^[A-Za-z\s]*$/.test(value))
+                                handleChange(e);
+                        }}
                         fullWidth
                         error={!!errors.name}
                         helperText={errors.name}
@@ -764,11 +844,16 @@ function EmployeeList() {
                     {errors.designation && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.designation}</Typography>}
                     <InputLabel>EmployeeID</InputLabel>
                     <TextField
-                        type='number'
+                        type="text" // Keep as 'text' for better control
                         margin="dense"
                         name="employeeID"
                         value={currentEmployee.employeeID}
-                        onChange={handleChange}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            // Remove any non-numeric characters
+                            const numericValue = value.replace(/\D/g, '');  // \D matches any non-digit character
+                            handleChange({ target: { name: e.target.name, value: numericValue } }); // Update state with numeric value only
+                        }}
                         fullWidth
                         error={!!errors.employeeID}
                         helperText={errors.employeeID}
@@ -798,12 +883,12 @@ function EmployeeList() {
                             </MenuItem>
                         ))}
                     </Select>
-                    {errors.department && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.department}</Typography>}                   
+                    {errors.department && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.department}</Typography>}
                     <InputLabel id="demo-simple-select-label">Technology</InputLabel>
                     <Autocomplete
                         multiple
                         id="technologies-autocomplete"
-                        options={technologies.map((tech) => tech.name)} 
+                        options={technologies.map((tech) => tech.name)}
                         value={currentEmployee.technology}
                         onChange={(event, newValue) => {
                             handleChange({
@@ -886,7 +971,11 @@ function EmployeeList() {
                         margin="dense"
                         name="projection"
                         value={currentEmployee.projection}
-                        onChange={handleChange}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            if (/^[A-Za-z\s]*$/.test(value))
+                                handleChange(e);
+                        }}
                         fullWidth
                         error={!!errors.projection}
                         helperText={errors.projection}
@@ -899,21 +988,21 @@ function EmployeeList() {
                         value={currentEmployee.password}
                         onChange={handleChange}
                         fullWidth
-                        error={!!errors.password}
-                        helperText={errors.password}
+                        error={!!errors.password}  // Show error if exists
+                        helperText={errors.password}  // Display error message
                     />
                     <InputLabel>PhoneNumber</InputLabel>
                     <TextField
-                        // type='number'
                         margin="dense"
                         name="phoneNo"
                         value={currentEmployee.phoneNo}
-                        onChange={handleChange}
+                        onChange={handleChange} // Use the modified handleChange
                         fullWidth
                         error={!!errors.phoneNo}
                         helperText={errors.phoneNo}
-                        inputProps={{ maxLength: 10 }}
+                        inputProps={{ maxLength: 10 }} // Limit the max length to 10 digits
                     />
+
                     <InputLabel>Role</InputLabel>
                     <Select
                         margin="dense"
@@ -929,16 +1018,16 @@ function EmployeeList() {
                             </MenuItem>
                         ))}
                     </Select>
-                    {errors.role && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.role}</Typography>}                    
+                    {errors.role && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.role}</Typography>}
                     <InputLabel>Profile</InputLabel>
                     <TextField
                         type="file"
                         margin="dense"
                         name="profile"
                         // value={currentEmployee.profile}
-                        onChange={handleFileChange}
+                        onChange={handleChange}
                         fullWidth
-                        required={!currentEmployee.id} 
+                        required={!currentEmployee.id}
                         error={!!errors.profile}
                         helperText={errors.profile}
                     />

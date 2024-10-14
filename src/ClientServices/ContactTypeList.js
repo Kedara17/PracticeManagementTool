@@ -143,31 +143,25 @@ function ContactTypeList() {
         setOpen(false);
 
     };
-
-    const handleNameChange = (e) => {
-        const { value } = e.target;    
-        // Use a regular expression to remove any non-alphabetic characters
-        const filteredValue = value.replace(/[^A-Za-z\s]/g, '');    
-        // Update the state with the filtered value
-        setCurrentContactType({ ...currentContactType, typeName: filteredValue });
-        
-        if (filteredValue.trim()) {
-                    setErrors((prevErrors) => ({ ...prevErrors, typeName: "" }));
-                }                
-                // Check for uniqueness
-            else if (contactTypes.some(cont => cont.name.toLowerCase() === value.toLowerCase() && cont.id !== currentContactType.id)) {
+   
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setCurrentContactType({ ...currentContactType, [name]: value });  
+        if (name === "typeName") {
+            // Check if the title is empty or only whitespace
+            if (!value.trim()) {
                 setErrors((prevErrors) => ({ ...prevErrors, typeName: "" }));
             }
-        // Clear the title error if valid
+            // Check for uniqueness
+            else if (contactTypes.some(cont => cont.client === value && cont.id !== currentContactType.id)) {
+                setErrors((prevErrors) => ({ ...prevErrors, typeName: "" }));
+            }
+            // Clear the title error if valid
             else {
                 setErrors((prevErrors) => ({ ...prevErrors, typeName: "" }));
-            }        
+            }
+        }         
     };
-
-    // const handleChange = (e) => {
-    //     const { name, value } = e.target;
-    //     setCurrentContactType({ ...currentContactType, [name]: value });        
-    // };
 
     const handleClose = () => {
         setCurrentContactType({ name: '' }); // Reset the department fields
@@ -330,7 +324,11 @@ function ContactTypeList() {
                         margin="dense"
                         name="typeName"
                         value={currentContactType.typeName}
-                        onChange={handleNameChange}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            if (/^[A-Za-z\s]*$/.test(value))
+                                handleChange(e);
+                        }}
                         fullWidth
                         error={!!errors.typeName} // Display error if exists
                         helperText={errors.typeName}

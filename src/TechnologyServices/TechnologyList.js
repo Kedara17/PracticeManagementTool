@@ -155,32 +155,26 @@ function TechnologyList() {
                 });
         }
         setOpen(false);
-    };
-
-    const handleNameChange = (e) => {
-        const { value } = e.target;    
-        // Use a regular expression to remove any non-alphabetic characters
-        const filteredValue = value.replace(/[^A-Za-z\s]/g, '');    
-        // Update the state with the filtered value
-        setCurrentTechnology({ ...currentTechnology, name: filteredValue });
-        
-        if (filteredValue.trim()) {
-                    setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
-                }                
-                // Check for uniqueness
-            else if (technologies.some(tech => tech.name.toLowerCase() === value.toLowerCase() && tech.id !== currentTechnology.id)) {
-                setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
-            }
-        // Clear the title error if valid
-            else {
-                setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
-            }        
-    };
+    };    
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setCurrentTechnology({ ...currentTechnology, [name]: value });
-       
+        if (name === "name") {
+            // Check if the title is empty or only whitespace
+            if (!value.trim()) {
+                setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
+            }
+            // Check for uniqueness
+            else if (technologies.some(tech => tech.client === value && tech.id !== currentTechnology.id)) {
+                setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
+            }
+            // Clear the title error if valid
+            else {
+                setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
+            }
+        }
+
         if (name === "department") {
             if (value) {
                 setErrors((prevErrors) => ({ ...prevErrors, department: "" }));
@@ -362,7 +356,11 @@ function TechnologyList() {
                         margin="dense"
                         name="name"                     
                         value={currentTechnology.name}
-                        onChange={handleNameChange}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            if (/^[A-Za-z\s]*$/.test(value))
+                                handleChange(e);
+                        }}
                         fullWidth
                         error={!!errors.name} // Display error if exists
                         helperText={errors.name}

@@ -137,31 +137,25 @@ function SOWStatusList() {
         setOpen(false);
 
     };
-
-    const handleNameChange = (e) => {
-        const { value } = e.target;    
-        // Use a regular expression to remove any non-alphabetic characters
-        const filteredValue = value.replace(/[^A-Za-z\s]/g, '');    
-        // Update the state with the filtered value
-        setCurrentSOWStatus({ ...currentSOWStatus, status: filteredValue });
-        
-        if (filteredValue.trim()) {
-                    setErrors((prevErrors) => ({ ...prevErrors, status: "" }));
-                }                
-                // Check for uniqueness
+  
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setCurrentSOWStatus({ ...currentSOWStatus, [name]: value });    
+        if (name === "status") {
+            // Check if the name is empty or only whitespace
+            if (!value.trim()) {
+                setErrors((prevErrors) => ({ ...prevErrors, status: "" }));
+            } 
+            // Check for uniqueness
             else if (SOWStatus.some(stat => stat.name.toLowerCase() === value.toLowerCase() && stat.id !== currentSOWStatus.id)) {
                 setErrors((prevErrors) => ({ ...prevErrors, status: "" }));
-            }
-        // Clear the title error if valid
+            } 
+            // Clear the name error if valid
             else {
                 setErrors((prevErrors) => ({ ...prevErrors, status: "" }));
-            }        
+            }
+        }   
     };
-    
-    // const handleChange = (e) => {
-    //     const { name, value } = e.target;
-    //     setCurrentSOWStatus({ ...currentSOWStatus, [name]: value });       
-    // };
 
     const handleClose = () => {
         setCurrentSOWStatus({ status: '', }); // Reset the department fields
@@ -321,7 +315,11 @@ function SOWStatusList() {
                         margin="dense"
                         name="status"
                         value={currentSOWStatus.status}
-                        onChange={handleNameChange}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            if (/^[A-Za-z\s]*$/.test(value))
+                                handleChange(e);
+                        }}
                         fullWidth
                         error={!!errors.status} // Display error if exists
                         helperText={errors.status}

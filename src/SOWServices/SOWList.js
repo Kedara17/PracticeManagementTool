@@ -222,23 +222,7 @@ function SOWList() {
 
     };
 
-    const handleNameChange = (e) => {
-        const { value } = e.target;    
-        // Use a regular expression to remove any non-alphabetic characters
-        const filteredValue = value.replace(/[^A-Za-z\s]/g, '');    
-        // Update the state with the filtered value
-        setCurrentSOW({ ...currentSOW, title: filteredValue });
-        
-        if (filteredValue.trim()) {
-                    setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
-                }                                
-        // Clear the title error if valid
-            else {
-                setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
-            }        
-    };
-
-    const handleChange = (e) => {
+        const handleChange = (e) => {
         const { name, value } = e.target;
         setCurrentSOW({ ...currentSOW, [name]: value });
         if (name === "client") {
@@ -246,11 +230,11 @@ function SOWList() {
                 setErrors((prevErrors) => ({ ...prevErrors, client: "" }));
             }
         }
-        // if (name === "title") {
-        //     if (value) {
-        //         setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
-        //     }
-        // }
+        if (name === "title") {
+            if (value) {
+                setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
+            }
+        }
         if (name === "project") {
             if (value) {
                 setErrors((prevErrors) => ({ ...prevErrors, project: "" }));
@@ -521,7 +505,11 @@ function SOWList() {
                         margin="dense"
                         name="title"
                         value={currentSOW.title}
-                        onChange={handleNameChange}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            if (/^[A-Za-z\s]*$/.test(value))
+                                handleChange(e);
+                        }}
                         fullWidth
                         error={!!errors.title}
                         helperText={errors.title}
@@ -551,6 +539,7 @@ function SOWList() {
                         onChange={handleChange}
                         fullWidth
                         error={!!errors.project}
+                        inputProps={{maxlength: 200}}
                     >
                         {Projects.map((project) => (
                             <MenuItem key={project.id} value={project.projectName}>
@@ -606,6 +595,7 @@ function SOWList() {
                         fullWidth
                         error={!!errors.comments} // Display error if exists
                         helperText={errors.comments}
+                        inputProps={{maxlength: 500}}
                     />
                 </DialogContent>
                 <DialogActions>
