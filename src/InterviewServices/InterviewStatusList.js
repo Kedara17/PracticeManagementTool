@@ -136,7 +136,7 @@ function InterviewStatusList() {
         setOpen(false);
 
     };
-
+   
     const handleChange = (e) => {
         const { name, value } = e.target;
         setCurrentInterviewStatus({ ...currentInterviewStatus, [name]: value });
@@ -307,7 +307,11 @@ function InterviewStatusList() {
                         margin="dense"
                         name="status"
                         value={currentInterviewStatus.status}
-                        onChange={handleChange}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            if (/^[A-Za-z\s]*$/.test(value))
+                                handleChange(e);
+                        }}
                         fullWidth
                         error={!!errors.status}
                         helperText={errors.status}

@@ -187,26 +187,20 @@ function POCList() {
         setOpen(false);
     };
 
-    const handleTitleChange = (e) => {
-        const { value } = e.target;    
-        // Use a regular expression to remove any non-alphabetic characters
-        const filteredValue = value.replace(/[^A-Za-z\s]/g, '');    
-        // Update the state with the filtered value
-        setCurrentPOC({ ...currentPOC, title: filteredValue });
-        
-        if (filteredValue.trim()) {
-                    setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
-                }                                
-        // Clear the title error if valid
-            else {
-                setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
-            }        
-    };
-
     const handleChange = (e) => {
         const { name, value } = e.target;
         setCurrentPOC({ ...currentPOC, [name]: value });
 
+        if (name === "title") {
+            // Check if the title is empty or only whitespace
+            if (!value.trim()) {
+                setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
+            }            
+            // Clear the title error if valid
+            else {
+                setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
+            }     
+        }
         if (name === "client") {
             // Clear the speaker error if the user selects a value
             if (value) {
@@ -462,7 +456,11 @@ function POCList() {
                         margin="dense"
                         name="title"
                         value={currentPOC.title}
-                        onChange={handleTitleChange}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            if (/^[A-Za-z\s]*$/.test(value))
+                                handleChange(e);
+                        }}
                         fullWidth
                         error={!!errors.title} // Display error if exists
                         helperText={errors.title}

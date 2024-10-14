@@ -138,31 +138,25 @@ function DesignationList() {
         }
         setOpen(false);
     };
-
-    const handleNameChange = (e) => {
-        const { value } = e.target;    
-        // Use a regular expression to remove any non-alphabetic characters
-        const filteredValue = value.replace(/[^A-Za-z\s]/g, '');    
-        // Update the state with the filtered value
-        setCurrentDesignation({ ...currentDesignation, name: filteredValue });
-        
-        if (filteredValue.trim()) {
-                    setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
-                }                
-                // Check for uniqueness
+     
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setCurrentDesignation({ ...currentDesignation, [name]: value });    
+        if (name === "name") {
+            // Check if the name is empty or only whitespace
+            if (!value.trim()) {
+                setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
+            }
+            // Check for uniqueness
             else if (designations.some(des => des.name.toLowerCase() === value.toLowerCase() && des.id !== currentDesignation.id)) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
             }
-        // Clear the title error if valid
+            // Clear the name error if valid
             else {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
-            }        
+            }
+        }   
     };
-    
-    // const handleChange = (e) => {
-    //     const { name, value } = e.target;
-    //     setCurrentDesignation({ ...currentDesignation, [name]: value });       
-    // };
 
     const handleClose = () => {
         setCurrentDesignation({ name: '' }); // Reset the department fields
@@ -327,7 +321,11 @@ function DesignationList() {
                         margin="dense"                       
                         name="name"
                         value={currentDesignation.name}
-                        onChange={handleNameChange}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            if (/^[A-Za-z\s]*$/.test(value))
+                                handleChange(e);
+                        }}
                         fullWidth
                         error={!!errors.name} // Display error if exists
                         helperText={errors.name}

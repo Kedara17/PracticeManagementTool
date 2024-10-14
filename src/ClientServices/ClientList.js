@@ -196,32 +196,26 @@ function ClientList() {
         }
         setOpen(false);
 
-    };
-
-    const handleNameChange = (e) => {
-        const { value } = e.target;    
-        // Use a regular expression to remove any non-alphabetic characters
-        const filteredValue = value.replace(/[^A-Za-z\s]/g, '');    
-        // Update the state with the filtered value
-        setCurrentClient({ ...currentClient, name: filteredValue });
-        
-        if (filteredValue.trim()) {
-                    setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
-                }                
-                // Check for uniqueness
-            else if (Clients.some(cli => cli.name.toLowerCase() === value.toLowerCase() && cli.id !== currentClient.id)) {
-                setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
-            }
-        // Clear the title error if valid
-            else {
-                setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
-            }        
-    };
+    };    
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setCurrentClient({ ...currentClient, [name]: value });
-       
+
+        if (name === "name") {
+            // Check if the title is empty or only whitespace
+            if (!value.trim()) {
+                setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
+            }
+            // Check for uniqueness
+            else if (Clients.some(cli => cli.name.toLowerCase() === value.toLowerCase() && cli.id !== currentClient.id)) {
+                setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
+            }
+            // Clear the title error if valid
+            else {
+                setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
+            }
+        }
         if (name === "lineofBusiness") {
             // Clear the lineofBusiness error if the user selects a value
             if (value) {
@@ -480,25 +474,33 @@ function ClientList() {
                 <DialogContent>
                     <InputLabel>Name</InputLabel>
                     <TextField
-                        margin="dense"                        
+                        margin="dense"
                         name="name"
                         value={currentClient.name}
-                        onChange={handleNameChange}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            if (/^[A-Za-z\s]*$/.test(value))
+                                handleChange(e);
+                        }}
                         fullWidth
                         error={!!errors.name} // Display error if exists
                         helperText={errors.name}
-                        inputProps={{maxlength: 50}}
+                        inputProps={{ maxlength: 50 }}
                     />
                     <InputLabel>LineofBusiness</InputLabel>
                     <TextField
                         margin="dense"
                         name="lineofBusiness"
                         value={currentClient.lineofBusiness}
-                        onChange={handleChange}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            if (/^[A-Za-z\s]*$/.test(value))
+                                handleChange(e);
+                        }}
                         fullWidth
                         error={!!errors.lineofBusiness} // Display error if exists
                         helperText={errors.lineofBusiness}
-                        inputProps={{maxlength: 50}}
+                        inputProps={{ maxlength: 50 }}
                     />
                     <InputLabel>SalesEmployee</InputLabel>
                     <Select
@@ -508,7 +510,7 @@ function ClientList() {
                         onChange={handleChange}
                         fullWidth
                         error={!!errors.salesEmployee}
-                        inputProps={{maxlength: 50}}
+                        inputProps={{ maxlength: 50 }}
                     >
                         {employees.map((employee) => (
                             <MenuItem key={employee.id} value={employee.name}>
@@ -516,15 +518,20 @@ function ClientList() {
                             </MenuItem>
                         ))}
                     </Select>
-                    {errors.salesEmployee && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.salesEmployee}</Typography>}
+                    {errors.salesEmployee && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.salesEmployee}</Typography>}                    
                     <InputLabel>Country</InputLabel>
                     <TextField
                         margin="dense"
                         name="country"
                         value={currentClient.country}
-                        onChange={handleChange}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            if (/^[A-Za-z\s]*$/.test(value)) {
+                                handleChange(e); 
+                            }
+                        }}
                         fullWidth
-                        error={!!errors.country} // Display error if exists
+                        error={!!errors.country} 
                         helperText={errors.country}
                     />
                     <InputLabel>City</InputLabel>
@@ -532,7 +539,11 @@ function ClientList() {
                         margin="dense"
                         name="city"
                         value={currentClient.city}
-                        onChange={handleChange}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            if (/^[A-Za-z\s]*$/.test(value))
+                                handleChange(e);
+                        }}
                         fullWidth
                         error={!!errors.city} // Display error if exists
                         helperText={errors.city}
@@ -542,7 +553,11 @@ function ClientList() {
                         margin="dense"
                         name="state"
                         value={currentClient.state}
-                        onChange={handleChange}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            if (/^[A-Za-z\s]*$/.test(value))
+                                handleChange(e);
+                        }}
                         fullWidth
                         error={!!errors.state} // Display error if exists
                         helperText={errors.state}

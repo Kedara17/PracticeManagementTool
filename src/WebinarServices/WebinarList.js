@@ -189,30 +189,24 @@ function WebinarList() {
 
     };
 
-    const handleNameChange = (e) => {
-        const { value } = e.target;    
-        // Use a regular expression to remove any non-alphabetic characters
-        const filteredValue = value.replace(/[^A-Za-z\s]/g, '');    
-        // Update the state with the filtered value
-        setCurrentWebinar({ ...currentWebinar, title: filteredValue });
-        
-        if (filteredValue.trim()) {
-                    setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
-                }                
-                // Check for uniqueness
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setCurrentWebinar({ ...currentWebinar, [name]: value });
+
+        if (name === "title") {
+            // Check if the title is empty or only whitespace
+            if (!value.trim()) {
+                setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
+            }
+            // Check for uniqueness
             else if (Webinars.some(web => web.title.toLowerCase() === value.toLowerCase() && web.id !== currentWebinar.id)) {
                 setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
             }
-        // Clear the title error if valid
+            // Clear the title error if valid
             else {
                 setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
-            }        
-    };
-
-        const handleChange = (e) => {
-        const { name, value } = e.target;
-        setCurrentWebinar({ ...currentWebinar, [name]: value });
-        
+            }
+        }
         if (name === "speaker") {
             // Clear the speaker error if the user selects a value
             if (value) {
@@ -456,11 +450,15 @@ function WebinarList() {
                         margin="dense"
                         name="title"
                         value={currentWebinar.title}
-                        onChange={handleNameChange}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            if (/^[A-Za-z\s]*$/.test(value))
+                                handleChange(e);
+                        }}
                         fullWidth
                         error={!!errors.title}
                         helperText={errors.title}
-                        inputProps={{maxlength: 200}}
+                        inputProps={{ maxlength: 200 }}
                     />
                     <InputLabel>Speaker</InputLabel>
                     <Select
@@ -502,17 +500,25 @@ function WebinarList() {
                             onChange={handleWebinarDateChange}
                             fullWidth
                             minDate={dayjs()}
-                            slots={{ textField: (params) => <TextField {...params} /> }}
+                            renderInput={(params) => (
+                                <TextField {...params} fullWidth margin="dense" />
+                            )}
                         />
                     </LocalizationProvider>
                     {errors.WebinarDate && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.WebinarDate}</Typography>}
                     <InputLabel>NumberOfAudience</InputLabel>
                     <TextField
-                        type='number'
+                        type="text"  // Keep the type as 'text' for full control over input
                         margin="dense"
                         name="numberOfAudience"
                         value={currentWebinar.numberOfAudience}
-                        onChange={handleChange}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            // Allow only digits (numbers) and prevent letters and special characters
+                            if (/^\d*$/.test(value)) {
+                                handleChange(e); // Only update if the value is valid (numbers only)
+                            }
+                        }}
                         fullWidth
                         error={!!errors.numberOfAudience} // Display error if exists
                         helperText={errors.numberOfAudience}

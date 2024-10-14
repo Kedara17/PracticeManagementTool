@@ -256,31 +256,25 @@ function ProjectList() {
         }
         setOpen(false);
     };
-
-    const handleNameChange = (e) => {
-        const { value } = e.target;    
-        // Use a regular expression to remove any non-alphabetic characters
-        const filteredValue = value.replace(/[^A-Za-z\s]/g, '');    
-        // Update the state with the filtered value
-        setCurrentProject({ ...currentProject, projectName: filteredValue });
-        
-        if (filteredValue.trim()) {
-                    setErrors((prevErrors) => ({ ...prevErrors, projectName: "" }));
-                }                
-                // Check for uniqueness
-            else if (Projects.some(pro => pro.projectName.toLowerCase() === value.toLowerCase() && pro.id !== currentProject.id)) {
-                setErrors((prevErrors) => ({ ...prevErrors, projectName: "" }));
-            }
-        // Clear the title error if valid
-            else {
-                setErrors((prevErrors) => ({ ...prevErrors, projectName: "" }));
-            }        
-    };
-
+    
     const handleChange = (e) => {
         const { name, value } = e.target;
         setCurrentProject({ ...currentProject, [name]: value });
 
+        if (name === "projectName") {
+            // Check if the title is empty or only whitespace
+            if (!value.trim()) {
+                setErrors((prevErrors) => ({ ...prevErrors, projectName: "" }));
+            }
+            // Check for uniqueness
+            else if (Projects.some(pro => pro.projectName.toLowerCase() === value.toLowerCase() && pro.id !== currentProject.id)) {
+                setErrors((prevErrors) => ({ ...prevErrors, projectName: "" }));
+            }
+            // Clear the title error if valid
+            else {
+                setErrors((prevErrors) => ({ ...prevErrors, projectName: "" }));
+            }
+        }
         if (name === "client") {
             if (value) {
                 setErrors((prevErrors) => ({ ...prevErrors, client: "" }));
@@ -626,7 +620,11 @@ function ProjectList() {
                         margin="dense"
                         name="projectName"
                         value={currentProject.projectName}
-                        onChange={handleNameChange}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            if (/^[A-Za-z\s]*$/.test(value))
+                                handleChange(e);
+                        }}
                         fullWidth
                         error={!!errors.projectName} 
                         helperText={errors.projectName}

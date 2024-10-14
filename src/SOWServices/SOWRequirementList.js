@@ -469,11 +469,15 @@ function SOWRequirementList() {
 
                     <InputLabel>TeamSize</InputLabel>
                     <TextField
-                    type='number'
+                    type='text'
                         margin="dense"
                         name="teamSize"
                         value={currentSOWRequirement.teamSize}
-                        onChange={handleChange}
+                        onChange={(e)=>{
+                            const value = e.target.value;
+                            if(/^\d*$/.test(value)){
+                                handleChange(e);
+                        }}}
                         fullWidth
                         error={!!errors.teamSize} // Display error if exists
                         helperText={errors.teamSize}
