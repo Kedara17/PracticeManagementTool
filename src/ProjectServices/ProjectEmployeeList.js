@@ -452,6 +452,7 @@ function ProjectEmployeeList() {
                     <InputLabel>StartDate</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
+                            className='time'
                             value={currentProjectEmployee.startDate ? dayjs(currentProjectEmployee.startDate) : null}
                             onChange={handleStartDateChange}
                             fullWidth
@@ -464,6 +465,7 @@ function ProjectEmployeeList() {
                     <InputLabel>EndDate</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
+                        className='time'
                             value={currentProjectEmployee.endDate ? dayjs(currentProjectEmployee.endDate) : null}
                             onChange={handleEndDateChange}
                             fullWidth

@@ -147,9 +147,11 @@ function SOWStatusList() {
                 setErrors((prevErrors) => ({ ...prevErrors, status: "" }));
             } 
             // Check for uniqueness
-            else if (SOWStatus.some(stat => stat.name.toLowerCase() === value.toLowerCase() && stat.id !== currentSOWStatus.id)) {
+            else if (SOWStatus.some(stat => stat.name === value && stat.id !== currentSOWStatus.id)) {
                 setErrors((prevErrors) => ({ ...prevErrors, status: "" }));
-            } 
+            } else if (value.length === 50) {
+                setErrors((prevErrors) => ({ ...prevErrors, status: "More than 50 characters are not allowed" }));
+            }
             // Clear the name error if valid
             else {
                 setErrors((prevErrors) => ({ ...prevErrors, status: "" }));
@@ -323,6 +325,7 @@ function SOWStatusList() {
                         fullWidth
                         error={!!errors.status} // Display error if exists
                         helperText={errors.status}
+                        inputProps={{maxLength: 50}}
                     />
                 </DialogContent>
                 <DialogActions>

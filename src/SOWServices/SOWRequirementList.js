@@ -202,7 +202,10 @@ function SOWRequirementList() {
             }
         }
         if (name === "designation") {
-            if (value) {
+            if (value.length === 36) {
+                setErrors((prevErrors) => ({ ...prevErrors, designation: "More than 36 characters are not allowed" }));
+            }
+            else {
                 setErrors((prevErrors) => ({ ...prevErrors, designation: "" }));
             }
         }
@@ -424,6 +427,7 @@ function SOWRequirementList() {
                         onChange={handleChange}
                         fullWidth
                         error={!!errors.designation}
+                        inputProps={{maxLength: 36}}
                     >
                         {Designations.map((designation) => (
                             <MenuItem key={designation.id} value={designation.name}>

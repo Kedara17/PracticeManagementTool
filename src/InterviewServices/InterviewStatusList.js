@@ -141,9 +141,13 @@ function InterviewStatusList() {
         const { name, value } = e.target;
         setCurrentInterviewStatus({ ...currentInterviewStatus, [name]: value });
         if (name === "status") {
-            if (value) {
-                setErrors((prevErrors) => ({ ...prevErrors, status: "" }));
+            if (value.length === 50) {
+                setErrors((prevErrors) => ({ ...prevErrors, status: "More than 50 characters are not allowed" }));
             }
+            // Clear the title error if valid
+            else {
+                setErrors((prevErrors) => ({ ...prevErrors, status: "" }));
+            }        
         }
     };
 
@@ -315,7 +319,7 @@ function InterviewStatusList() {
                         fullWidth
                         error={!!errors.status}
                         helperText={errors.status}
-                        inputProps={{maxlength: 50}}
+                        inputProps={{maxLength: 50}}
                     />
                 </DialogContent>
                 <DialogActions>

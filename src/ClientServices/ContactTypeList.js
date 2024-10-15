@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment, InputLabel } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
@@ -155,6 +155,8 @@ function ContactTypeList() {
             // Check for uniqueness
             else if (contactTypes.some(cont => cont.client === value && cont.id !== currentContactType.id)) {
                 setErrors((prevErrors) => ({ ...prevErrors, typeName: "" }));
+            }else if (value.length === 50) {
+                setErrors((prevErrors) => ({ ...prevErrors, typeName: "More than 50 characters are not allowed" }));
             }
             // Clear the title error if valid
             else {
@@ -320,6 +322,7 @@ function ContactTypeList() {
             <Dialog open={open} onClose={() => setOpen(false)}>
                 <DialogTitle>{currentContactType.id ? 'Update ContactType' : 'Add ContactType'}</DialogTitle>
                 <DialogContent>
+                    <InputLabel>TypeName</InputLabel>
                     <TextField
                         margin="dense"
                         name="typeName"
@@ -332,7 +335,7 @@ function ContactTypeList() {
                         fullWidth
                         error={!!errors.typeName} // Display error if exists
                         helperText={errors.typeName}
-                        inputProps={{maxlength: 50}}
+                        inputProps={{maxLength: 50}}
                     />
                 </DialogContent>
                 <DialogActions>

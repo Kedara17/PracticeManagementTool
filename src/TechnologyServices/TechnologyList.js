@@ -168,6 +168,8 @@ function TechnologyList() {
             // Check for uniqueness
             else if (technologies.some(tech => tech.client === value && tech.id !== currentTechnology.id)) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
+            }else if (value.length === 50) {
+                setErrors((prevErrors) => ({ ...prevErrors, name: "More than 50 characters are not allowed" }));
             }
             // Clear the title error if valid
             else {
@@ -364,7 +366,7 @@ function TechnologyList() {
                         fullWidth
                         error={!!errors.name} // Display error if exists
                         helperText={errors.name}
-                        inputProps={{maxlength: 50}}
+                        inputProps={{maxLength: 50}}
                     />
                     <InputLabel>Department</InputLabel>
                     <Select

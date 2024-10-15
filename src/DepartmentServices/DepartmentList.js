@@ -92,16 +92,16 @@ function DepartmentList() {
         setConfirmOpen(false);
     };
 
-    const handleSave = () => {
+    const handleSave = (e) => {
         let validationErrors = {};
-
+       
         // Name field validation
         if (!currentDepartment.name.trim()) {
             validationErrors.name = "Name is required";
         }  else if (departments.some(dep => dep.name.toLowerCase() === currentDepartment.name.toLowerCase() && dep.id !== currentDepartment.id)) {
             validationErrors.name = "Name must be unique";
         }
-
+        
         // If there are validation errors, update the state and prevent save
         if (Object.keys(validationErrors).length > 0) {
             setErrors(validationErrors);
@@ -137,24 +137,23 @@ function DepartmentList() {
 
     };
 
-     const handleChange = (e) => {
+    const handleChange = (e) => {
         const { name, value } = e.target;
-        setCurrentDepartment({ ...currentDepartment, [name]: value });  
+        setCurrentDepartment({ ...currentDepartment, [name]: value });    
         if (name === "name") {
-            // Check if the title is empty or only whitespace
+            // Perform validation
             if (!value.trim()) {
-                setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
-            }
-            // Check for uniqueness
+                setErrors((prevErrors) => ({ ...prevErrors, name: "Name is required" }));
+            }  // Check for uniqueness
             else if (departments.some(dep => dep.name.toLowerCase() === value.toLowerCase() && dep.id !== currentDepartment.id)) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
-            }
-            // Clear the title error if valid
-            else {
+            } else if (value.length === 50) {
+                setErrors((prevErrors) => ({ ...prevErrors, name: "More than 50 characters are not allowed" }));
+            } else {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
-            }     
+            }
         }
-    };
+    };           
 
     const handleClose = () => {
         setCurrentDepartment({ name: '' }); // Reset the department fields
@@ -324,12 +323,12 @@ function DepartmentList() {
                         onChange={(e) => {
                             const value = e.target.value;
                             if (/^[A-Za-z\s]*$/.test(value))
-                                handleChange(e);
-                        }}
+                               handleChange(e);
+                        }}                       
                         fullWidth
                         error={!!errors.name} // Display error if exists
                         helperText={errors.name}
-                        inputProps={{maxlength: 50}}
+                        inputProps={{maxLength: 50}}
                     />
                 </DialogContent>
                 <DialogActions>

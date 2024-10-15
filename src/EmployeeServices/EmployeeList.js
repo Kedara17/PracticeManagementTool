@@ -44,6 +44,8 @@ function EmployeeList() {
         technology: []
     });
 
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\W).{8,}$/;
+
     const [order, setOrder] = useState('asc'); // Order of sorting: 'asc' or 'desc'
     const [orderBy, setOrderBy] = useState('createdDate'); // Column to sort by
     const [searchQuery, setSearchQuery] = useState(''); // State for search query  
@@ -237,7 +239,6 @@ function EmployeeList() {
 
         let validationErrors = {};
 
-        // Name field validation
         if (!currentEmployee.name) {
             validationErrors.name = "Name  is required";
         } else if (Employees.some(emp => emp.name.toLowerCase() === currentEmployee.name.toLowerCase() && emp.id !== currentEmployee.id)) {
@@ -247,11 +248,12 @@ function EmployeeList() {
         if (!currentEmployee.designation) {
             validationErrors.designation = "Designation is required";
         }
+        //Check employeeID validation       
         if (!currentEmployee.employeeID) {
             validationErrors.employeeID = "EmployeeID is required";
-        } else if (!currentEmployee.employeeID.length < 4) {
+        } else if (currentEmployee.employeeID.length < 4) { // Change here
             validationErrors.employeeID = "EmployeeID must be at least 4 characters";
-        } else if (!currentEmployee.employeeID.length > 8) {
+        } else if (currentEmployee.employeeID.length > 8) { // Change here
             validationErrors.employeeID = "EmployeeID must be at most 8 characters";
         } else if (Employees.some(emp => emp.employeeID.toLowerCase() === currentEmployee.employeeID.toLowerCase() && emp.id !== currentEmployee.id)) {
             validationErrors.employeeID = "EmployeeID must be unique";
@@ -369,9 +371,7 @@ function EmployeeList() {
     const handleChange = (e) => {
         const { name, value } = e.target;
         setCurrentEmployee({ ...currentEmployee, [name]: value });
-
-        let validationErrors = { ...errors };
-
+      
         if (name === "name") {
             // Check if the title is empty or only whitespace
             if (!value.trim()) {
@@ -380,6 +380,8 @@ function EmployeeList() {
             // Check for uniqueness
             else if (Employees.some(emp => emp.name.toLowerCase() === value.toLowerCase() && emp.id !== currentEmployee.id)) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
+            }else if (value.length === 50) {
+                setErrors((prevErrors) => ({ ...prevErrors, name: "More than 50 characters are not allowed" }));
             }
             // Clear the title error if valid
             else {
@@ -433,22 +435,14 @@ function EmployeeList() {
             if (value) {
                 setErrors((prevErrors) => ({ ...prevErrors, projection: "" }));
             }
-        }
-        // if (name === "password") {
-        //     if (value) {
-        //         setErrors((prevErrors) => ({ ...prevErrors, password: "" }));
-        //     }
-        // }
-        // Password validation
-        if (name === "password") {
-            // Updated regex for password validation
-            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*(),.?":{}|<>])[A-Za-z\d!@#$%^&*(),.?":{}|<>]{8,}$/;
+        }        
+        if (name === 'password') {
             if (!value) {
-                validationErrors.password = "Password is required"; // Check if empty
+                setErrors({ ...errors, password: 'Password is required' });
             } else if (!passwordRegex.test(value)) {
-                validationErrors.password = "Password must contain at least 1 uppercase, 1 lowercase, 1 special character and be at least 8 characters long";
+                setErrors({ ...errors, password: 'Password must contain at least 1 uppercase, 1 lowercase, 1 special character and be at least 8 characters long' });
             } else {
-                validationErrors.password = ""; // Clear error if password is valid
+                setErrors({ ...errors, password: '' });
             }
         }
         if (name === "phoneNo") {
@@ -460,20 +454,14 @@ function EmployeeList() {
                     ...prevEmployee,
                     [name]: numericValue
                 }));
-                // If a valid number is entered, remove the error message
                 if (numericValue) {
                     setErrors((prevErrors) => ({
                         ...prevErrors,
-                        phoneNo: "" // Clear the error if valid numeric input is provided
+                        phoneNo: "" 
                     }));
                 }
             }
         }
-        // if (name === "profile") {
-        //     if (value) {
-        //         setErrors((prevErrors) => ({ ...prevErrors, profile: "" }));
-        //     }
-        // }
         if (name === "profile") {
             const file = e.target.files[0];
 
@@ -513,9 +501,24 @@ function EmployeeList() {
             if (value) {
                 setErrors((prevErrors) => ({ ...prevErrors, technology: "" }));
             }
-        }
+        }       
     };
+    const validateForm = () => {
+        let formIsValid = true;
+        let newErrors = {};
 
+        // Password validation
+        if (!currentEmployee.password) {
+            newErrors.password = 'Password is required';
+            formIsValid = false;
+        } else if (!passwordRegex.test(currentEmployee.password)) {
+            newErrors.password = 'Password must contain at least 1 uppercase, 1 lowercase, 1 special character and be at least 8 characters long';
+            formIsValid = false;
+        }
+
+        setErrors(newErrors);
+        return formIsValid;
+    };
     const handleClose = () => {
         setCurrentEmployee({ name: '', designation: '', employeeId: '', emailId: '', department: '', reportingTo: '', joiningDate: '', relievingDate: '', projection: '', password: '', profile: '', phoneNo: '', role: '', technology: [] }); // Reset the department fields
         setErrors({ name: '', designation: '', employeeId: '', emailId: '', department: '', reportingTo: '', joiningDate: '', relievingDate: '', projection: '', password: '', profile: '', phoneNo: '', role: '', technology: '' }); // Reset the error state
@@ -824,7 +827,7 @@ function EmployeeList() {
                         fullWidth
                         error={!!errors.name}
                         helperText={errors.name}
-                        inputProps={{ maxlength: 50 }}
+                        inputProps={{ maxLength: 50 }}                      
                     />
                     <InputLabel>Designation</InputLabel>
                     <Select
@@ -850,9 +853,8 @@ function EmployeeList() {
                         value={currentEmployee.employeeID}
                         onChange={(e) => {
                             const value = e.target.value;
-                            // Remove any non-numeric characters
-                            const numericValue = value.replace(/\D/g, '');  // \D matches any non-digit character
-                            handleChange({ target: { name: e.target.name, value: numericValue } }); // Update state with numeric value only
+                            const numericValue = value.replace(/\D/g, '');  
+                            handleChange({ target: { name: e.target.name, value: numericValue } }); 
                         }}
                         fullWidth
                         error={!!errors.employeeID}
@@ -947,10 +949,11 @@ function EmployeeList() {
                     <InputLabel>Joining Date</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
+                        className='datetime'
                             value={currentEmployee.joiningDate ? dayjs(currentEmployee.joiningDate) : null}
                             onChange={handleJoiningDateChange}
                             renderInput={(params) => (
-                                <TextField {...params} fullWidth margin="dense" />
+                                <TextField className='DateTime' {...params} fullWidth margin="dense" />
                             )}
                         />
                     </LocalizationProvider>
@@ -958,6 +961,7 @@ function EmployeeList() {
                     <InputLabel>Relieving Date</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
+                         className='datetime'
                             value={currentEmployee.relievingDate ? dayjs(currentEmployee.relievingDate) : null}
                             onChange={handleRelievingDateChange}
                             renderInput={(params) => (

@@ -227,6 +227,8 @@ function BlogsList() {
             // Check for uniqueness
             else if (blogs.some(web => web.title.toLowerCase() === value.toLowerCase() && web.id !== currentBlogs.id)) {
                 setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
+            }else if (value.length === 200) {
+                setErrors((prevErrors) => ({ ...prevErrors, title: "More than 200 characters are not allowed" }));
             }
             // Clear the title error if valid
             else {
@@ -239,8 +241,12 @@ function BlogsList() {
             }
         }
         if (name === "status") {
-            if (value) {
-                setErrors((prevErrors) => ({ ...prevErrors, status: "" }));
+            if (value.length === 50) {
+                setErrors((prevErrors) => ({ ...prevErrors, title: "More than 50 characters are not allowed" }));
+            }
+            // Clear the title error if valid
+            else {
+                setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
             }
         }
 
@@ -520,7 +526,6 @@ function BlogsList() {
                 <DialogContent>
                     <InputLabel>Title</InputLabel>
                     <TextField
-                        //   type='text'
                         margin="dense"
                         name="title"
                         value={currentBlogs.title}
@@ -531,7 +536,9 @@ function BlogsList() {
                         }}
                         fullWidth
                         error={!!errors.title}
-                        helperText={errors.title} />
+                        helperText={errors.title} 
+                        inputProps={{maxLength: 200}}
+                        />                       
                     <InputLabel>Author</InputLabel>
                     <Select
                         margin="dense"
@@ -556,6 +563,7 @@ function BlogsList() {
                         onChange={handleChange}
                         fullWidth
                         error={!!errors.status}
+                        inputProps={{maxLength: 50}}
                     >
                         {options.map((option, index) => (
                             <MenuItem key={index} value={option}>
@@ -567,6 +575,7 @@ function BlogsList() {
                     <InputLabel>TargetDate</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
+                        className='datetime'
                             value={currentBlogs.targetDate ? dayjs(currentBlogs.targetDate) : null}
                             onChange={handleTargetDateChange}
                             renderInput={(params) => (
@@ -579,6 +588,7 @@ function BlogsList() {
                     <InputLabel>CompletedDate</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
+                        className='datetime'
                             value={currentBlogs.completedDate ? dayjs(currentBlogs.completedDate) : null}
                             onChange={handleCompletedDateChange}
                             renderInput={(params) => (
@@ -591,6 +601,7 @@ function BlogsList() {
                     <InputLabel>PublishedDate</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
+                        className='datetime'
                             value={currentBlogs.publishedDate ? dayjs(currentBlogs.publishedDate) : null}
                             onChange={handlePublishedDateChange}
                             renderInput={(params) => (

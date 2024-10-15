@@ -193,19 +193,23 @@ function POCList() {
 
         if (name === "title") {
             // Check if the title is empty or only whitespace
-            if (!value.trim()) {
-                setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
-            }            
+            if (value.length === 200) {
+                setErrors((prevErrors) => ({ ...prevErrors, title: "More than 200 characters are not allowed" }));
+            }
             // Clear the title error if valid
             else {
                 setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
-            }     
+            }    
         }
         if (name === "client") {
             // Clear the speaker error if the user selects a value
-            if (value) {
-                setErrors((prevErrors) => ({ ...prevErrors, client: "" }));
+            if (value.length === 36) {
+                setErrors((prevErrors) => ({ ...prevErrors, client: "More than 36 characters are not allowed" }));
             }
+            // Clear the title error if valid
+            else {
+                setErrors((prevErrors) => ({ ...prevErrors, client: "" }));
+            }   
         }    
         if (name === "targetDate") {
             // Clear the speaker error if the user selects a value
@@ -474,6 +478,7 @@ function POCList() {
                         onChange={handleChange}
                         fullWidth
                         error={!!errors.client}
+                        inputProps={{maxLength: 36}}
                     >
                         {Clients.map((client) => (
                             <MenuItem key={client.id} value={client.name}>
@@ -485,6 +490,7 @@ function POCList() {
                     <InputLabel>TargetDate</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
+                        className='date'
                             value={currentPOC.targetDate ? dayjs(currentPOC.targetDate) : null}
                             onChange={handleTargetDateChange}
                             renderInput={(params) => (
@@ -496,6 +502,7 @@ function POCList() {
                     <InputLabel>CompletedDate</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
+                       className='date'
                             value={currentPOC.completedDate ? dayjs(currentPOC.completedDate) : null}
                             onChange={handleCompletedDateChange}
                             renderInput={(params) => (
