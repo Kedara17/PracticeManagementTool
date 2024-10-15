@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AppBar, Toolbar, IconButton, Typography, Drawer, Box, List, ListItem, ListItemText, Avatar, Menu, MenuItem, CssBaseline } from '@mui/material';
+import { AppBar,Divider, Toolbar, IconButton, Typography, Drawer, Box, List, ListItem, ListItemText, Avatar, Menu, MenuItem, CssBaseline } from '@mui/material';
 import MenuOutlinedIcon from '@mui/icons-material/MenuOutlined';
 import BadgeIcon from '@mui/icons-material/Badge';
 import CorporateFareIcon from '@mui/icons-material/CorporateFare';
@@ -410,28 +410,43 @@ function Home() {
 
       {/* AppBar */}
       <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, backgroundColor:'#fff' }}>
-        <Toolbar>
-          {/* Left menu icon */}
-          
-          <IconButton edge="start" color="inherit" aria-label="menu" onClick={toggleDrawer}>
-            <MenuOutlinedIcon sx={{color:'black', fontSize: '32px'  }}/>
-          </IconButton>
+        <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      
+          {/* Left menu icon and Logo container */}
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <IconButton edge="start" color="inherit" aria-label="menu" onClick={toggleDrawer}>
+              <MenuOutlinedIcon sx={{ color: 'black', fontSize: '32px' }} />
+            </IconButton>
+            <img src='/miraclelogodark.png' alt="Miracle Logo" style={{ width: '160px', marginLeft: '16px' }} />
+            <Divider orientation="vertical" flexItem sx={{ margin: '0 16px' }} />
+          </div>
 
-          {/* Logo */}
-          <img src='/miraclelogodark.png' alt="Miracle Logo" style={{ width: '160px', marginLeft: '16px'  }} />
-
-          {/* App Title */}
-          <Typography variant="h6" sx={{ flexGrow: 1, ml: 1 }}>
-            PMT 
-          </Typography>
+          {/* Navigation Images */}
+        <div style={{ display: 'flex', alignItems: 'center', marginRight: '800px' }}>
+          <a href="https://miraclesoft.com/" target="_blank" rel="noopener noreferrer">
+            <img src="https://images.miraclesoft.com/mss/images/newsletters/2020/May/M.png" alt="Page 1" style={{ width: '30px', height: '30px', marginRight: '8px' }} />
+          </a>
+          <a href="https://me.miraclesoft.com/login" target="_blank" rel="noopener noreferrer">
+            <img src='https://images.miraclesoft.com/mss/images/newsletters/2020/May/MiracleMe_logo.png' alt="Page 2" style={{ width: '30px', height: '30px', marginRight: '8px' }} />
+          </a>
+          <a href="https://blog.miraclesoft.com/" target="_blank" rel="noopener noreferrer">
+            <img src='https://images.miraclesoft.com/mss/images/newsletters/2020/May/B.png' alt="Page 3" style={{ width: '30px', height: '30px', marginRight: '8px' }} />
+          </a>
+          <a href="https://help.miraclesoft.com/login" target="_blank" rel="noopener noreferrer">
+            <img src='https://images.miraclesoft.com/mss/images/newsletters/2020/May/H.png' alt="Page 4" style={{ width: '30px', height: '30px' }} />
+          </a>
+          <Divider orientation="vertical" flexItem sx={{ margin: '0 16px' }} />
+        </div>
 
           {/* Username and Profile Avatar */}
-          <Typography variant="body1" sx={{ marginRight: 1, color:'black' }}>
-            {username[0]}
-          </Typography>
-          <IconButton onClick={handleProfileMenuClick} color="inherit">
-            <Avatar sx={{ bgcolor: '#00aae7' }}>{username[0]}</Avatar>
-          </IconButton>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <Typography variant="body1" sx={{ marginRight: 1, color: 'black' }}>
+              {username[0] || 'U'}
+            </Typography>
+            <IconButton onClick={handleProfileMenuClick} color="inherit">
+              <Avatar sx={{ bgcolor: '#00aae7' }}>{username[0] || 'U'}</Avatar>
+            </IconButton>
+          </div>
 
           {/* Profile Menu */}
           <Menu

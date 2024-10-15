@@ -193,31 +193,28 @@ function DepartmentList({isDrawerOpen}) {
     }
 
     return (
-        <div style={{ display: 'flex', padding: '10px', marginLeft: isDrawerOpen ? 260 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}> 
-            <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>Department Table List</h3>
-            </div>
-            <div style={{ display: 'flex', marginBottom: '20px', width: '100%' }}>
-                <TextField
-                    margin="dense"
-                    name="name"
-                    label="Search"
-                    variant="outlined"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    InputProps={{
-                        endAdornment: (
-                            <InputAdornment position="end">
-                                <IconButton edge="end">
-                                    <SearchIcon />
-                                </IconButton>
-                            </InputAdornment>
-                        ),
-                    }}
-                    style={{ marginRight: '20px', flexGrow: 1 }}
-                />
-                <Button variant="contained" sx={{ backgroundColor: '#00aae7' }} onClick={handleAdd}>Add Department</Button>
-            </div>
+    <div style={{ display: 'flex', padding: '10px', marginLeft: isDrawerOpen ? 260 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
+        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>Department Table List</h3>
+        <div style={{ display: 'flex', marginBottom: '20px', width: '100%' }}>
+            <TextField
+                label="Search"
+                variant="outlined"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                InputProps={{
+                    endAdornment: (
+                        <InputAdornment position="end">
+                            <IconButton edge="end">
+                                <SearchIcon />
+                            </IconButton>
+                        </InputAdornment>
+                    ),
+                }}
+                style={{ marginRight: '20px', flexGrow: 1 }}
+            />
+            <Button variant="contained" sx={{ backgroundColor: '#00aae7' }} onClick={handleAdd}>Add Department</Button>
+        </div>
             <TableContainer component={Paper} style={{ width: '100%' }}>
                 <Table>
                     <TableHead>
@@ -352,6 +349,7 @@ function DepartmentList({isDrawerOpen}) {
                 </DialogActions>
             </Dialog>
         </div>
+    </div>
     );
 }
 
