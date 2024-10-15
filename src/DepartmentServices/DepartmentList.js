@@ -121,7 +121,7 @@ function DepartmentList({isDrawerOpen}) {
                     console.error('There was an error updating the Department!', error);
                     setError(error);
                 });
-
+                
         } else {
             // axios.post('http://localhost:5560/api/Department', currentDepartment)
             axios.post('http://172.17.31.61:5160/api/department', currentDepartment)
