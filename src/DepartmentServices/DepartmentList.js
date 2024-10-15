@@ -6,7 +6,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import PaginationComponent from '../Components/PaginationComponent'; // Import your PaginationComponent
 import { InputLabel, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
 
-function DepartmentList() {
+function DepartmentList({isDrawerOpen}) {
     const [departments, setDepartments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -193,12 +193,14 @@ function DepartmentList() {
     }
 
     return (
-        <div>
-            <div style={{ display: 'flex' }}>
-                <h3>Department Table List</h3>
+        <div style={{ display: 'flex', padding: '10px', marginLeft: isDrawerOpen ? 260 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}> 
+            <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>Department Table List</h3>
             </div>
-            <div style={{ display: 'flex', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', marginBottom: '20px', width: '100%' }}>
                 <TextField
+                    margin="dense"
+                    name="name"
                     label="Search"
                     variant="outlined"
                     value={searchQuery}
@@ -212,11 +214,11 @@ function DepartmentList() {
                             </InputAdornment>
                         ),
                     }}
-                    style={{ marginRight: '20px', width: '90%' }}
+                    style={{ marginRight: '20px', flexGrow: 1 }}
                 />
-                <Button variant="contained" color="primary" onClick={handleAdd}>Add Department</Button>
+                <Button variant="contained" sx={{ backgroundColor: '#00aae7' }} onClick={handleAdd}>Add Department</Button>
             </div>
-            <TableContainer component={Paper}>
+            <TableContainer component={Paper} style={{ width: '100%' }}>
                 <Table>
                     <TableHead>
                         <TableRow>
@@ -285,7 +287,7 @@ function DepartmentList() {
                         {filteredDepartments.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((Department) => (
                             <TableRow key={Department.id}
                                 sx={{ backgroundColor: Department.isActive ? 'inherit' : '#FFCCCB' }} >
-                                {/* <TableCell>{Department.id}</TableCell> */}
+                                
                                 <TableCell>{Department.name}</TableCell>
                                 <TableCell>{Department.isActive ? 'Active' : 'Inactive'}</TableCell>
                                 <TableCell>{Department.createdBy}</TableCell>
