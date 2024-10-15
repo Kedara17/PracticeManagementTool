@@ -55,13 +55,16 @@ function Home() {
     const userEmail = localStorage.getItem('userEmail'); 
     const userRole = localStorage.getItem('userRole');
     
-    // Extract username from email
+    // Check if userEmail is valid
     if (userEmail) {
       const emailParts = userEmail.split('@');
       setUsername(emailParts[0]); 
     }
     
-    setRole(userRole);
+    // Check if userRole is valid
+    if (userRole) {
+      setRole(userRole);
+    }
   }, []);
   
   const toggleDrawer = () => {
@@ -422,7 +425,7 @@ function Home() {
           </div>
 
           {/* Navigation Images */}
-        <div style={{ display: 'flex', alignItems: 'center', marginRight: '800px' }}>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
           <a href="https://miraclesoft.com/" target="_blank" rel="noopener noreferrer">
             <img src="https://images.miraclesoft.com/mss/images/newsletters/2020/May/M.png" alt="Page 1" style={{ width: '30px', height: '30px', marginRight: '8px' }} />
           </a>
@@ -437,11 +440,12 @@ function Home() {
           </a>
           <Divider orientation="vertical" flexItem sx={{ margin: '0 16px' }} />
         </div>
+        <Box flexGrow={1} />
 
           {/* Username and Profile Avatar */}
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <Typography variant="body1" sx={{ marginRight: 1, color: 'black' }}>
-              {username[0] || 'U'}
+              {username || 'U'}
             </Typography>
             <IconButton onClick={handleProfileMenuClick} color="inherit">
               <Avatar sx={{ bgcolor: '#00aae7' }}>{username[0] || 'U'}</Avatar>

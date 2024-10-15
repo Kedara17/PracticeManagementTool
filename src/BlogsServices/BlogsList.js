@@ -485,8 +485,8 @@ function BlogsList({isDrawerOpen}) {
                                 <TableCell>{Blogs.targetDate}</TableCell>
                                 <TableCell>{Blogs.completedDate}</TableCell>
                                 <TableCell>{Blogs.publishedDate}</TableCell>
-                                {/* <TableCell>{Blogs.isActive ? 'Active' : 'Inactive'}</TableCell> */}
-                                <TableCell>
+                                <TableCell>{Blogs.isActive ? 'Active' : 'Inactive'}</TableCell>
+                                {/* <TableCell>
                                     {isAdmin && (
                                         <Switch
                                             checked={Blogs.isActive}
@@ -494,7 +494,7 @@ function BlogsList({isDrawerOpen}) {
                                             color="primary"
                                         />
                                     )}
-                                </TableCell>
+                                </TableCell> */}
                                 <TableCell>{Blogs.createdBy}</TableCell>
                                 <TableCell>{new Date(Blogs.createdDate).toLocaleString()}</TableCell>
                                 <TableCell>{Blogs.updatedBy || 'N/A'}</TableCell>
