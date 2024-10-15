@@ -11,7 +11,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import '../App.css';
 
-function ProjectList() {
+function ProjectList({isDrawerOpen}) {
     const [Projects, setProjects] = useState([]);
     const [Employees, setEmployees] = useState([]);
     const [Clients, setClients] = useState([]);
@@ -400,11 +400,11 @@ function ProjectList() {
     }
 
     return (
-        <div>
-            <div style={{ display: 'flex' }}>
-                <h3>Project Table List</h3>
+        <div style={{ display: 'flex',flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 250 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
+            <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+                <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>Project Table List</h3>
             </div>
-            <div style={{ display: 'flex', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', marginBottom: '20px', width: '100%' }}>
                 <TextField
                     label="Search"
                     variant="outlined"
@@ -419,11 +419,11 @@ function ProjectList() {
                             </InputAdornment>
                         ),
                     }}
-                    style={{ marginRight: '20px', width: '90%' }}
+                    style={{ flexGrow: 1, marginRight: '10px' }}
                 />
-                <Button variant="contained" color="primary" onClick={handleAdd}>Add Project</Button>
+                <Button variant="contained" sx={{ backgroundColor: '#00aae7' }} onClick={handleAdd}>Add Project</Button>
             </div>
-            <TableContainer component={Paper}>
+            <TableContainer component={Paper} style={{ width: '100%' }}>
                 <Table>
                     <TableHead>
                         <TableRow>

@@ -6,7 +6,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 import PaginationComponent from '../Components/PaginationComponent'; // Import your PaginationComponent
 
-function TechnologyList() {
+function TechnologyList({isDrawerOpen}) {
     const [technologies, setTechnologies] = useState([]);
     const [loading, setLoading] = useState(true);
     const [departments, setDepartments] = useState([]);
@@ -219,9 +219,9 @@ function TechnologyList() {
     }
 
     return (
-        <div>
-            <div style={{ display: 'flex' }}>
-                <h3>Technology Table List</h3>
+        <div style={{ display: 'flex',flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 250 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
+            <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+                <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>Technology Table List</h3>
             </div>
             <div style={{ display: 'flex', marginBottom: '20px' }}>
                 <TextField
@@ -238,12 +238,12 @@ function TechnologyList() {
                             </InputAdornment>
                         ),
                     }}
-                    style={{ marginRight: '20px', width: '90%' }}
+                    style={{ flexGrow: 1, marginRight: '10px' }}
                 />
-                <Button variant="contained" color="primary" onClick={handleAdd}>Add Technology</Button>
+                <Button variant="contained" sx={{ backgroundColor: '#00aae7' }} onClick={handleAdd}>Add Technology</Button>
             </div>
 
-            <TableContainer component={Paper}>
+            <TableContainer component={Paper} style={{ width: '100%' }}>
                 <Table>
                     <TableHead>
                         <TableRow>

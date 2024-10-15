@@ -6,7 +6,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 import PaginationComponent from '../Components/PaginationComponent'; // Import your PaginationComponent
 
-function ClientList() {
+function ClientList({isDrawerOpen}) {
     const [Clients, setClients] = useState([]);
     const [employees, setEmployees] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -294,11 +294,11 @@ function ClientList() {
     }
 
     return (
-        <div>
-            <div style={{ display: 'flex' }}>
-                <h3>Client Table List</h3>
+        <div style={{ display: 'flex',flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 250 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
+            <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+                <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>Client Table List</h3>
             </div>
-            <div style={{ display: 'flex', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', marginBottom: '20px', width: '100%' }}>
                 <TextField
                     label="Search"
                     variant="outlined"
@@ -313,11 +313,11 @@ function ClientList() {
                             </InputAdornment>
                         ),
                     }}
-                    style={{ marginRight: '20px', width: '90%' }}
+                    style={{ flexGrow: 1, marginRight: '10px' }}
                 />
-                <Button variant="contained" color="primary" onClick={handleAdd}>Add Client</Button>
+                <Button variant="contained" sx={{ backgroundColor: '#00aae7' }}  onClick={handleAdd}>Add Client</Button>
             </div>
-            <TableContainer component={Paper}>
+            <TableContainer component={Paper} style={{ width: '100%' }}>
                 <Table>
                     <TableHead>
                         <TableRow>
@@ -587,8 +587,8 @@ function ClientList() {
                     <Typography>Are you sure you want to delete this Client?</Typography>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleConfirmClose}>No</Button>
-                    <Button onClick={handleConfirmYes} color="error">Yes</Button>
+                    <Button onClick={handleConfirmClose}>Cancel</Button>
+                    <Button onClick={handleConfirmYes} color="error">Ok</Button>
                 </DialogActions>
             </Dialog>
         </div>

@@ -11,7 +11,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import '../App.css';
 
-function ProjectEmployeeList() {
+function ProjectEmployeeList({isDrawerOpen}) {
     const [ProjectEmployees, setProjectEmployees] = useState([]);
     const [Projects, setProjects] = useState([]);
     const [Employees, setEmployees] = useState([]);
@@ -270,11 +270,11 @@ function ProjectEmployeeList() {
     }
 
     return (
-        <div>
-            <div style={{ display: 'flex' }}>
-                <h3>ProjectEmployee Table List</h3>
+        <div style={{ display: 'flex',flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 250 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
+            <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+                <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>Project Employee Table List</h3>
             </div>
-            <div style={{ display: 'flex', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', marginBottom: '20px', width: '100%' }}>
                 <TextField
                     label="Search"
                     variant="outlined"
@@ -289,11 +289,11 @@ function ProjectEmployeeList() {
                             </InputAdornment>
                         ),
                     }}
-                    style={{ marginRight: '20px', width: '90%' }}
+                    style={{ flexGrow: 1, marginRight: '10px' }}
                 />
-                <Button variant="contained" color="primary" onClick={handleAdd}>Add ProjectEmployee</Button>
+                <Button variant="contained" sx={{ backgroundColor: '#00aae7' }} onClick={handleAdd}>Add Project Employee</Button>
             </div>
-            <TableContainer component={Paper}>
+            <TableContainer component={Paper} style={{ width: '100%' }}>
                 <Table>
                     <TableHead>
                         <TableRow>
@@ -378,6 +378,7 @@ function ProjectEmployeeList() {
                                     <b>Updated Date</b>
                                 </TableSortLabel>
                             </TableCell>
+                            <TableCell><b>Actions</b></TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -489,8 +490,8 @@ function ProjectEmployeeList() {
                     <Typography>Are you sure you want to delete this employee project?</Typography>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleConfirmClose}>No</Button>
-                    <Button onClick={handleConfirmYes} color="error">Yes</Button>
+                    <Button onClick={handleConfirmClose}>Cancel</Button>
+                    <Button onClick={handleConfirmYes} color="error">Ok</Button>
                 </DialogActions>
             </Dialog>
         </div>
