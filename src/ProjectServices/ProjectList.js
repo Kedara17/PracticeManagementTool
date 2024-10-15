@@ -269,6 +269,8 @@ function ProjectList({isDrawerOpen}) {
             // Check for uniqueness
             else if (Projects.some(pro => pro.projectName.toLowerCase() === value.toLowerCase() && pro.id !== currentProject.id)) {
                 setErrors((prevErrors) => ({ ...prevErrors, projectName: "" }));
+            }else if (value.length === 50) {
+                setErrors((prevErrors) => ({ ...prevErrors, projectName: "More than 50 characters are not allowed" }));
             }
             // Clear the title error if valid
             else {
@@ -713,7 +715,8 @@ function ProjectList({isDrawerOpen}) {
                     {errors.pmo && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.pmo}</Typography>}
                     <InputLabel>SOWSubmittedDate</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
-                        <DatePicker                          
+                        <DatePicker  
+                        className='datetime'                        
                             value={currentProject.sowSubmittedDate ? dayjs(currentProject.sowSubmittedDate) : null}
                             onChange={handleSowSubmittedDateChange}
                             fullWidth
@@ -727,6 +730,7 @@ function ProjectList({isDrawerOpen}) {
                     <InputLabel>SOWSignedDate</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
+                        className='datetime'
                             value={currentProject.sowSignedDate ? dayjs(currentProject.sowSignedDate) : null}
                             onChange={handleSowSignedDateChange}
                             fullWidth
@@ -739,6 +743,7 @@ function ProjectList({isDrawerOpen}) {
                     <InputLabel>SOWValidTill</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
+                        className='datetime'
                             value={currentProject.sowValidTill ? dayjs(currentProject.sowValidTill) : null}
                             onChange={handleSowValidTillDateChange}
                             fullWidth
@@ -751,6 +756,7 @@ function ProjectList({isDrawerOpen}) {
                     <InputLabel>SOWLastExtendedDate</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
+                       className='datetime'
                             value={currentProject.sowLastExtendedDate ? dayjs(currentProject.sowLastExtendedDate) : null}
                             onChange={handleSowLastExtendedDateChange}
                             fullWidth                            

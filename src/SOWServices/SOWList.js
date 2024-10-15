@@ -230,17 +230,23 @@ function SOWList({isDrawerOpen}) {
                 setErrors((prevErrors) => ({ ...prevErrors, client: "" }));
             }
         }
-        if (name === "title") {
-            if (value) {
+        if (name === "title") {            
+             if (value.length === 200) {
+                setErrors((prevErrors) => ({ ...prevErrors, title: "More than 200 characters are not allowed" }));
+            }
+            // Clear the title error if valid
+            else {
                 setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
             }
         }
         if (name === "project") {
-            if (value) {
+            if (value.length === 200) {
+                setErrors((prevErrors) => ({ ...prevErrors, project: "More than 200 characters are not allowed" }));
+            }
+            else {
                 setErrors((prevErrors) => ({ ...prevErrors, project: "" }));
             }
         }
-
         if (name === "preparedDate") {
             // Clear the salesEmployee error if the user selects a value
             if (value) {
@@ -258,7 +264,11 @@ function SOWList({isDrawerOpen}) {
             }
         }
         if (name === "comments") {
-            if (value) {
+            if (value.length === 500) {
+                setErrors((prevErrors) => ({ ...prevErrors, comments: "More than 500 characters are not allowed" }));
+            }
+            // Clear the title error if valid
+            else {
                 setErrors((prevErrors) => ({ ...prevErrors, comments: "" }));
             }
         }
@@ -513,7 +523,7 @@ function SOWList({isDrawerOpen}) {
                         fullWidth
                         error={!!errors.title}
                         helperText={errors.title}
-                        inputProps={{maxlength: 200}}
+                        inputProps={{maxLength: 200}}
                     />
                     <InputLabel>Client</InputLabel>
                     <Select
@@ -539,7 +549,7 @@ function SOWList({isDrawerOpen}) {
                         onChange={handleChange}
                         fullWidth
                         error={!!errors.project}
-                        inputProps={{maxlength: 200}}
+                        inputProps={{maxLength: 200}}
                     >
                         {Projects.map((project) => (
                             <MenuItem key={project.id} value={project.projectName}>
@@ -551,6 +561,7 @@ function SOWList({isDrawerOpen}) {
                     <InputLabel>PreparedDate</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
+                        className='datetime'
                             value={currentSOW.preparedDate ? dayjs(currentSOW.preparedDate) : null}
                             onChange={handlePreparedDateChange}
                             renderInput={(params) => (
@@ -562,6 +573,7 @@ function SOWList({isDrawerOpen}) {
                     <InputLabel>SubmittedDate</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
+                        className='datetime'
                             value={currentSOW.submittedDate ? dayjs(currentSOW.submittedDate) : null}
                             onChange={handleSubmittedDateChange}
                             renderInput={(params) => (
@@ -595,7 +607,7 @@ function SOWList({isDrawerOpen}) {
                         fullWidth
                         error={!!errors.comments} // Display error if exists
                         helperText={errors.comments}
-                        inputProps={{maxlength: 500}}
+                        inputProps={{maxLength: 500}}
                     />
                 </DialogContent>
                 <DialogActions>

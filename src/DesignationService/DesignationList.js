@@ -97,7 +97,7 @@ function DesignationList({isDrawerOpen}) {
         // Name field validation
         if (!currentDesignation.name.trim()) {
             validationErrors.name = "Designation is required";
-        } else if (designations.some(dep => dep.name.toLowerCase() === currentDesignation.name.toLowerCase() && dep.id !== currentDesignation.id)) {
+        } else if (designations.some(des => des.name.toLowerCase() === currentDesignation.name.toLowerCase() && des.id !== currentDesignation.id)) {
             validationErrors.name = "Name must be unique";
         }
 
@@ -150,6 +150,8 @@ function DesignationList({isDrawerOpen}) {
             // Check for uniqueness
             else if (designations.some(des => des.name.toLowerCase() === value.toLowerCase() && des.id !== currentDesignation.id)) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
+            } else if (value.length === 50) {
+                setErrors((prevErrors) => ({ ...prevErrors, name: "More than 50 characters are not allowed" }));
             }
             // Clear the name error if valid
             else {
@@ -329,7 +331,7 @@ function DesignationList({isDrawerOpen}) {
                         fullWidth
                         error={!!errors.name} // Display error if exists
                         helperText={errors.name}
-                        inputProps={{maxlength: 50}}
+                        inputProps={{maxLength: 50}}
                     />
                 </DialogContent>
                 <DialogActions>

@@ -210,6 +210,8 @@ function ClientList({isDrawerOpen}) {
             // Check for uniqueness
             else if (Clients.some(cli => cli.name.toLowerCase() === value.toLowerCase() && cli.id !== currentClient.id)) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
+            }else if (value.length === 50) {
+                setErrors((prevErrors) => ({ ...prevErrors, name: "More than 50 characters are not allowed" }));
             }
             // Clear the title error if valid
             else {
@@ -217,8 +219,10 @@ function ClientList({isDrawerOpen}) {
             }
         }
         if (name === "lineofBusiness") {
-            // Clear the lineofBusiness error if the user selects a value
-            if (value) {
+            if (value.length === 50) {
+                setErrors((prevErrors) => ({ ...prevErrors, lineofBusiness: "More than 50 characters are not allowed" }));
+            }
+            else {
                 setErrors((prevErrors) => ({ ...prevErrors, lineofBusiness: "" }));
             }
         }
@@ -230,26 +234,34 @@ function ClientList({isDrawerOpen}) {
         }
 
         if (name === "country") {
-            // Clear the country error if the user selects a value
-            if (value) {
+             if (value.length === 50) {
+                setErrors((prevErrors) => ({ ...prevErrors, country: "More than 50 characters are not allowed" }));
+            }
+            else {
                 setErrors((prevErrors) => ({ ...prevErrors, country: "" }));
             }
         }
         if (name === "city") {
-            // Clear the city error if the user selects a value
-            if (value) {
+            if (value.length === 50) {
+                setErrors((prevErrors) => ({ ...prevErrors, city: "More than 50 characters are not allowed" }));
+            }
+            else {
                 setErrors((prevErrors) => ({ ...prevErrors, city: "" }));
             }
         }
         if (name === "state") {
-            // Clear the state error if the user selects a value
-            if (value) {
+             if (value.length === 50) {
+                setErrors((prevErrors) => ({ ...prevErrors, state: "More than 50 characters are not allowed" }));
+            }
+            else {
                 setErrors((prevErrors) => ({ ...prevErrors, state: "" }));
             }
         }
-        if (name === "address") {
-            // Clear the address error if the user selects a value
-            if (value) {
+        if (name === "address") {           
+             if (value.length === 500) {
+                setErrors((prevErrors) => ({ ...prevErrors, address: "More than 500 characters are not allowed" }));
+            }
+            else {
                 setErrors((prevErrors) => ({ ...prevErrors, address: "" }));
             }
         }
@@ -485,7 +497,7 @@ function ClientList({isDrawerOpen}) {
                         fullWidth
                         error={!!errors.name} // Display error if exists
                         helperText={errors.name}
-                        inputProps={{ maxlength: 50 }}
+                        inputProps={{ maxLength: 50 }}
                     />
                     <InputLabel>LineofBusiness</InputLabel>
                     <TextField
@@ -500,7 +512,7 @@ function ClientList({isDrawerOpen}) {
                         fullWidth
                         error={!!errors.lineofBusiness} // Display error if exists
                         helperText={errors.lineofBusiness}
-                        inputProps={{ maxlength: 50 }}
+                        inputProps={{ maxLength: 50 }}
                     />
                     <InputLabel>SalesEmployee</InputLabel>
                     <Select
@@ -510,7 +522,7 @@ function ClientList({isDrawerOpen}) {
                         onChange={handleChange}
                         fullWidth
                         error={!!errors.salesEmployee}
-                        inputProps={{ maxlength: 50 }}
+                        inputProps={{ maxLength: 50 }}
                     >
                         {employees.map((employee) => (
                             <MenuItem key={employee.id} value={employee.name}>
@@ -533,6 +545,7 @@ function ClientList({isDrawerOpen}) {
                         fullWidth
                         error={!!errors.country} 
                         helperText={errors.country}
+                        inputProps={{maxLength: 50}}
                     />
                     <InputLabel>City</InputLabel>
                     <TextField
@@ -547,6 +560,7 @@ function ClientList({isDrawerOpen}) {
                         fullWidth
                         error={!!errors.city} // Display error if exists
                         helperText={errors.city}
+                        inputProps={{maxLength: 50}}
                     />
                     <InputLabel>State</InputLabel>
                     <TextField
@@ -561,6 +575,7 @@ function ClientList({isDrawerOpen}) {
                         fullWidth
                         error={!!errors.state} // Display error if exists
                         helperText={errors.state}
+                        inputProps={{maxLength: 50}}
                     />
                     <InputLabel>Address</InputLabel>
                     <TextField
@@ -571,6 +586,7 @@ function ClientList({isDrawerOpen}) {
                         fullWidth
                         error={!!errors.address} // Display error if exists
                         helperText={errors.address}
+                        inputProps={{maxLength: 500}}
                     />
                 </DialogContent>
                 <DialogActions>

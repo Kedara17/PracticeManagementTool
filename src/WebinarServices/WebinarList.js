@@ -201,6 +201,8 @@ function WebinarList({isDrawerOpen}) {
             // Check for uniqueness
             else if (Webinars.some(web => web.title.toLowerCase() === value.toLowerCase() && web.id !== currentWebinar.id)) {
                 setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
+            }else if (value.length === 200) {
+                setErrors((prevErrors) => ({ ...prevErrors, title: "More than 200 characters are not allowed" }));
             }
             // Clear the title error if valid
             else {
@@ -215,11 +217,14 @@ function WebinarList({isDrawerOpen}) {
         }
         if (name === "status") {
             // Clear the status error if the user selects a value
-            if (value) {
+            if (value.length === 50) {
+                setErrors((prevErrors) => ({ ...prevErrors, status: "More than 50 characters are not allowed" }));
+            }
+            // Clear the title error if valid
+            else {
                 setErrors((prevErrors) => ({ ...prevErrors, status: "" }));
             }
         }
-
         if (name === "numberOfAudience") {
             // Clear the numberOfAudience error if the user selects a value
             if (value) {
@@ -496,6 +501,7 @@ function WebinarList({isDrawerOpen}) {
                     <InputLabel>WebinarDate</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
+                        className='date'
                             value={currentWebinar.webinarDate ? dayjs(currentWebinar.webinarDate) : null}
                             onChange={handleWebinarDateChange}
                             fullWidth

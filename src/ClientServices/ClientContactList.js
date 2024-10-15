@@ -190,6 +190,8 @@ function ClientContactList({isDrawerOpen}) {
             // Check for uniqueness
             else if (ClientContact.some(conval => conval.contactValue && conval.contactValue.toLowerCase() === value.toLowerCase() && conval.id !== currentClientContact.id)) {
                 setErrors((prevErrors) => ({ ...prevErrors, contactValue: "Contact value must be unique" }));
+            }else if (value.length === 50) {
+                setErrors((prevErrors) => ({ ...prevErrors, contactValue: "More than 50 characters are not allowed" }));
             }
             // Clear the name error if valid
             else {
@@ -206,6 +208,8 @@ function ClientContactList({isDrawerOpen}) {
             // Check for uniqueness
             else if (Clients.some(contyp => contyp.contactType && contyp.contactType.toLowerCase() === value.toLowerCase() && contyp.id !== currentClientContact.id)) {
                 setErrors((prevErrors) => ({ ...prevErrors, contactType: "Contact type must be unique" }));
+            }else if (value.length === 50) {
+                setErrors((prevErrors) => ({ ...prevErrors, contactType: "More than 50 characters are not allowed" }));
             }
             // Clear the name error if valid
             else {
@@ -425,7 +429,7 @@ function ClientContactList({isDrawerOpen}) {
                         fullWidth
                         error={!!errors.contactValue} // Display error if exists
                         helperText={errors.contactValue}
-                        inputProps={{maxlength: 50}}
+                        inputProps={{maxLength: 50}}
                     />
                     <InputLabel>ContactType</InputLabel>
                     <TextField
@@ -436,7 +440,7 @@ function ClientContactList({isDrawerOpen}) {
                         fullWidth
                         error={!!errors.contactType} // Display error if exists
                         helperText={errors.contactType}
-                        inputProps={{maxlength: 50}}
+                        inputProps={{maxLength: 50}}
                     />
                 </DialogContent>
                 <DialogActions>
