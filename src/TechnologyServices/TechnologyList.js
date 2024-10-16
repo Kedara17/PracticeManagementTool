@@ -322,7 +322,7 @@ function TechnologyList({isDrawerOpen}) {
                                 sx={{ backgroundColor: technology.isActive ? 'inherit' : '#FFCCCB' }} >
                                 <TableCell>{technology.name}</TableCell>
                                 <TableCell>{technology.department}</TableCell>
-                                <TableCell>{technology.isActive ? 'Active' : 'Inactive'}</TableCell>
+                                <TableCell>{technology.isActive ? 'Yes' : 'No'}</TableCell>
                                 <TableCell>{technology.createdBy}</TableCell>
                                 <TableCell>{new Date(technology.createdDate).toLocaleDateString()}</TableCell>
                                 <TableCell>{technology.updatedBy || 'N/A'}</TableCell>

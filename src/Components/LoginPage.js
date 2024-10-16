@@ -70,11 +70,9 @@ function LoginPage() {
     try {
       //const response = await axios.post(`http://localhost:5107/api/Login?emailId=${email}&password=${password}`);
       const response = await axios.post(`http://172.17.31.61:5107/api/Login?emailId=${email}&password=${password}`);
-
       if (response.status === 200) {
         localStorage.setItem('oauth2', response.data.token);
         localStorage.setItem('userRole', response.data.role);
-        localStorage.setItem('userEmail', email); 
 
         // Now you can retrieve the role
         const userRole = response.data.role;
