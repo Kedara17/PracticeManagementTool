@@ -487,7 +487,7 @@ function EmployeeList({isDrawerOpen}) {
                     // Set error if an invalid file type is selected
                     setErrors((prevErrors) => ({
                         ...prevErrors,
-                        profile: "Please select a PDF or DOC file"
+                        profile: "Only PDF or DOC files are allowed"
                     }));
                 }
             }
