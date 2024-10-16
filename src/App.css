@@ -8,3 +8,17 @@
     background: black;
     height: 20px;
 }
+
+.datetime {
+    width: 339px;
+}
+.date {
+    width: 351px;
+}
+.time {
+    width: 351px;
+}
+.MuiDialogContent-root {
+    width: 400px;
+}
+

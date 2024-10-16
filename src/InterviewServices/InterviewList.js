@@ -11,7 +11,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import '../App.css';
 
-function InterviewList() {
+function InterviewList({isDrawerOpen}) {
     const [Interviews, setInterviews] = useState([]);
     const [SOWRequirement, setSOWRequirement] = useState([]);
     const [InterviewStatus, setInterviewStatus] = useState([]);
@@ -160,25 +160,25 @@ function InterviewList() {
 
         // Name field validation
         if (!currentInterview.sowRequirement.trim()) {
-            validationErrors.sowRequirement = "Please select a sowRequirement";
+            validationErrors.sowRequirement = "SowRequirement is required";
         }
         if (!currentInterview.name) {
-            validationErrors.name = "Please select a name";
+            validationErrors.name = "Name is required";
         }
         if (!currentInterview.interviewDate) {
-            validationErrors.interviewDate = "Please select a interviewDate";
+            validationErrors.interviewDate = "InterviewDate is required";
         }
         if (!currentInterview.yearsOfExperience) {
-            validationErrors.yearsOfExperience = "Please select a yearsOfExperience";
+            validationErrors.yearsOfExperience = "YearsOfExperience is required";
         }
         if (!currentInterview.status) {
-            validationErrors.status = "Please select a status";
+            validationErrors.status = "Status is required";
         }
         if (!currentInterview.on_Boarding) {
-            validationErrors.on_Boarding = "Please select a on_Boarding";
+            validationErrors.on_Boarding = "On_Boarding is required";
         }
         if (!currentInterview.recruiter) {
-            validationErrors.recruiter = "Please select a recruiter";
+            validationErrors.recruiter = "Recruiter is required";
         }
 
         // If there are validation errors, update the state and prevent save
@@ -320,11 +320,11 @@ function InterviewList() {
     }
 
     return (
-        <div>
-            <div style={{ display: 'flex' }}>
-                <h3>Interview Table List</h3>
+        <div style={{ display: 'flex',flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 250 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
+            <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+                <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>Interview Table List</h3>
             </div>
-            <div style={{ display: 'flex', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', marginBottom: '20px', width: '100%' }}>
                 <TextField
                     label="Search"
                     variant="outlined"
@@ -339,11 +339,11 @@ function InterviewList() {
                             </InputAdornment>
                         ),
                     }}
-                    style={{ marginRight: '20px', width: '90%' }}
+                    style={{ flexGrow: 1, marginRight: '10px' }}
                 />
-                <Button variant="contained" color="primary" onClick={handleAdd}>Add Interview</Button>
+                <Button variant="contained" sx={{ backgroundColor: '#00aae7' }} onClick={handleAdd}>Add Interview</Button>
             </div>
-            <TableContainer component={Paper}>
+            <TableContainer component={Paper} style={{ width: '100%' }}>
                 <Table>
                     <TableHead>
                         <TableRow>
@@ -513,9 +513,9 @@ function InterviewList() {
                         ))}
                     </Select>
                     {errors.sowRequirement && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.sowRequirement}</Typography>}
+                    <InputLabel>Name</InputLabel>
                     <TextField
                         margin="dense"
-                        label="Name"
                         name="name"
                         value={currentInterview.name}
                         onChange={handleChange}
@@ -523,9 +523,9 @@ function InterviewList() {
                         error={!!errors.name} // Display error if exists
                         helperText={errors.name}
                     />
+                    <InputLabel>InterviewDate</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                            label="InterviewDate"
                             value={currentInterview.interviewDate ? dayjs(currentInterview.interviewDate) : null}
                             onChange={handleInterviewDateChange}
                             renderInput={(params) => (
@@ -534,9 +534,9 @@ function InterviewList() {
                         />
                         {errors.interviewDate && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.interviewDate}</Typography>}
                     </LocalizationProvider>
+                    <InputLabel>YearsOfExperience</InputLabel>
                     <TextField
                         margin="dense"
-                        label="YearsOfExperience"
                         name="yearsOfExperience"
                         value={currentInterview.yearsOfExperience}
                         onChange={handleChange}
@@ -560,9 +560,9 @@ function InterviewList() {
                         ))}
                     </Select>
                     {errors.status && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.status}</Typography>}
+                    <InputLabel>On_Boarding</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                            label="On_Boarding"
                             value={currentInterview.on_Boarding ? dayjs(currentInterview.on_Boarding) : null}
                             onChange={handleOnBoardingDateChange}
                             renderInput={(params) => (
@@ -603,8 +603,8 @@ function InterviewList() {
                     <Typography>Are you sure you want to delete this Interview?</Typography>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleConfirmClose}>No</Button>
-                    <Button onClick={handleConfirmYes} color="error">Yes</Button>
+                    <Button onClick={handleConfirmClose}>Cancel</Button>
+                    <Button onClick={handleConfirmYes} color="error">Ok</Button>
                 </DialogActions>
             </Dialog>
         </div>

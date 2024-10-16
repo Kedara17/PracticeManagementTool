@@ -10,14 +10,14 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import '../App.css';
-import ProjectList from '../ProjectServices/ProjectList';
 
-function POCList() {
+function POCList({isDrawerOpen}) {
     const [POCs, setPOCs] = useState([]);
     const [Clients, setClients] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [open, setOpen] = useState(false);
+    const [selectedFile, setSelectedFile] = useState(null);
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [deleteTechId, setDeleteTechId] = useState(null);
     const [page, setPage] = useState(0);
@@ -27,18 +27,19 @@ function POCList() {
         client: '',
         status: '',
         targetDate: '',
-        comletedDate: '',
+        completedDate: '',
         document: ''
     });
     const [order, setOrder] = useState('asc'); // Order of sorting: 'asc' or 'desc'
     const [orderBy, setOrderBy] = useState('createdDate'); // Column to sort by
     const [searchQuery, setSearchQuery] = useState(''); // State for search query
+    const options = ['InProgress','InReview','Completed'];
     const [errors, setErrors] = useState({
         title: '',
         client: '',
         status: '',
         targetDate: '',
-        comletedDate: '',
+        completedDate: '',
         document: ''
     }
     );
@@ -88,21 +89,19 @@ function POCList() {
         }
     });
 
-    const filteredPOCs = sortedPOCs.filter((poc) =>
-        (poc.title && typeof poc.title === 'string' &&
-            poc.title.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        const filteredPOCs = POCs.filter(poc => 
+        (poc && poc.title.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        
+        (poc && poc.client && poc.client.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    
+        (poc && poc.status && poc.status.toLowerCase().includes(searchQuery.toLowerCase())) ||
 
-        (poc.client && typeof poc.client === 'string' &&
-            poc.client.toLowerCase().includes(searchQuery.toLowerCase())) ||
-
-        (poc.project && typeof poc.project === 'string' &&
-            poc.project.toLowerCase().includes(searchQuery.toLowerCase())) ||
-
-        (poc.status && typeof poc.status === 'string' &&
-            poc.status.toLowerCase().includes(searchQuery.toLowerCase())) ||
-
-        (poc.comments && typeof poc.comments === 'string' &&
-            poc.comments.toLowerCase().includes(searchQuery.toLowerCase()))
+        (poc && poc.targetDate && poc.targetDate.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        
+        (poc && poc.completedDate && poc.completedDate.toLowerCase().includes(searchQuery.toLowerCase())) ||
+       
+        (poc && poc.document && poc.document.toLowerCase().includes(searchQuery.toLowerCase())) 
+       
     );
 
     const handleAdd = () => {
@@ -136,113 +135,138 @@ function POCList() {
         setConfirmOpen(false);
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         let validationErrors = {};
-
-        // Name field validation
+        
         if (!currentPOC.title.trim()) {
-            validationErrors.title = "POC title cannot be empty or whitespace";
+            validationErrors.title = "POC title is required";
         } else if (POCs.some(tech => tech.title.toLowerCase() === currentPOC.title.toLowerCase() && tech.id !== currentPOC.id)) {
             validationErrors.title = "POC title must be unique";
         }
-
-        // Department field validation 
         if (!currentPOC.client) {
-            validationErrors.client = "Please select a client";
+            validationErrors.client = "Client is required";
         }
-
+        if (!currentPOC.status) {
+            validationErrors.status = "Status is required";
+        }
+        if (!currentPOC.targetDate) {
+            validationErrors.targetDate = "TargetDate is required";
+        }
+        if (!currentPOC.completedDate) {
+            validationErrors.completedDate = "ComletedDate is required";
+        }
+        if (!currentPOC.document || errors.document) {
+            validationErrors.document = "Please select a valid PDF or DOC file";
+        }
         // If there are validation errors, update the state and prevent save
         if (Object.keys(validationErrors).length > 0) {
             setErrors(validationErrors);
             return;
         }
-
-        // Clear any previous errors if validation passes
         setErrors({});
 
-        if (currentPOC.id) {
-            // axios.put(`http://localhost:5254/api/poc/${currentPOC.id}`, currentPOC)
-            axios.put(`http://172.17.31.61:5254/api/poc/${currentPOC.id}`, currentPOC)
-                .then(response => {
-                    setPOCs(POCs.map(tech => tech.id === currentPOC.id ? response.data : tech));
-                })
-                .catch(error => {
-                    console.error('There was an error updating the poc!', error);
-                    setError(error);
+        try {
+            let documentPath = currentPOC.document;
+            // If a new file is selected, upload it
+            if (selectedFile) {
+                const formData = new FormData();
+                formData.append('document', selectedFile);
+                formData.append('id', "");
+
+                const uploadResponse = await axios.post('http://localhost:5254/api/POC/uploadFile', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
                 });
-        } else {
-            // axios.post('http://localhost:5254/api/poc', currentPOC)
-            axios.post('http://172.17.31.61:5254/api/poc', currentPOC)
-                .then(response => {
-                    setPOCs([...POCs, response.data]);
-                })
-                .catch(error => {
-                    console.error('There was an error adding the poc!', error);
-                    setError(error);
-                });
+                documentPath = uploadResponse.data.path; // Adjust based on your backend response
+            }
+
+            currentPOC.document = documentPath;
+            if (currentPOC.id) {
+                // axios.put(`http://localhost:5254/api/poc/${currentPOC.id}`, currentPOC)
+                const response = axios.put(`http://localhost:5254/api/POC/${currentPOC.id}`, currentPOC)
+                setPOCs(POCs.map(poc => poc.id === currentPOC.id ? response.data : poc));
+            } else {
+                // axios.post('http://localhost:5254/api/poc', currentPOC)
+                const response = axios.post('http://localhost:5254/api/POC', currentPOC)
+                setPOCs([...POCs, response.data]);
+            }
+            setSelectedFile(null);
+            setOpen(false);
+        } catch (error) {
+            console.error('There was an error saving the Poc!', error);
+            setError(error);
         }
-        setOpen(false);
     };
 
     const handleChange = (e) => {
-        const { title, value } = e.target;
-        setCurrentPOC({ ...currentPOC, [title]: value });
-        if (title === "client") {
-            // Check if the title is empty or only whitespace
-            if (!value.trim()) {
-                setErrors((prevErrors) => ({ ...prevErrors, client: "" }));
+        const { name, value } = e.target;
+        setCurrentPOC({ ...currentPOC, [name]: value });
+
+        if (name === "title") {
+            if (value.length === 200) {
+                setErrors((prevErrors) => ({ ...prevErrors, title: "More than 200 characters are not allowed" }));
             }
-            // Check for uniqueness
-            else if (ProjectList.some(pro => pro.client.toLowerCase() === value.toLowerCase() && pro.id !== currentPOC.id)) {
-                setErrors((prevErrors) => ({ ...prevErrors, client: "" }));
+            else {
+                setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
             }
-            // Clear the title error if valid
+        }
+        if (name === "client") {
+            if (value.length === 36) {
+                setErrors((prevErrors) => ({ ...prevErrors, client: "More than 36 characters are not allowed" }));
+            }
             else {
                 setErrors((prevErrors) => ({ ...prevErrors, client: "" }));
             }
         }
+        if (name === "status") {
+            if (value.length === 50) {
+                setErrors((prevErrors) => ({ ...prevErrors, status: "More than 50 characters are not allowed" }));
+            }
+            else {
+                setErrors((prevErrors) => ({ ...prevErrors, status: "" }));
+            }
+        }
+        if (name === "targetDate") {
+            if (value) {
+                setErrors((prevErrors) => ({ ...prevErrors, targetDate: "" }));
+            }
+        }
+        if (name === "completedDate") {
+            if (value) {
+                setErrors((prevErrors) => ({ ...prevErrors, completedDate: "" }));
+            }
+        }
+        if (name === "document") {
+            const file = e.target.files[0];
 
-        // if (name === "projectName") {
-        //     if (value) {
-        //         setErrors((prevErrors) => ({ ...prevErrors, projectName: "" }));
-        //     }
-        // }
-        // if (name === "technicalProjectManager") {
-        //     if (value) {
-        //         setErrors((prevErrors) => ({ ...prevErrors, technicalProjectManager: "" }));
-        //     }
-        // }
+            if (file) {
+                const fileType = file.type;
 
-        // if (name === "salesContact") {
-        //     if (value) {
-        //         setErrors((prevErrors) => ({ ...prevErrors, salesContact: "" }));
-        //     }
-        // }
-        // if (name === "pmo") {
-        //     if (value) {
-        //         setErrors((prevErrors) => ({ ...prevErrors, pmo: "" }));
-        //     }
-        // }
-        // if (name === "sowSubmittedDate") {
-        //     if (value) {
-        //         setErrors((prevErrors) => ({ ...prevErrors, sowSubmittedDate: "" }));
-        //     }
-        // }
-        // if (name === "sowSignedDate") {
-        //     if (value) {
-        //         setErrors((prevErrors) => ({ ...prevErrors, sowSignedDate: "" }));
-        //     }
-        // }
-        // if (name === "sowValidTill") {
-        //     if (value) {
-        //         setErrors((prevErrors) => ({ ...prevErrors, sowValidTill: "" }));
-        //     }
-        // }
-        // if (name === "sowLastExtendedDate") {
-        //     if (value) {
-        //         setErrors((prevErrors) => ({ ...prevErrors, sowLastExtendedDate: "" }));
-        //     }
-        // }
+                // Check if the file type is either PDF or DOC/DOCX
+                if (fileType === "application/pdf" ||
+                    fileType === "application/msword" ||
+                    fileType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
+
+                    setCurrentPOC((prevEmployee) => ({
+                        ...prevEmployee,
+                        document: file
+                    }));
+                    setSelectedFile(file);
+                    // Remove error when valid file is selected
+                    setErrors((prevErrors) => ({
+                        ...prevErrors,
+                        document: "" // Clear error for profile
+                    }));
+                } else {
+                    // Set error if an invalid file type is selected
+                    setErrors((prevErrors) => ({
+                        ...prevErrors,
+                        document: "Only PDF or DOC files are allowed"
+                    }));
+                }
+            }
+        }
     };
 
     const handleClose = () => {
@@ -277,6 +301,12 @@ function POCList() {
             ...prevPOCs,
             targetDate: newDate ? newDate.toISOString() : "",
         }));
+        if (newDate) {
+            setErrors((prevErrors) => ({
+                ...prevErrors,
+                targetDate: "",
+            }));
+        }
     };
 
     const handleCompletedDateChange = (newDate) => {
@@ -284,6 +314,12 @@ function POCList() {
             ...prev,
             completedDate: newDate ? newDate.toISOString() : "",
         }));
+        if (newDate) {
+            setErrors((prevErrors) => ({
+                ...prevErrors,
+                completedDate: "",
+            }));
+        }
     };
 
 
@@ -296,11 +332,11 @@ function POCList() {
     }
 
     return (
-        <div>
-            <div style={{ display: 'flex' }}>
-                <h3>POC Table List</h3>
+        <div style={{ display: 'flex',flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 250 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
+            <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+                <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>POC Table List</h3>
             </div>
-            <div style={{ display: 'flex', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', marginBottom: '20px', width: '100%' }}>
                 <TextField
                     label="Search"
                     variant="outlined"
@@ -315,16 +351,14 @@ function POCList() {
                             </InputAdornment>
                         ),
                     }}
-                    style={{ marginRight: '20px', width: '90%' }}
+                    style={{ flexGrow: 1, marginRight: '10px' }}
                 />
-                <Button variant="contained" color="primary" onClick={handleAdd}>Add POC</Button>
+                <Button variant="contained" sx={{ backgroundColor: '#00aae7' }} onClick={handleAdd}>Add POC</Button>
             </div>
-
-            <TableContainer component={Paper}>
+            <TableContainer component={Paper} style={{ width: '100%' }}>
                 <Table>
                     <TableHead>
                         <TableRow>
-                            {/* Sorting logic */}
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'title'}
@@ -454,7 +488,6 @@ function POCList() {
                         ))}
                     </TableBody>
                 </Table>
-                {/* Pagination Component */}
                 <PaginationComponent
                     count={filteredPOCs.length}
                     page={page}
@@ -463,20 +496,23 @@ function POCList() {
                     handleRowsPerPageChange={handleRowsPerPageChange}
                 />
             </TableContainer>
-
-            {/* Dialogs for adding/editing and confirming delete */}
             <Dialog open={open} onClose={() => setOpen(false)}>
                 <DialogTitle>{currentPOC.id ? 'Update POC' : 'Add POC'}</DialogTitle>
                 <DialogContent>
+                    <InputLabel>POC Title</InputLabel>
                     <TextField
                         margin="dense"
                         name="title"
-                        label="POC Title"
                         value={currentPOC.title}
-                        onChange={handleChange}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            if (/^[A-Za-z\s]*$/.test(value))
+                                handleChange(e);
+                        }}
                         fullWidth
                         error={!!errors.title} // Display error if exists
                         helperText={errors.title}
+                        inputProps={{ maxLength: 200 }}
                     />
                     <InputLabel>Client</InputLabel>
                     <Select
@@ -486,6 +522,7 @@ function POCList() {
                         onChange={handleChange}
                         fullWidth
                         error={!!errors.client}
+                        inputProps={{ maxLength: 36 }}
                     >
                         {Clients.map((client) => (
                             <MenuItem key={client.id} value={client.name}>
@@ -494,38 +531,57 @@ function POCList() {
                         ))}
                     </Select>
                     {errors.client && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.client}</Typography>}
+                    <InputLabel>Status</InputLabel>
+                    <Select
+                        margin="dense"
+                        label="Status"
+                        name="status"
+                        value={currentPOC.status}
+                        onChange={handleChange}
+                        fullWidth
+                        error={!!errors.status} 
+                        inputProps={{ maxLength: 50 }}
+                        >
+                            {options.map((option, index) => (
+                                <MenuItem key={index} value={option}>
+                                    {option}
+                                    </MenuItem>
+                            ))}
+                            </Select>
+                            {errors.status && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.status}</Typography>}                                         
+                    <InputLabel>TargetDate</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                            label="TargetDate"
+                            className='date'
                             value={currentPOC.targetDate ? dayjs(currentPOC.targetDate) : null}
                             onChange={handleTargetDateChange}
                             renderInput={(params) => (
-                                <TextField {...params} fullWidth margin="dense"
-                                    error={!!errors.targetDate} />
+                                <TextField {...params} fullWidth margin="dense" />
                             )}
                         />
                     </LocalizationProvider>
                     {errors.targetDate && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.targetDate}</Typography>}
+                    <InputLabel>CompletedDate</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                            label="CompletedDate"
+                            className='date'
                             value={currentPOC.completedDate ? dayjs(currentPOC.completedDate) : null}
                             onChange={handleCompletedDateChange}
                             renderInput={(params) => (
-                                <TextField {...params} fullWidth margin="dense"
-                                    error={!!errors.completedDate} />
+                                <TextField {...params} fullWidth margin="dense" />
                             )}
                         />
                     </LocalizationProvider>
                     {errors.completedDate && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.completedDate}</Typography>}
+                    <InputLabel>POC Document</InputLabel>                                       
                     <TextField
+                        type="file"
                         margin="dense"
-                        name="document"
-                        label="POC Document"
-                        value={currentPOC.document}
+                        name="document"                                            
                         onChange={handleChange}
                         fullWidth
-                        error={!!errors.document} // Display error if exists
+                        required={!currentPOC.id}
+                        error={!!errors.document}
                         helperText={errors.document}
                     />
                 </DialogContent>

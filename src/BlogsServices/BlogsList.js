@@ -11,7 +11,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import '../App.css';
 
-function BlogsList() {
+function BlogsList({isDrawerOpen}) {
     const [blogs, setBlogs] = useState([]);
     const [Employees, setEmployees] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -150,22 +150,22 @@ function BlogsList() {
 
         // Title field validation
         if (!currentBlogs.title.trim()) {
-            validationErrors.title = "Please add the Blogs title";
+            validationErrors.title = "Title is required";
         }
         if (!currentBlogs.author) {
-            validationErrors.author = "Please select a author";
+            validationErrors.author = "Author is required";
         }
         if (!currentBlogs.status) {
-            validationErrors.status = "Please select a status";
+            validationErrors.status = "Status is required";
         }
         if (!currentBlogs.targetDate) {
-            validationErrors.targetDate = "Please select a targetDate";
+            validationErrors.targetDate = "TargetDate is required";
         }
         if (!currentBlogs.completedDate) {
-            validationErrors.completedDate = "Please select a completedDate";
+            validationErrors.completedDate = "CompletedDate is required";
         }
         if (!currentBlogs.publishedDate) {
-            validationErrors.publishedDate = "Please select a publishedDate";
+            validationErrors.publishedDate = "PublishedDate is required";
         }
 
         // If there are validation errors, update the state and prevent save
@@ -213,12 +213,12 @@ function BlogsList() {
                 });
         }
         setOpen(false);
-
     };
 
-    const handleChange = (e) => {
+       const handleChange = (e) => {
         const { name, value } = e.target;
         setCurrentBlogs({ ...currentBlogs, [name]: value });
+
         if (name === "title") {
             // Check if the title is empty or only whitespace
             if (!value.trim()) {
@@ -227,21 +227,26 @@ function BlogsList() {
             // Check for uniqueness
             else if (blogs.some(web => web.title.toLowerCase() === value.toLowerCase() && web.id !== currentBlogs.id)) {
                 setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
+            }else if (value.length === 200) {
+                setErrors((prevErrors) => ({ ...prevErrors, title: "More than 200 characters are not allowed" }));
             }
             // Clear the title error if valid
             else {
                 setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
             }
         }
-
         if (name === "author") {
             if (value) {
                 setErrors((prevErrors) => ({ ...prevErrors, author: "" }));
             }
         }
         if (name === "status") {
-            if (value) {
-                setErrors((prevErrors) => ({ ...prevErrors, status: "" }));
+            if (value.length === 50) {
+                setErrors((prevErrors) => ({ ...prevErrors, title: "More than 50 characters are not allowed" }));
+            }
+            // Clear the title error if valid
+            else {
+                setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
             }
         }
 
@@ -338,11 +343,11 @@ function BlogsList() {
     }
 
     return (
-        <div>
-            <div style={{ display: 'flex' }}>
-                <h3>Blogs Table List</h3>
+        <div style={{ display: 'flex',flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 250 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
+            <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+                <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>Blogs Table List</h3>
             </div>
-            <div style={{ display: 'flex', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', marginBottom: '20px', width: '100%' }}>
                 <TextField
                     label="Search"
                     variant="outlined"
@@ -357,11 +362,11 @@ function BlogsList() {
                             </InputAdornment>
                         ),
                     }}
-                    style={{ marginRight: '20px', width: '90%' }}
+                    style={{ flexGrow: 1, marginRight: '10px' }}
                 />
-                <Button variant="contained" color="primary" onClick={handleAdd}>Add Blogs</Button>
+                <Button variant="contained" sx={{ backgroundColor: '#00aae7' }} onClick={handleAdd}>Add Blogs</Button>
             </div>
-            <TableContainer component={Paper}>
+            <TableContainer component={Paper} style={{ width: '100%' }}>
                 <Table>
                     <TableHead>
                         <TableRow>
@@ -480,8 +485,8 @@ function BlogsList() {
                                 <TableCell>{Blogs.targetDate}</TableCell>
                                 <TableCell>{Blogs.completedDate}</TableCell>
                                 <TableCell>{Blogs.publishedDate}</TableCell>
-                                {/* <TableCell>{Blogs.isActive ? 'Active' : 'Inactive'}</TableCell> */}
-                                <TableCell>
+                                <TableCell>{Blogs.isActive ? 'Active' : 'Inactive'}</TableCell>
+                                {/* <TableCell>
                                     {isAdmin && (
                                         <Switch
                                             checked={Blogs.isActive}
@@ -489,7 +494,7 @@ function BlogsList() {
                                             color="primary"
                                         />
                                     )}
-                                </TableCell>
+                                </TableCell> */}
                                 <TableCell>{Blogs.createdBy}</TableCell>
                                 <TableCell>{new Date(Blogs.createdDate).toLocaleString()}</TableCell>
                                 <TableCell>{Blogs.updatedBy || 'N/A'}</TableCell>
@@ -519,20 +524,25 @@ function BlogsList() {
             <Dialog open={open} onClose={() => setOpen(false)}>
                 <DialogTitle>{currentBlogs.id ? 'Update Blogs' : 'Add Blogs'}</DialogTitle>
                 <DialogContent>
+                    <InputLabel>Title</InputLabel>
                     <TextField
                         margin="dense"
-                        label="Title"
                         name="title"
                         value={currentBlogs.title}
-                        onChange={handleChange}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            if (/^[A-Za-z\s]*$/.test(value))
+                                handleChange(e);
+                        }}
                         fullWidth
                         error={!!errors.title}
-                        helperText={errors.title} />
+                        helperText={errors.title} 
+                        inputProps={{maxLength: 200}}
+                        />                       
                     <InputLabel>Author</InputLabel>
                     <Select
                         margin="dense"
                         name="author"
-                        label="Author"
                         value={currentBlogs.employee}
                         onChange={handleChange}
                         fullWidth
@@ -548,12 +558,12 @@ function BlogsList() {
                     <InputLabel>Status</InputLabel>
                     <Select
                         margin="dense"
-                        label="Status"
                         name="status"
                         value={currentBlogs.status}
                         onChange={handleChange}
                         fullWidth
                         error={!!errors.status}
+                        inputProps={{maxLength: 50}}
                     >
                         {options.map((option, index) => (
                             <MenuItem key={index} value={option}>
@@ -562,10 +572,10 @@ function BlogsList() {
                         ))}
                     </Select>
                     {errors.status && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.status}</Typography>}
-
+                    <InputLabel>TargetDate</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                            label="TargetDate"
+                        className='datetime'
                             value={currentBlogs.targetDate ? dayjs(currentBlogs.targetDate) : null}
                             onChange={handleTargetDateChange}
                             renderInput={(params) => (
@@ -575,9 +585,10 @@ function BlogsList() {
                         />
                     </LocalizationProvider>
                     {errors.targetDate && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.targetDate}</Typography>}
+                    <InputLabel>CompletedDate</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                            label="CompletedDate"
+                        className='datetime'
                             value={currentBlogs.completedDate ? dayjs(currentBlogs.completedDate) : null}
                             onChange={handleCompletedDateChange}
                             renderInput={(params) => (
@@ -587,9 +598,10 @@ function BlogsList() {
                         />
                     </LocalizationProvider>
                     {errors.completedDate && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.completedDate}</Typography>}
+                    <InputLabel>PublishedDate</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                            label="PublishedDate"
+                        className='datetime'
                             value={currentBlogs.publishedDate ? dayjs(currentBlogs.publishedDate) : null}
                             onChange={handlePublishedDateChange}
                             renderInput={(params) => (
@@ -614,8 +626,8 @@ function BlogsList() {
                     <Typography>Are you sure you want to delete this blog?</Typography>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleConfirmClose}>No</Button>
-                    <Button onClick={handleConfirmYes} color="error">Yes</Button>
+                    <Button onClick={handleConfirmClose}>Cancel</Button>
+                    <Button onClick={handleConfirmYes} color="error">Ok</Button>
                 </DialogActions>
             </Dialog>
         </div>

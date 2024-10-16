@@ -11,7 +11,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import '../App.css';
 
-function SOWList() {
+function SOWList({isDrawerOpen}) {
     const [SOWs, setSOWs] = useState([]);
     const [Clients, setClients] = useState([]);
     const [Projects, setProjects] = useState([]);
@@ -161,25 +161,25 @@ function SOWList() {
         //     validationErrors.client = "Please select a Project";
         // }
         if (!currentSOW.title) {
-            validationErrors.title = "Please select a title";
+            validationErrors.title = "Title is required";
         }
         if (!currentSOW.client) {
-            validationErrors.client = "Please select a client";
+            validationErrors.client = "Client is required";
         }
         if (!currentSOW.project) {
-            validationErrors.project = "Please select a project";
+            validationErrors.project = "Project is required";
         }
         if (!currentSOW.preparedDate) {
-            validationErrors.preparedDate = "Please select a preparedDate";
+            validationErrors.preparedDate = "PreparedDate is required";
         }
         if (!currentSOW.submittedDate) {
-            validationErrors.submittedDate = "Please select a submittedDate";
+            validationErrors.submittedDate = "SubmittedDate is required";
         }
         if (!currentSOW.status) {
-            validationErrors.status = "Please select a status";
+            validationErrors.status = "Status is required";
         }
         if (!currentSOW.comments) {
-            validationErrors.comments = "Please select a comments";
+            validationErrors.comments = "Comments is required";
         }
 
         // If there are validation errors, update the state and prevent save
@@ -222,7 +222,7 @@ function SOWList() {
 
     };
 
-    const handleChange = (e) => {
+        const handleChange = (e) => {
         const { name, value } = e.target;
         setCurrentSOW({ ...currentSOW, [name]: value });
         if (name === "client") {
@@ -230,17 +230,23 @@ function SOWList() {
                 setErrors((prevErrors) => ({ ...prevErrors, client: "" }));
             }
         }
-        if (name === "title") {
-            if (value) {
+        if (name === "title") {            
+             if (value.length === 200) {
+                setErrors((prevErrors) => ({ ...prevErrors, title: "More than 200 characters are not allowed" }));
+            }
+            // Clear the title error if valid
+            else {
                 setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
             }
         }
         if (name === "project") {
-            if (value) {
+            if (value.length === 200) {
+                setErrors((prevErrors) => ({ ...prevErrors, project: "More than 200 characters are not allowed" }));
+            }
+            else {
                 setErrors((prevErrors) => ({ ...prevErrors, project: "" }));
             }
         }
-
         if (name === "preparedDate") {
             // Clear the salesEmployee error if the user selects a value
             if (value) {
@@ -258,7 +264,11 @@ function SOWList() {
             }
         }
         if (name === "comments") {
-            if (value) {
+            if (value.length === 500) {
+                setErrors((prevErrors) => ({ ...prevErrors, comments: "More than 500 characters are not allowed" }));
+            }
+            // Clear the title error if valid
+            else {
                 setErrors((prevErrors) => ({ ...prevErrors, comments: "" }));
             }
         }
@@ -320,11 +330,11 @@ function SOWList() {
     }
 
     return (
-        <div>
-            <div style={{ display: 'flex' }}>
-                <h3>SOW Table List</h3>
+        <div style={{ display: 'flex',flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 250 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
+            <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+                <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>SOW Table List</h3>
             </div>
-            <div style={{ display: 'flex', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', marginBottom: '20px', width: '100%' }}>
                 <TextField
                     label="Search"
                     variant="outlined"
@@ -339,11 +349,11 @@ function SOWList() {
                             </InputAdornment>
                         ),
                     }}
-                    style={{ marginRight: '20px', width: '90%' }}
+                    style={{ flexGrow: 1, marginRight: '10px' }}
                 />
-                <Button variant="contained" color="primary" onClick={handleAdd}>Add SOW</Button>
+                <Button variant="contained" sx={{ backgroundColor: '#00aae7' }} onClick={handleAdd}>Add SOW</Button>
             </div>
-            <TableContainer component={Paper}>
+            <TableContainer component={Paper} style={{ width: '100%' }}>
                 <Table>
                     <TableHead>
                         <TableRow>
@@ -500,15 +510,20 @@ function SOWList() {
             <Dialog open={open} onClose={() => setOpen(false)}>
                 <DialogTitle>{currentSOW.id ? 'Update SOW' : 'Add SOW'}</DialogTitle>
                 <DialogContent>
+                    <InputLabel>Title</InputLabel>
                     <TextField
                         margin="dense"
-                        label="Title"
                         name="title"
                         value={currentSOW.title}
-                        onChange={handleChange}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            if (/^[A-Za-z\s]*$/.test(value))
+                                handleChange(e);
+                        }}
                         fullWidth
                         error={!!errors.title}
                         helperText={errors.title}
+                        inputProps={{maxLength: 200}}
                     />
                     <InputLabel>Client</InputLabel>
                     <Select
@@ -534,6 +549,7 @@ function SOWList() {
                         onChange={handleChange}
                         fullWidth
                         error={!!errors.project}
+                        inputProps={{maxLength: 200}}
                     >
                         {Projects.map((project) => (
                             <MenuItem key={project.id} value={project.projectName}>
@@ -542,9 +558,10 @@ function SOWList() {
                         ))}
                     </Select>
                     {errors.project && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.project}</Typography>}
+                    <InputLabel>PreparedDate</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                            label="PreparedDate"
+                        className='datetime'
                             value={currentSOW.preparedDate ? dayjs(currentSOW.preparedDate) : null}
                             onChange={handlePreparedDateChange}
                             renderInput={(params) => (
@@ -553,9 +570,10 @@ function SOWList() {
                         />
                         {errors.preparedDate && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.preparedDate}</Typography>}
                     </LocalizationProvider>
+                    <InputLabel>SubmittedDate</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                            label="SubmittedDate"
+                        className='datetime'
                             value={currentSOW.submittedDate ? dayjs(currentSOW.submittedDate) : null}
                             onChange={handleSubmittedDateChange}
                             renderInput={(params) => (
@@ -580,15 +598,16 @@ function SOWList() {
                         ))}
                     </Select>
                     {errors.status && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.status}</Typography>}
+                    <InputLabel>Comments</InputLabel>
                     <TextField
                         margin="dense"
-                        label="Comments"
                         name="comments"
                         value={currentSOW.comments}
                         onChange={handleChange}
                         fullWidth
                         error={!!errors.comments} // Display error if exists
                         helperText={errors.comments}
+                        inputProps={{maxLength: 500}}
                     />
                 </DialogContent>
                 <DialogActions>
@@ -605,8 +624,8 @@ function SOWList() {
                     <Typography>Are you sure you want to delete this SOW?</Typography>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleConfirmClose}>No</Button>
-                    <Button onClick={handleConfirmYes} color="error">Yes</Button>
+                    <Button onClick={handleConfirmClose}>Cancel</Button>
+                    <Button onClick={handleConfirmYes} color="error">Ok</Button>
                 </DialogActions>
             </Dialog>
         </div>

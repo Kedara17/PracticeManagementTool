@@ -1,12 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { Table, Typography, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, InputAdornment, IconButton } from '@mui/material';
 
-function EmployeeTechnologyList() {
+function EmployeeTechnologyList({isDrawerOpen}) {
     const [employeeTechnologies, setemployeeTechnologies] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [open, setOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [deleteTechId, setDeleteTechId] = useState(null);
     const [currentEmployeeTechnology, setCurrentEmployeeTechnology] = useState({
         id: '',
         employeeID: '',
@@ -17,6 +23,13 @@ function EmployeeTechnologyList() {
         updatedBy: '',
         updatedDate: ''
     });
+
+    const [errors, setErrors] = useState({
+        id: '',
+        employeeID: '',
+        technology: '',
+    }
+    );
 
     useEffect(() => {
         //axios.get('http://localhost:5033/api/EmployeeTechnology')
@@ -101,6 +114,25 @@ function EmployeeTechnologyList() {
         setCurrentEmployeeTechnology({ ...currentEmployeeTechnology, [name]: value });
     };
 
+    const handleConfirmClose = () => {
+        setConfirmOpen(false);
+    };
+
+    const handleConfirmYes = () => {
+        handleDelete(deleteTechId);
+    };
+
+    const confirmDelete = (id) => {
+        setDeleteTechId(id);
+        setConfirmOpen(true);
+    };
+
+    const handleClose = () => {
+        setCurrentEmployeeTechnology({ id: '', employeeId: '', technology: [] }); // Reset the department fields
+        setErrors({ id: '', employeeId: '', technology: '' }); // Reset the error state
+        setOpen(false); // Close the dialog
+    };
+
     if (loading) {
         return <p>Loading...</p>;
     }
@@ -110,14 +142,30 @@ function EmployeeTechnologyList() {
     }
 
     return (
-        <div>
-            <div style={{ display: 'flex' }}>
-                <h3>EmployeeTechnology Table List</h3>
+        <div style={{ display: 'flex',flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 250 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
+            <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+                <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>Employee Technology Table List</h3>
             </div>
-            <div style={{ display: 'flex', marginBottom: '20px' }}>
-                <Button variant="contained" color="primary" onClick={handleAdd}>Add EmployeeTechnology</Button>
+            <div style={{ display: 'flex', marginBottom: '20px', width: '100%' }}>
+            <TextField
+                    label="Search"
+                    variant="outlined"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    InputProps={{
+                        endAdornment: (
+                            <InputAdornment position="end">
+                                <IconButton edge="end">
+                                    <SearchIcon />
+                                </IconButton>
+                            </InputAdornment>
+                        ),
+                    }}
+                    style={{ flexGrow: 1, marginRight: '10px' }}
+                />
+                <Button variant="contained" sx={{ backgroundColor: '#00aae7' }} onClick={handleAdd}>Add Employee Technology</Button>
             </div>
-            <TableContainer component={Paper}>
+            <TableContainer component={Paper} style={{ width: '100%' }}>
                 <Table>
                     <TableHead>
                         <TableRow>
@@ -144,8 +192,12 @@ function EmployeeTechnologyList() {
                                 <TableCell>{EmployeeTechnology.updatedBy || 'N/A'}</TableCell>
                                 <TableCell>{EmployeeTechnology.updatedDate ? new Date(EmployeeTechnology.updatedDate).toLocaleString() : 'N/A'}</TableCell>
                                 <TableCell>
-                                    <Button variant="contained" color="secondary" onClick={() => handleUpdate(EmployeeTechnology)}>Update</Button>
-                                    <Button variant="contained" color="error" onClick={() => handleDelete(EmployeeTechnology.id)}>Delete</Button>
+                                    <IconButton onClick={() => handleUpdate(EmployeeTechnology)}>
+                                        <EditIcon color="primary" />
+                                    </IconButton>
+                                    <IconButton onClick={() => handleDelete(EmployeeTechnology.id)}>
+                                        <DeleteIcon color="error" />
+                                    </IconButton>
                                 </TableCell>
                             </TableRow>
                         ))}
@@ -219,6 +271,17 @@ function EmployeeTechnologyList() {
                     <Button onClick={handleSave} color="primary">
                         Save
                     </Button>
+                </DialogActions>
+            </Dialog>
+
+            <Dialog open={confirmOpen} onClose={handleConfirmClose}>
+                <DialogTitle>Confirm Delete</DialogTitle>
+                <DialogContent>
+                    <Typography>Are you sure you want to delete this employee technology?</Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleConfirmClose}>Cancel</Button>
+                    <Button onClick={handleConfirmYes} color="error">Ok</Button>
                 </DialogActions>
             </Dialog>
         </div>

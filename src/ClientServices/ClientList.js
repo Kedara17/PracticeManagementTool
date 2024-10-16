@@ -6,7 +6,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 import PaginationComponent from '../Components/PaginationComponent'; // Import your PaginationComponent
 
-function ClientList() {
+function ClientList({isDrawerOpen}) {
     const [Clients, setClients] = useState([]);
     const [employees, setEmployees] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -139,28 +139,28 @@ function ClientList() {
 
         // Name field validation
         if (!currentClient.name.trim()) {
-            validationErrors.name = "Client name cannot be empty or whitespace";
+            validationErrors.name = "Name is required";
         } else if (Clients.some(cli => cli.name.toLowerCase() === currentClient.name.toLowerCase() && cli.id !== currentClient.id)) {
-            validationErrors.name = "Client name must be unique";
+            validationErrors.name = "Name must be unique";
         }
 
         if (!currentClient.lineofBusiness) {
-            validationErrors.lineofBusiness = "Please select a lineofBusiness";
+            validationErrors.lineofBusiness = "LineofBusiness is required";
         }
         if (!currentClient.salesEmployee) {
-            validationErrors.salesEmployee = "Please select a salesEmployee";
+            validationErrors.salesEmployee = "SalesEmployee is required";
         }
         if (!currentClient.country) {
-            validationErrors.country = "Please select a country";
+            validationErrors.country = "Country is required";
         }
         if (!currentClient.city) {
-            validationErrors.city = "Please select a city";
+            validationErrors.city = "City is required";
         }
         if (!currentClient.state) {
-            validationErrors.state = "Please select a state";
+            validationErrors.state = "State is required";
         }
         if (!currentClient.address) {
-            validationErrors.address = "Please select a address";
+            validationErrors.address = "Address is required";
         }
 
         // If there are validation errors, update the state and prevent save
@@ -196,11 +196,12 @@ function ClientList() {
         }
         setOpen(false);
 
-    };
+    };    
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setCurrentClient({ ...currentClient, [name]: value });
+
         if (name === "name") {
             // Check if the title is empty or only whitespace
             if (!value.trim()) {
@@ -209,16 +210,19 @@ function ClientList() {
             // Check for uniqueness
             else if (Clients.some(cli => cli.name.toLowerCase() === value.toLowerCase() && cli.id !== currentClient.id)) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
+            }else if (value.length === 50) {
+                setErrors((prevErrors) => ({ ...prevErrors, name: "More than 50 characters are not allowed" }));
             }
             // Clear the title error if valid
             else {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
             }
         }
-
         if (name === "lineofBusiness") {
-            // Clear the lineofBusiness error if the user selects a value
-            if (value) {
+            if (value.length === 50) {
+                setErrors((prevErrors) => ({ ...prevErrors, lineofBusiness: "More than 50 characters are not allowed" }));
+            }
+            else {
                 setErrors((prevErrors) => ({ ...prevErrors, lineofBusiness: "" }));
             }
         }
@@ -230,26 +234,34 @@ function ClientList() {
         }
 
         if (name === "country") {
-            // Clear the country error if the user selects a value
-            if (value) {
+             if (value.length === 50) {
+                setErrors((prevErrors) => ({ ...prevErrors, country: "More than 50 characters are not allowed" }));
+            }
+            else {
                 setErrors((prevErrors) => ({ ...prevErrors, country: "" }));
             }
         }
         if (name === "city") {
-            // Clear the city error if the user selects a value
-            if (value) {
+            if (value.length === 50) {
+                setErrors((prevErrors) => ({ ...prevErrors, city: "More than 50 characters are not allowed" }));
+            }
+            else {
                 setErrors((prevErrors) => ({ ...prevErrors, city: "" }));
             }
         }
         if (name === "state") {
-            // Clear the state error if the user selects a value
-            if (value) {
+             if (value.length === 50) {
+                setErrors((prevErrors) => ({ ...prevErrors, state: "More than 50 characters are not allowed" }));
+            }
+            else {
                 setErrors((prevErrors) => ({ ...prevErrors, state: "" }));
             }
         }
-        if (name === "address") {
-            // Clear the address error if the user selects a value
-            if (value) {
+        if (name === "address") {           
+             if (value.length === 500) {
+                setErrors((prevErrors) => ({ ...prevErrors, address: "More than 500 characters are not allowed" }));
+            }
+            else {
                 setErrors((prevErrors) => ({ ...prevErrors, address: "" }));
             }
         }
@@ -294,11 +306,11 @@ function ClientList() {
     }
 
     return (
-        <div>
-            <div style={{ display: 'flex' }}>
-                <h3>Client Table List</h3>
+        <div style={{ display: 'flex',flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 250 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
+            <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+                <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>Client Table List</h3>
             </div>
-            <div style={{ display: 'flex', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', marginBottom: '20px', width: '100%' }}>
                 <TextField
                     label="Search"
                     variant="outlined"
@@ -313,11 +325,11 @@ function ClientList() {
                             </InputAdornment>
                         ),
                     }}
-                    style={{ marginRight: '20px', width: '90%' }}
+                    style={{ flexGrow: 1, marginRight: '10px' }}
                 />
-                <Button variant="contained" color="primary" onClick={handleAdd}>Add Client</Button>
+                <Button variant="contained" sx={{ backgroundColor: '#00aae7' }}  onClick={handleAdd}>Add Client</Button>
             </div>
-            <TableContainer component={Paper}>
+            <TableContainer component={Paper} style={{ width: '100%' }}>
                 <Table>
                     <TableHead>
                         <TableRow>
@@ -472,25 +484,35 @@ function ClientList() {
             <Dialog open={open} onClose={() => setOpen(false)}>
                 <DialogTitle>{currentClient.id ? 'Update Client' : 'Add Client'}</DialogTitle>
                 <DialogContent>
+                    <InputLabel>Name</InputLabel>
                     <TextField
                         margin="dense"
-                        label="Name"
                         name="name"
                         value={currentClient.name}
-                        onChange={handleChange}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            if (/^[A-Za-z\s]*$/.test(value))
+                                handleChange(e);
+                        }}
                         fullWidth
                         error={!!errors.name} // Display error if exists
                         helperText={errors.name}
+                        inputProps={{ maxLength: 50 }}
                     />
+                    <InputLabel>LineofBusiness</InputLabel>
                     <TextField
                         margin="dense"
-                        label="LineofBusiness"
                         name="lineofBusiness"
                         value={currentClient.lineofBusiness}
-                        onChange={handleChange}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            if (/^[A-Za-z\s]*$/.test(value))
+                                handleChange(e);
+                        }}
                         fullWidth
                         error={!!errors.lineofBusiness} // Display error if exists
                         helperText={errors.lineofBusiness}
+                        inputProps={{ maxLength: 50 }}
                     />
                     <InputLabel>SalesEmployee</InputLabel>
                     <Select
@@ -500,6 +522,7 @@ function ClientList() {
                         onChange={handleChange}
                         fullWidth
                         error={!!errors.salesEmployee}
+                        inputProps={{ maxLength: 50 }}
                     >
                         {employees.map((employee) => (
                             <MenuItem key={employee.id} value={employee.name}>
@@ -507,46 +530,63 @@ function ClientList() {
                             </MenuItem>
                         ))}
                     </Select>
-                    {errors.salesEmployee && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.salesEmployee}</Typography>}
+                    {errors.salesEmployee && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.salesEmployee}</Typography>}                    
+                    <InputLabel>Country</InputLabel>
                     <TextField
                         margin="dense"
-                        label="Country"
                         name="country"
                         value={currentClient.country}
-                        onChange={handleChange}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            if (/^[A-Za-z\s]*$/.test(value)) {
+                                handleChange(e); 
+                            }
+                        }}
                         fullWidth
-                        error={!!errors.country} // Display error if exists
+                        error={!!errors.country} 
                         helperText={errors.country}
+                        inputProps={{maxLength: 50}}
                     />
+                    <InputLabel>City</InputLabel>
                     <TextField
                         margin="dense"
-                        label="City"
                         name="city"
                         value={currentClient.city}
-                        onChange={handleChange}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            if (/^[A-Za-z\s]*$/.test(value))
+                                handleChange(e);
+                        }}
                         fullWidth
                         error={!!errors.city} // Display error if exists
                         helperText={errors.city}
+                        inputProps={{maxLength: 50}}
                     />
+                    <InputLabel>State</InputLabel>
                     <TextField
                         margin="dense"
-                        label="State"
                         name="state"
                         value={currentClient.state}
-                        onChange={handleChange}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            if (/^[A-Za-z\s]*$/.test(value))
+                                handleChange(e);
+                        }}
                         fullWidth
                         error={!!errors.state} // Display error if exists
                         helperText={errors.state}
+                        inputProps={{maxLength: 50}}
                     />
+                    <InputLabel>Address</InputLabel>
                     <TextField
                         margin="dense"
-                        label="Address"
                         name="address"
                         value={currentClient.address}
                         onChange={handleChange}
                         fullWidth
                         error={!!errors.address} // Display error if exists
                         helperText={errors.address}
+                        inputProps={{maxLength: 500}}
                     />
                 </DialogContent>
                 <DialogActions>
@@ -563,8 +603,8 @@ function ClientList() {
                     <Typography>Are you sure you want to delete this Client?</Typography>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleConfirmClose}>No</Button>
-                    <Button onClick={handleConfirmYes} color="error">Yes</Button>
+                    <Button onClick={handleConfirmClose}>Cancel</Button>
+                    <Button onClick={handleConfirmYes} color="error">Ok</Button>
                 </DialogActions>
             </Dialog>
         </div>
