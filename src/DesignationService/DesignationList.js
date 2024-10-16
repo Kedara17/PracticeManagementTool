@@ -4,9 +4,9 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 import PaginationComponent from '../Components/PaginationComponent'; // Import your PaginationComponent
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
+import { InputLabel, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
 
-function DesignationList() {
+function DesignationList({isDrawerOpen}) {
     const [designations, setDesignations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -96,9 +96,9 @@ function DesignationList() {
 
         // Name field validation
         if (!currentDesignation.name.trim()) {
-            validationErrors.name = "Designation name cannot be empty or whitespace";
-        } else if (designations.some(dep => dep.name.toLowerCase() === currentDesignation.name.toLowerCase() && dep.id !== currentDesignation.id)) {
-            validationErrors.name = "Designation name must be unique";
+            validationErrors.name = "Designation is required";
+        } else if (designations.some(des => des.name.toLowerCase() === currentDesignation.name.toLowerCase() && des.id !== currentDesignation.id)) {
+            validationErrors.name = "Name must be unique";
         }
 
         // If there are validation errors, update the state and prevent save
@@ -138,10 +138,10 @@ function DesignationList() {
         }
         setOpen(false);
     };
-
+     
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setCurrentDesignation({ ...currentDesignation, [name]: value });
+        setCurrentDesignation({ ...currentDesignation, [name]: value });    
         if (name === "name") {
             // Check if the name is empty or only whitespace
             if (!value.trim()) {
@@ -150,12 +150,14 @@ function DesignationList() {
             // Check for uniqueness
             else if (designations.some(des => des.name.toLowerCase() === value.toLowerCase() && des.id !== currentDesignation.id)) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
+            } else if (value.length === 50) {
+                setErrors((prevErrors) => ({ ...prevErrors, name: "More than 50 characters are not allowed" }));
             }
             // Clear the name error if valid
             else {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
             }
-        }
+        }   
     };
 
     const handleClose = () => {
@@ -196,11 +198,11 @@ function DesignationList() {
     }
 
     return (
-        <div>
-            <div style={{ display: 'flex' }}>
-                <h3>Designation Table List</h3>
+        <div style={{ display: 'flex',flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 250 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
+            <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+                <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>Designation Table List</h3>
             </div>
-            <div style={{ display: 'flex', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', marginBottom: '20px', width: '100%' }}>
                 <TextField
                     label="Search"
                     variant="outlined"
@@ -215,11 +217,11 @@ function DesignationList() {
                             </InputAdornment>
                         ),
                     }}
-                    style={{ marginRight: '20px', width: '90%' }}
+                    style={{ flexGrow: 1, marginRight: '10px' }}
                 />
-                <Button variant="contained" color="primary" onClick={handleAdd}>Add Designation</Button>
+                <Button variant="contained" sx={{ backgroundColor: '#00aae7' }} onClick={handleAdd}>Add Designation</Button>
             </div>
-            <TableContainer component={Paper}>
+            <TableContainer component={Paper} style={{ width: '100%' }}>
                 <Table>
                     <TableHead>
                         <TableRow>
@@ -316,15 +318,20 @@ function DesignationList() {
             <Dialog open={open} onClose={() => setOpen(false)}>
                 <DialogTitle>{currentDesignation.id ? 'Update Designation' : 'Add Designation'}</DialogTitle>
                 <DialogContent>
+                <InputLabel>Name</InputLabel>
                     <TextField
-                        margin="dense"
-                        label="Name"
+                        margin="dense"                       
                         name="name"
                         value={currentDesignation.name}
-                        onChange={handleChange}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            if (/^[A-Za-z\s]*$/.test(value))
+                                handleChange(e);
+                        }}
                         fullWidth
                         error={!!errors.name} // Display error if exists
                         helperText={errors.name}
+                        inputProps={{maxLength: 50}}
                     />
                 </DialogContent>
                 <DialogActions>
@@ -341,8 +348,8 @@ function DesignationList() {
                     <Typography>Are you sure you want to delete this Designation?</Typography>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleConfirmClose}>No</Button>
-                    <Button onClick={handleConfirmYes} color="error">Yes</Button>
+                    <Button onClick={handleConfirmClose}>Cancel</Button>
+                    <Button onClick={handleConfirmYes} color="error">Ok</Button>
                 </DialogActions>
             </Dialog>
         </div>

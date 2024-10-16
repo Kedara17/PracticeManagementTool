@@ -10,9 +10,8 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import '../App.css';
-import ProjectList from '../ProjectServices/ProjectList';
 
-function POCList() {
+function POCList({isDrawerOpen}) {
     const [POCs, setPOCs] = useState([]);
     const [Clients, setClients] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -27,7 +26,7 @@ function POCList() {
         client: '',
         status: '',
         targetDate: '',
-        comletedDate: '',
+        completedDate: '',
         document: ''
     });
     const [order, setOrder] = useState('asc'); // Order of sorting: 'asc' or 'desc'
@@ -38,7 +37,7 @@ function POCList() {
         client: '',
         status: '',
         targetDate: '',
-        comletedDate: '',
+        completedDate: '',
         document: ''
     }
     );
@@ -141,16 +140,20 @@ function POCList() {
 
         // Name field validation
         if (!currentPOC.title.trim()) {
-            validationErrors.title = "POC title cannot be empty or whitespace";
+            validationErrors.title = "POC title is required";
         } else if (POCs.some(tech => tech.title.toLowerCase() === currentPOC.title.toLowerCase() && tech.id !== currentPOC.id)) {
             validationErrors.title = "POC title must be unique";
         }
-
         // Department field validation 
         if (!currentPOC.client) {
-            validationErrors.client = "Please select a client";
+            validationErrors.client = "Client is required";
         }
-
+        if (!currentPOC.targetDate) {
+            validationErrors.targetDate = "TargetDate is required";
+        }
+        if (!currentPOC.completedDate) {
+            validationErrors.completedDate = "ComletedDate is required";
+        }
         // If there are validation errors, update the state and prevent save
         if (Object.keys(validationErrors).length > 0) {
             setErrors(validationErrors);
@@ -185,64 +188,41 @@ function POCList() {
     };
 
     const handleChange = (e) => {
-        const { title, value } = e.target;
-        setCurrentPOC({ ...currentPOC, [title]: value });
-        if (title === "client") {
+        const { name, value } = e.target;
+        setCurrentPOC({ ...currentPOC, [name]: value });
+
+        if (name === "title") {
             // Check if the title is empty or only whitespace
-            if (!value.trim()) {
-                setErrors((prevErrors) => ({ ...prevErrors, client: "" }));
+            if (value.length === 200) {
+                setErrors((prevErrors) => ({ ...prevErrors, title: "More than 200 characters are not allowed" }));
             }
-            // Check for uniqueness
-            else if (ProjectList.some(pro => pro.client.toLowerCase() === value.toLowerCase() && pro.id !== currentPOC.id)) {
-                setErrors((prevErrors) => ({ ...prevErrors, client: "" }));
+            // Clear the title error if valid
+            else {
+                setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
+            }    
+        }
+        if (name === "client") {
+            // Clear the speaker error if the user selects a value
+            if (value.length === 36) {
+                setErrors((prevErrors) => ({ ...prevErrors, client: "More than 36 characters are not allowed" }));
             }
             // Clear the title error if valid
             else {
                 setErrors((prevErrors) => ({ ...prevErrors, client: "" }));
+            }   
+        }    
+        if (name === "targetDate") {
+            // Clear the speaker error if the user selects a value
+            if (value) {
+                setErrors((prevErrors) => ({ ...prevErrors, targetDate: "" }));
             }
-        }
-
-        // if (name === "projectName") {
-        //     if (value) {
-        //         setErrors((prevErrors) => ({ ...prevErrors, projectName: "" }));
-        //     }
-        // }
-        // if (name === "technicalProjectManager") {
-        //     if (value) {
-        //         setErrors((prevErrors) => ({ ...prevErrors, technicalProjectManager: "" }));
-        //     }
-        // }
-
-        // if (name === "salesContact") {
-        //     if (value) {
-        //         setErrors((prevErrors) => ({ ...prevErrors, salesContact: "" }));
-        //     }
-        // }
-        // if (name === "pmo") {
-        //     if (value) {
-        //         setErrors((prevErrors) => ({ ...prevErrors, pmo: "" }));
-        //     }
-        // }
-        // if (name === "sowSubmittedDate") {
-        //     if (value) {
-        //         setErrors((prevErrors) => ({ ...prevErrors, sowSubmittedDate: "" }));
-        //     }
-        // }
-        // if (name === "sowSignedDate") {
-        //     if (value) {
-        //         setErrors((prevErrors) => ({ ...prevErrors, sowSignedDate: "" }));
-        //     }
-        // }
-        // if (name === "sowValidTill") {
-        //     if (value) {
-        //         setErrors((prevErrors) => ({ ...prevErrors, sowValidTill: "" }));
-        //     }
-        // }
-        // if (name === "sowLastExtendedDate") {
-        //     if (value) {
-        //         setErrors((prevErrors) => ({ ...prevErrors, sowLastExtendedDate: "" }));
-        //     }
-        // }
+        }  
+        if (name === "completedDate") {
+            // Clear the speaker error if the user selects a value
+            if (value) {
+                setErrors((prevErrors) => ({ ...prevErrors, completedDate: "" }));
+            }
+        }         
     };
 
     const handleClose = () => {
@@ -277,6 +257,12 @@ function POCList() {
             ...prevPOCs,
             targetDate: newDate ? newDate.toISOString() : "",
         }));
+        if (newDate) {
+            setErrors((prevErrors) => ({
+                ...prevErrors,
+                targetDate: "",
+            }));
+        }
     };
 
     const handleCompletedDateChange = (newDate) => {
@@ -284,6 +270,12 @@ function POCList() {
             ...prev,
             completedDate: newDate ? newDate.toISOString() : "",
         }));
+        if (newDate) {
+            setErrors((prevErrors) => ({
+                ...prevErrors,
+                completedDate: "",
+            }));
+        }
     };
 
 
@@ -296,11 +288,11 @@ function POCList() {
     }
 
     return (
-        <div>
-            <div style={{ display: 'flex' }}>
-                <h3>POC Table List</h3>
+        <div style={{ display: 'flex',flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 250 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
+            <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+                <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>POC Table List</h3>
             </div>
-            <div style={{ display: 'flex', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', marginBottom: '20px', width: '100%' }}>
                 <TextField
                     label="Search"
                     variant="outlined"
@@ -315,16 +307,14 @@ function POCList() {
                             </InputAdornment>
                         ),
                     }}
-                    style={{ marginRight: '20px', width: '90%' }}
+                    style={{ flexGrow: 1, marginRight: '10px' }}
                 />
-                <Button variant="contained" color="primary" onClick={handleAdd}>Add POC</Button>
+                <Button variant="contained" sx={{ backgroundColor: '#00aae7' }} onClick={handleAdd}>Add POC</Button>
             </div>
-
-            <TableContainer component={Paper}>
+            <TableContainer component={Paper} style={{ width: '100%' }}>
                 <Table>
                     <TableHead>
                         <TableRow>
-                            {/* Sorting logic */}
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'title'}
@@ -454,7 +444,6 @@ function POCList() {
                         ))}
                     </TableBody>
                 </Table>
-                {/* Pagination Component */}
                 <PaginationComponent
                     count={filteredPOCs.length}
                     page={page}
@@ -463,20 +452,23 @@ function POCList() {
                     handleRowsPerPageChange={handleRowsPerPageChange}
                 />
             </TableContainer>
-
-            {/* Dialogs for adding/editing and confirming delete */}
             <Dialog open={open} onClose={() => setOpen(false)}>
                 <DialogTitle>{currentPOC.id ? 'Update POC' : 'Add POC'}</DialogTitle>
                 <DialogContent>
+                    <InputLabel>POC Title</InputLabel>
                     <TextField
                         margin="dense"
                         name="title"
-                        label="POC Title"
                         value={currentPOC.title}
-                        onChange={handleChange}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            if (/^[A-Za-z\s]*$/.test(value))
+                                handleChange(e);
+                        }}
                         fullWidth
                         error={!!errors.title} // Display error if exists
                         helperText={errors.title}
+                        inputProps={{maxlength: 200}}
                     />
                     <InputLabel>Client</InputLabel>
                     <Select
@@ -486,6 +478,7 @@ function POCList() {
                         onChange={handleChange}
                         fullWidth
                         error={!!errors.client}
+                        inputProps={{maxLength: 36}}
                     >
                         {Clients.map((client) => (
                             <MenuItem key={client.id} value={client.name}>
@@ -494,40 +487,40 @@ function POCList() {
                         ))}
                     </Select>
                     {errors.client && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.client}</Typography>}
+                    <InputLabel>TargetDate</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                            label="TargetDate"
+                        className='date'
                             value={currentPOC.targetDate ? dayjs(currentPOC.targetDate) : null}
                             onChange={handleTargetDateChange}
                             renderInput={(params) => (
-                                <TextField {...params} fullWidth margin="dense"
-                                    error={!!errors.targetDate} />
+                                <TextField {...params} fullWidth margin="dense" />
                             )}
                         />
                     </LocalizationProvider>
                     {errors.targetDate && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.targetDate}</Typography>}
+                    <InputLabel>CompletedDate</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                            label="CompletedDate"
+                       className='date'
                             value={currentPOC.completedDate ? dayjs(currentPOC.completedDate) : null}
                             onChange={handleCompletedDateChange}
                             renderInput={(params) => (
-                                <TextField {...params} fullWidth margin="dense"
-                                    error={!!errors.completedDate} />
+                                <TextField {...params} fullWidth margin="dense" />
                             )}
                         />
                     </LocalizationProvider>
                     {errors.completedDate && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.completedDate}</Typography>}
+                    <InputLabel>POC Document</InputLabel>
                     <TextField
                         margin="dense"
                         name="document"
-                        label="POC Document"
                         value={currentPOC.document}
                         onChange={handleChange}
                         fullWidth
                         error={!!errors.document} // Display error if exists
                         helperText={errors.document}
-                    />
+                    />                    
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleClose}>Cancel</Button>

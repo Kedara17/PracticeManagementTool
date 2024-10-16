@@ -11,7 +11,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import '../App.css';
 
-function WebinarList() {
+function WebinarList({isDrawerOpen}) {
     const [Webinars, setWebinars] = useState([]);
     const [Employees, setEmployees] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -134,23 +134,23 @@ function WebinarList() {
 
         // Title field validation
         if (!currentWebinar.title.trim()) {
-            validationErrors.title = "Webinar title cannot be empty or whitespace";
+            validationErrors.title = "Title is required";
         } else if (Webinars.some(web => web.title.toLowerCase() === currentWebinar.title.toLowerCase() && web.id !== currentWebinar.id)) {
-            validationErrors.title = "Webinar title must be unique";
+            validationErrors.title = "Title must be unique";
         }
 
         // Speaker field validation
         if (!currentWebinar.speaker) {
-            validationErrors.speaker = "Please select a speaker";
+            validationErrors.speaker = "Speaker is required";
         }
         if (!currentWebinar.status) {
-            validationErrors.status = "Please select a status";
+            validationErrors.status = "Status is required";
         }
         if (!currentWebinar.webinarDate) {
-            validationErrors.WebinarDate = "Please select a WebinarDate";
+            validationErrors.WebinarDate = "WebinarDate is required";
         }
         if (!currentWebinar.numberOfAudience) {
-            validationErrors.numberOfAudience = "Please select a numberOfAudience";
+            validationErrors.numberOfAudience = "NumberOfAudience is required";
         }
 
         // If there are validation errors, update the state and prevent save
@@ -192,6 +192,7 @@ function WebinarList() {
     const handleChange = (e) => {
         const { name, value } = e.target;
         setCurrentWebinar({ ...currentWebinar, [name]: value });
+
         if (name === "title") {
             // Check if the title is empty or only whitespace
             if (!value.trim()) {
@@ -200,13 +201,14 @@ function WebinarList() {
             // Check for uniqueness
             else if (Webinars.some(web => web.title.toLowerCase() === value.toLowerCase() && web.id !== currentWebinar.id)) {
                 setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
+            }else if (value.length === 200) {
+                setErrors((prevErrors) => ({ ...prevErrors, title: "More than 200 characters are not allowed" }));
             }
             // Clear the title error if valid
             else {
                 setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
             }
         }
-
         if (name === "speaker") {
             // Clear the speaker error if the user selects a value
             if (value) {
@@ -215,11 +217,14 @@ function WebinarList() {
         }
         if (name === "status") {
             // Clear the status error if the user selects a value
-            if (value) {
+            if (value.length === 50) {
+                setErrors((prevErrors) => ({ ...prevErrors, status: "More than 50 characters are not allowed" }));
+            }
+            // Clear the title error if valid
+            else {
                 setErrors((prevErrors) => ({ ...prevErrors, status: "" }));
             }
         }
-
         if (name === "numberOfAudience") {
             // Clear the numberOfAudience error if the user selects a value
             if (value) {
@@ -282,11 +287,11 @@ function WebinarList() {
     }
 
     return (
-        <div>
-            <div style={{ display: 'flex' }}>
-                <h3>Webinar Table List</h3>
+        <div style={{ display: 'flex',flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 250 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
+            <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+                <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>Webinar Table List</h3>
             </div>
-            <div style={{ display: 'flex', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', marginBottom: '20px', width: '100%' }}>
                 <TextField
                     label="Search"
                     variant="outlined"
@@ -301,11 +306,11 @@ function WebinarList() {
                             </InputAdornment>
                         ),
                     }}
-                    style={{ marginRight: '20px', width: '90%' }}
+                    style={{ flexGrow: 1, marginRight: '10px' }}
                 />
-                <Button variant="contained" color="primary" onClick={handleAdd}>Add Webinar</Button>
+                <Button variant="contained" sx={{ backgroundColor: '#00aae7' }} onClick={handleAdd}>Add Webinar</Button>
             </div>
-            <TableContainer component={Paper}>
+            <TableContainer component={Paper} style={{ width: '100%' }}>
                 <Table>
                     <TableHead>
                         <TableRow>
@@ -445,15 +450,20 @@ function WebinarList() {
             <Dialog open={open} onClose={() => setOpen(false)}>
                 <DialogTitle>{currentWebinar.id ? 'Update Webinar' : 'Add Webinar'}</DialogTitle>
                 <DialogContent>
+                    <InputLabel>Title</InputLabel>
                     <TextField
                         margin="dense"
-                        label="Title"
                         name="title"
                         value={currentWebinar.title}
-                        onChange={handleChange}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            if (/^[A-Za-z\s]*$/.test(value))
+                                handleChange(e);
+                        }}
                         fullWidth
                         error={!!errors.title}
                         helperText={errors.title}
+                        inputProps={{ maxlength: 200 }}
                     />
                     <InputLabel>Speaker</InputLabel>
                     <Select
@@ -488,24 +498,33 @@ function WebinarList() {
                         ))}
                     </Select>
                     {errors.status && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.status}</Typography>}
+                    <InputLabel>WebinarDate</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                            label="WebinarDate"
+                        className='date'
                             value={currentWebinar.webinarDate ? dayjs(currentWebinar.webinarDate) : null}
                             onChange={handleWebinarDateChange}
                             fullWidth
                             minDate={dayjs()}
-                            slots={{ textField: (params) => <TextField {...params} /> }}
+                            renderInput={(params) => (
+                                <TextField {...params} fullWidth margin="dense" />
+                            )}
                         />
                     </LocalizationProvider>
                     {errors.WebinarDate && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.WebinarDate}</Typography>}
+                    <InputLabel>NumberOfAudience</InputLabel>
                     <TextField
-                        type='number'
+                        type="text"  // Keep the type as 'text' for full control over input
                         margin="dense"
-                        label="NumberOfAudience"
                         name="numberOfAudience"
                         value={currentWebinar.numberOfAudience}
-                        onChange={handleChange}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            // Allow only digits (numbers) and prevent letters and special characters
+                            if (/^\d*$/.test(value)) {
+                                handleChange(e); // Only update if the value is valid (numbers only)
+                            }
+                        }}
                         fullWidth
                         error={!!errors.numberOfAudience} // Display error if exists
                         helperText={errors.numberOfAudience}
@@ -525,8 +544,8 @@ function WebinarList() {
                     <Typography>Are you sure you want to delete this Webinar?</Typography>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleConfirmClose}>No</Button>
-                    <Button onClick={handleConfirmYes} color="error">Yes</Button>
+                    <Button onClick={handleConfirmClose}>Cancel</Button>
+                    <Button onClick={handleConfirmYes} color="error">Ok</Button>
                 </DialogActions>
             </Dialog>
         </div>

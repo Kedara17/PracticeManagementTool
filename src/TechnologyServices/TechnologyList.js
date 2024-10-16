@@ -5,9 +5,8 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 import PaginationComponent from '../Components/PaginationComponent'; // Import your PaginationComponent
-import ProjectList from '../ProjectServices/ProjectList';
 
-function TechnologyList() {
+function TechnologyList({isDrawerOpen}) {
     const [technologies, setTechnologies] = useState([]);
     const [loading, setLoading] = useState(true);
     const [departments, setDepartments] = useState([]);
@@ -115,14 +114,14 @@ function TechnologyList() {
 
         // Name field validation
         if (!currentTechnology.name.trim()) {
-            validationErrors.name = "Technology name cannot be empty or whitespace";
+            validationErrors.name = "Name is required";
         } else if (technologies.some(tech => tech.name.toLowerCase() === currentTechnology.name.toLowerCase() && tech.id !== currentTechnology.id)) {
-            validationErrors.name = "Technology name must be unique";
+            validationErrors.name = "Name must be unique";
         }
 
         // Department field validation 
         if (!currentTechnology.department) {
-            validationErrors.department = "Please select a department";
+            validationErrors.department = "Department is required";
         }
 
         // If there are validation errors, update the state and prevent save
@@ -156,7 +155,7 @@ function TechnologyList() {
                 });
         }
         setOpen(false);
-    };
+    };    
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -169,6 +168,8 @@ function TechnologyList() {
             // Check for uniqueness
             else if (technologies.some(tech => tech.client === value && tech.id !== currentTechnology.id)) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
+            }else if (value.length === 50) {
+                setErrors((prevErrors) => ({ ...prevErrors, name: "More than 50 characters are not allowed" }));
             }
             // Clear the title error if valid
             else {
@@ -220,9 +221,9 @@ function TechnologyList() {
     }
 
     return (
-        <div>
-            <div style={{ display: 'flex' }}>
-                <h3>Technology Table List</h3>
+        <div style={{ display: 'flex',flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 250 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
+            <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+                <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>Technology Table List</h3>
             </div>
             <div style={{ display: 'flex', marginBottom: '20px' }}>
                 <TextField
@@ -239,12 +240,12 @@ function TechnologyList() {
                             </InputAdornment>
                         ),
                     }}
-                    style={{ marginRight: '20px', width: '90%' }}
+                    style={{ flexGrow: 1, marginRight: '10px' }}
                 />
-                <Button variant="contained" color="primary" onClick={handleAdd}>Add Technology</Button>
+                <Button variant="contained" sx={{ backgroundColor: '#00aae7' }} onClick={handleAdd}>Add Technology</Button>
             </div>
 
-            <TableContainer component={Paper}>
+            <TableContainer component={Paper} style={{ width: '100%' }}>
                 <Table>
                     <TableHead>
                         <TableRow>
@@ -321,7 +322,7 @@ function TechnologyList() {
                                 sx={{ backgroundColor: technology.isActive ? 'inherit' : '#FFCCCB' }} >
                                 <TableCell>{technology.name}</TableCell>
                                 <TableCell>{technology.department}</TableCell>
-                                <TableCell>{technology.isActive ? 'Yes' : 'No'}</TableCell>
+                                <TableCell>{technology.isActive ? 'Active' : 'Inactive'}</TableCell>
                                 <TableCell>{technology.createdBy}</TableCell>
                                 <TableCell>{new Date(technology.createdDate).toLocaleDateString()}</TableCell>
                                 <TableCell>{technology.updatedBy || 'N/A'}</TableCell>
@@ -352,15 +353,20 @@ function TechnologyList() {
             <Dialog open={open} onClose={() => setOpen(false)}>
                 <DialogTitle>{currentTechnology.id ? 'Update Technology' : 'Add Technology'}</DialogTitle>
                 <DialogContent>
+                <InputLabel>Name</InputLabel>
                     <TextField
                         margin="dense"
-                        name="name"
-                        label="Technology Name"
+                        name="name"                     
                         value={currentTechnology.name}
-                        onChange={handleChange}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            if (/^[A-Za-z\s]*$/.test(value))
+                                handleChange(e);
+                        }}
                         fullWidth
                         error={!!errors.name} // Display error if exists
                         helperText={errors.name}
+                        inputProps={{maxLength: 50}}
                     />
                     <InputLabel>Department</InputLabel>
                     <Select

@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment, InputLabel } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 import PaginationComponent from '../Components/PaginationComponent'; // Import your PaginationComponent
 
-function SOWStatusList() {
+function SOWStatusList({isDrawerOpen}) {
     const [SOWStatus, setSOWStatus] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -95,7 +95,7 @@ function SOWStatusList() {
 
         // Name field validation
         if (!currentSOWStatus.status.trim()) {
-            validationErrors.status = "Status cannot be empty or whitespace";
+            validationErrors.status = "Status is required";
         } else if (SOWStatus.some(stat => stat.status === currentSOWStatus.status && stat.id !== currentSOWStatus.id)) {
             validationErrors.status = "Status must be unique";
         }
@@ -137,24 +137,26 @@ function SOWStatusList() {
         setOpen(false);
 
     };
-
+  
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setCurrentSOWStatus({ ...currentSOWStatus, [name]: value });
+        setCurrentSOWStatus({ ...currentSOWStatus, [name]: value });    
         if (name === "status") {
             // Check if the name is empty or only whitespace
             if (!value.trim()) {
                 setErrors((prevErrors) => ({ ...prevErrors, status: "" }));
-            }
+            } 
             // Check for uniqueness
             else if (SOWStatus.some(stat => stat.name === value && stat.id !== currentSOWStatus.id)) {
                 setErrors((prevErrors) => ({ ...prevErrors, status: "" }));
+            } else if (value.length === 50) {
+                setErrors((prevErrors) => ({ ...prevErrors, status: "More than 50 characters are not allowed" }));
             }
             // Clear the name error if valid
             else {
                 setErrors((prevErrors) => ({ ...prevErrors, status: "" }));
             }
-        }
+        }   
     };
 
     const handleClose = () => {
@@ -193,11 +195,11 @@ function SOWStatusList() {
     }
 
     return (
-        <div>
-            <div style={{ display: 'flex' }}>
-                <h3>SOWStatus Table List</h3>
+        <div style={{ display: 'flex',flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 250 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
+            <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+                <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>SOW Status Table List</h3>
             </div>
-            <div style={{ display: 'flex', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', marginBottom: '20px', width: '100%' }}>
                 <TextField
                     label="Search"
                     variant="outlined"
@@ -212,11 +214,11 @@ function SOWStatusList() {
                             </InputAdornment>
                         ),
                     }}
-                    style={{ marginRight: '20px', width: '90%' }}
+                    style={{ flexGrow: 1, marginRight: '10px' }}
                 />
-                <Button variant="contained" color="primary" onClick={handleAdd}>Add SOWStatus</Button>
+                <Button variant="contained" sx={{ backgroundColor: '#00aae7' }} onClick={handleAdd}>Add SOW Status</Button>
             </div>
-            <TableContainer component={Paper}>
+            <TableContainer component={Paper} style={{ width: '100%' }}>
                 <Table>
                     <TableHead>
                         <TableRow>
@@ -310,15 +312,20 @@ function SOWStatusList() {
             <Dialog open={open} onClose={() => setOpen(false)}>
                 <DialogTitle>{currentSOWStatus.id ? 'Update SOWStatus' : 'Add SOWStatus'}</DialogTitle>
                 <DialogContent>
+                    <InputLabel>Status</InputLabel>
                     <TextField
                         margin="dense"
-                        label="Status"
                         name="status"
                         value={currentSOWStatus.status}
-                        onChange={handleChange}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            if (/^[A-Za-z\s]*$/.test(value))
+                                handleChange(e);
+                        }}
                         fullWidth
                         error={!!errors.status} // Display error if exists
                         helperText={errors.status}
+                        inputProps={{maxLength: 50}}
                     />
                 </DialogContent>
                 <DialogActions>
@@ -332,11 +339,11 @@ function SOWStatusList() {
             <Dialog open={confirmOpen} onClose={handleConfirmClose}>
                 <DialogTitle>Confirm Delete</DialogTitle>
                 <DialogContent>
-                    <Typography>Are you sure you want to delete this sowStatus?</Typography>
+                    <Typography>Are you sure you want to delete this SOW Status?</Typography>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleConfirmClose}>No</Button>
-                    <Button onClick={handleConfirmYes} color="error">Yes</Button>
+                    <Button onClick={handleConfirmClose}>Cancel</Button>
+                    <Button onClick={handleConfirmYes} color="error">Ok</Button>
                 </DialogActions>
             </Dialog>
         </div>

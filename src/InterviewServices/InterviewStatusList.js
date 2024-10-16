@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment, InputLabel } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 import PaginationComponent from '../Components/PaginationComponent'; // Import your PaginationComponent
 
-function InterviewStatusList() {
+function InterviewStatusList({isDrawerOpen}) {
     const [InterviewStatus, setInterviewStatus] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -94,7 +94,7 @@ function InterviewStatusList() {
         let validationErrors = {};
 
         if (!currentInterviewStatus.status.trim()) {
-            validationErrors.status = "Please select a status";
+            validationErrors.status = "Status is required";
         }
 
         // If there are validation errors, update the state and prevent save
@@ -136,14 +136,18 @@ function InterviewStatusList() {
         setOpen(false);
 
     };
-
+   
     const handleChange = (e) => {
         const { name, value } = e.target;
         setCurrentInterviewStatus({ ...currentInterviewStatus, [name]: value });
         if (name === "status") {
-            if (value) {
-                setErrors((prevErrors) => ({ ...prevErrors, status: "" }));
+            if (value.length === 50) {
+                setErrors((prevErrors) => ({ ...prevErrors, status: "More than 50 characters are not allowed" }));
             }
+            // Clear the title error if valid
+            else {
+                setErrors((prevErrors) => ({ ...prevErrors, status: "" }));
+            }        
         }
     };
 
@@ -184,11 +188,11 @@ function InterviewStatusList() {
     }
 
     return (
-        <div>
-            <div style={{ display: 'flex' }}>
-                <h3>InterviewStatus Table List</h3>
+        <div style={{ display: 'flex',flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 250 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
+            <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+                <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>Interview Status Table List</h3>
             </div>
-            <div style={{ display: 'flex', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', marginBottom: '20px', width: '100%' }}>
                 <TextField
                     label="Search"
                     variant="outlined"
@@ -203,11 +207,11 @@ function InterviewStatusList() {
                             </InputAdornment>
                         ),
                     }}
-                    style={{ marginRight: '20px', width: '90%' }}
+                    style={{ flexGrow: 1, marginRight: '10px' }}
                 />
-                <Button variant="contained" color="primary" onClick={handleAdd}>Add InterviewStatus</Button>
+                <Button variant="contained" sx={{ backgroundColor: '#00aae7' }} onClick={handleAdd}>Add Interview Status</Button>
             </div>
-            <TableContainer component={Paper}>
+            <TableContainer component={Paper} style={{ width: '100%' }}>
                 <Table>
                     <TableHead>
                         <TableRow>
@@ -302,15 +306,20 @@ function InterviewStatusList() {
             <Dialog open={open} onClose={() => setOpen(false)}>
                 <DialogTitle>{currentInterviewStatus.id ? 'Update InterviewStatus' : 'Add InterviewStatus'}</DialogTitle>
                 <DialogContent>
+                    <InputLabel>Status</InputLabel>
                     <TextField
                         margin="dense"
-                        label="Status"
                         name="status"
                         value={currentInterviewStatus.status}
-                        onChange={handleChange}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            if (/^[A-Za-z\s]*$/.test(value))
+                                handleChange(e);
+                        }}
                         fullWidth
                         error={!!errors.status}
                         helperText={errors.status}
+                        inputProps={{maxLength: 50}}
                     />
                 </DialogContent>
                 <DialogActions>
@@ -327,8 +336,8 @@ function InterviewStatusList() {
                     <Typography>Are you sure you want to delete this InterviewStatus?</Typography>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleConfirmClose}>No</Button>
-                    <Button onClick={handleConfirmYes} color="error">Yes</Button>
+                    <Button onClick={handleConfirmClose}>Cancel</Button>
+                    <Button onClick={handleConfirmYes} color="error">Ok</Button>
                 </DialogActions>
             </Dialog>
         </div>

@@ -6,7 +6,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 import PaginationComponent from '../Components/PaginationComponent'; // Import your PaginationComponent
 
-function ClientContactList() {
+function ClientContactList({isDrawerOpen}) {
     const [ClientContact, setClientContact] = useState([]);
     const [Clients, setClient] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -118,7 +118,7 @@ function ClientContactList() {
 
         // Name field validation
         if (!currentClientContact.contactValue.trim()) {
-            validationErrors.contactValue = "ContactValue cannot be empty or whitespace";
+            validationErrors.contactValue = "ContactValue is required";
         } else if (ClientContact.some(conval => conval.contactValue.toLowerCase() === currentClientContact.contactValue.toLowerCase() && conval.id !== currentClientContact.id)) {
             validationErrors.contactValue = "ContactValue must be unique";
         }
@@ -127,7 +127,7 @@ function ClientContactList() {
         }
 
         if (!currentClientContact.contactType.trim()) {
-            validationErrors.contactType = "contactType cannot be empty or whitespace";
+            validationErrors.contactType = "contactType is required";
         } else if (ClientContact.some(conval => conval.contactType === currentClientContact.contactType && conval.id !== currentClientContact.id)) {
             validationErrors.contactType = "contactType must be unique";
         }
@@ -136,7 +136,7 @@ function ClientContactList() {
         }
 
         if (!currentClientContact.client) {
-            validationErrors.client = "Please select a client";
+            validationErrors.client = "Client is required";
         }
 
         // If there are validation errors, update the state and prevent save
@@ -190,6 +190,8 @@ function ClientContactList() {
             // Check for uniqueness
             else if (ClientContact.some(conval => conval.contactValue && conval.contactValue.toLowerCase() === value.toLowerCase() && conval.id !== currentClientContact.id)) {
                 setErrors((prevErrors) => ({ ...prevErrors, contactValue: "Contact value must be unique" }));
+            }else if (value.length === 50) {
+                setErrors((prevErrors) => ({ ...prevErrors, contactValue: "More than 50 characters are not allowed" }));
             }
             // Clear the name error if valid
             else {
@@ -206,6 +208,8 @@ function ClientContactList() {
             // Check for uniqueness
             else if (Clients.some(contyp => contyp.contactType && contyp.contactType.toLowerCase() === value.toLowerCase() && contyp.id !== currentClientContact.id)) {
                 setErrors((prevErrors) => ({ ...prevErrors, contactType: "Contact type must be unique" }));
+            }else if (value.length === 50) {
+                setErrors((prevErrors) => ({ ...prevErrors, contactType: "More than 50 characters are not allowed" }));
             }
             // Clear the name error if valid
             else {
@@ -260,11 +264,11 @@ function ClientContactList() {
     }
 
     return (
-        <div>
-            <div style={{ display: 'flex' }}>
-                <h3>ClientContact Table List</h3>
+        <div style={{ display: 'flex',flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 250 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
+            <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+                <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>Client Contact Table List</h3>
             </div>
-            <div style={{ display: 'flex', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', marginBottom: '20px', width: '100%' }}>
                 <TextField
                     label="Search"
                     variant="outlined"
@@ -279,11 +283,11 @@ function ClientContactList() {
                             </InputAdornment>
                         ),
                     }}
-                    style={{ marginRight: '20px', width: '90%' }}
+                    style={{ flexGrow: 1, marginRight: '10px' }}
                 />
-                <Button variant="contained" color="primary" onClick={handleAdd}>Add ClientContact</Button>
+                <Button variant="contained" sx={{ backgroundColor: '#00aae7' }} onClick={handleAdd}>Add Client Contact</Button>
             </div>
-            <TableContainer component={Paper}>
+            <TableContainer component={Paper} style={{ width: '100%' }}>
                 <Table>
                     <TableHead>
                         <TableRow>
@@ -416,25 +420,27 @@ function ClientContactList() {
                         ))}
                     </Select>
                     {errors.client && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.client}</Typography>}
+                    <InputLabel>ContactValue</InputLabel>
                     <TextField
                         margin="dense"
-                        label="ContactValue"
                         name="contactValue"
                         value={currentClientContact.contactValue}
                         onChange={handleChange}
                         fullWidth
                         error={!!errors.contactValue} // Display error if exists
                         helperText={errors.contactValue}
+                        inputProps={{maxLength: 50}}
                     />
+                    <InputLabel>ContactType</InputLabel>
                     <TextField
                         margin="dense"
-                        label="ContactType"
                         name="contactType"
                         value={currentClientContact.contactType}
                         onChange={handleChange}
                         fullWidth
                         error={!!errors.contactType} // Display error if exists
                         helperText={errors.contactType}
+                        inputProps={{maxLength: 50}}
                     />
                 </DialogContent>
                 <DialogActions>
@@ -451,8 +457,8 @@ function ClientContactList() {
                     <Typography>Are you sure you want to delete this clientContact?</Typography>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleConfirmClose}>No</Button>
-                    <Button onClick={handleConfirmYes} color="error">Yes</Button>
+                    <Button onClick={handleConfirmClose}>Cancel</Button>
+                    <Button onClick={handleConfirmYes} color="error">Ok</Button>
                 </DialogActions>
             </Dialog>
         </div>
