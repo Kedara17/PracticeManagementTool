@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Select, MenuItem, Table, InputLabel, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment, Switch } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import UndoIcon from '@mui/icons-material/Undo';
 import SearchIcon from '@mui/icons-material/Search';
 import PaginationComponent from '../Components/PaginationComponent'; // Import your PaginationComponent
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -21,6 +22,9 @@ function BlogsList({isDrawerOpen}) {
     const [deleteTechId, setDeleteTechId] = useState(null);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [undoConfirmOpen, setUndoConfirmOpen] = useState(false);
+    const [unauthorizedOpen, setUnauthorizedOpen] = useState(false); // State for unauthorized access dialog
+    const [selectedBlog, setSelectedBlog] = useState(null); // To store the blog being undone
     const [isAdmin, setIsAdmin] = useState(true); // Assume isAdmin is determined by login/auth
     const [currentBlogs, setCurrentBlogs] = useState({
         title: '',
@@ -80,6 +84,32 @@ function BlogsList({isDrawerOpen}) {
         setOrderBy(property);
     };
 
+    const handleUndoClick = (blog) => {
+        const userRole = localStorage.getItem('userRole'); // Get the role from localStorage
+    
+        if (userRole !== 'Admin') {
+            setUnauthorizedOpen(true); // Show unauthorized dialog for non-admins
+            return;
+        }
+    
+        setSelectedBlog(blog); // For admins, store the blog
+        setUndoConfirmOpen(true); // Open the confirmation dialog for admins
+    };
+
+    const handleUndoConfirm = async () => {
+        if (!isAdmin) {
+            alert('You cannot access to activate the record.'); // Simple alert for non-admins
+            setUndoConfirmOpen(false); // Close the undo dialog
+            return;
+        }
+    
+        if (selectedBlog) {
+            await handleToggleActive(selectedBlog); // Toggle the active state if admin
+        }
+        setUndoConfirmOpen(false); // Close the dialog
+        setSelectedBlog(null); // Clear the selected blog
+    };
+    
     const handleToggleActive = async (blog) => {
         try {
             const updatedBlog = { ...blog, isActive: !blog.isActive };
@@ -132,18 +162,20 @@ function BlogsList({isDrawerOpen}) {
     };
 
     const handleDelete = (id) => {
-        // axios.delete(`http://localhost:5147/api/Blogs/${id}`)
-        //axios.delete(`http://172.17.31.61:5174/api/blogs/${id}`)
         axios.patch(`http://172.17.31.61:5174/api/blogs/${id}`)
             .then(response => {
-                setBlogs(blogs.filter(tech => tech.id !== id));
+                // Find the deleted record and mark it as inactive in the local state
+                setBlogs(blogs.map((blog) => 
+                    blog.id === id ? { ...blog, isActive: false } : blog
+                ));
             })
             .catch(error => {
-                console.error('There was an error deleting the Blogs!', error);
+                console.error('There was an error deleting the blog!', error);
                 setError(error);
             });
-        setConfirmOpen(false);
+        setConfirmOpen(false); // Close the confirmation dialog
     };
+    
 
     const handleSave = () => {
         let validationErrors = {};
@@ -370,8 +402,6 @@ function BlogsList({isDrawerOpen}) {
                 <Table>
                     <TableHead>
                         <TableRow>
-                            {/* <TableCell>ID</TableCell> */}
-                            {/* Sorting logic */}
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'title'}
@@ -485,8 +515,8 @@ function BlogsList({isDrawerOpen}) {
                                 <TableCell>{Blogs.targetDate}</TableCell>
                                 <TableCell>{Blogs.completedDate}</TableCell>
                                 <TableCell>{Blogs.publishedDate}</TableCell>
-                                <TableCell>{Blogs.isActive ? 'Active' : 'Inactive'}</TableCell>
-                                {/* <TableCell>
+                                {/* <TableCell>{Blogs.isActive ? 'Active' : 'Inactive'}</TableCell> */}
+                                <TableCell>
                                     {isAdmin && (
                                         <Switch
                                             checked={Blogs.isActive}
@@ -494,19 +524,26 @@ function BlogsList({isDrawerOpen}) {
                                             color="primary"
                                         />
                                     )}
-                                </TableCell> */}
+                                </TableCell>
                                 <TableCell>{Blogs.createdBy}</TableCell>
                                 <TableCell>{new Date(Blogs.createdDate).toLocaleString()}</TableCell>
                                 <TableCell>{Blogs.updatedBy || 'N/A'}</TableCell>
                                 <TableCell>{new Date(Blogs.updatedDate).toLocaleString() || 'N/A'}</TableCell>
-                                <TableCell >
+                                <TableCell>
+                                    {Blogs.isActive ? (
+                                    <>
                                     <IconButton onClick={() => handleUpdate(Blogs)}>
-                                        {/* <IconButton onClick={() => setOpen(true)}> */}
                                         <EditIcon color="primary" />
                                     </IconButton>
                                     <IconButton onClick={() => confirmDelete(Blogs.id)}>
                                         <DeleteIcon color="error" />
                                     </IconButton>
+                                        </>
+                                        ) : (
+                                    <IconButton onClick={() => handleUndoClick(Blogs)}>
+                                        <UndoIcon color="action" />
+                                    </IconButton>      
+                                    )}
                                 </TableCell>
                             </TableRow>
                         ))}
@@ -628,6 +665,25 @@ function BlogsList({isDrawerOpen}) {
                 <DialogActions>
                     <Button onClick={handleConfirmClose}>Cancel</Button>
                     <Button onClick={handleConfirmYes} color="error">Ok</Button>
+                </DialogActions>
+            </Dialog>
+            <Dialog open={undoConfirmOpen} onClose={() => setUndoConfirmOpen(false)}>
+                <DialogTitle>Undo Confirmation</DialogTitle>
+                <DialogContent>
+                    <Typography>Are you sure you want to undo to the respective state?</Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setUndoConfirmOpen(false)}>Cancel</Button>
+                    <Button onClick={handleUndoConfirm} color="primary">Confirm</Button>
+                </DialogActions>
+            </Dialog>
+            <Dialog open={unauthorizedOpen} onClose={() => setUnauthorizedOpen(false)}>
+                <DialogTitle>Access Denied</DialogTitle>
+                <DialogContent>
+                    <Typography>Only Admins have access to activate the record.</Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setUnauthorizedOpen(false)}>Ok</Button>
                 </DialogActions>
             </Dialog>
         </div>
