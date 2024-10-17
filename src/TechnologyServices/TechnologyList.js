@@ -20,7 +20,7 @@ function TechnologyList({isDrawerOpen}) {
         name: '',
         department: '',
     });
-    const [order, setOrder] = useState('asc'); // Order of sorting: 'asc' or 'desc'
+    const [order, setOrder] = useState('desc'); // Order of sorting: 'asc' or 'desc'
     const [orderBy, setOrderBy] = useState('createdDate'); // Column to sort by
     const [searchQuery, setSearchQuery] = useState(''); // State for search query
     const [errors, setErrors] = useState({
@@ -32,7 +32,6 @@ function TechnologyList({isDrawerOpen}) {
     useEffect(() => {
         const fetchTechnologies = async () => {
             try {
-                // const techResponse = await axios.get('http://localhost:5574/api/Technology');
                 const techResponse = await axios.get('http://172.17.31.61:5274/api/technology');
                 setTechnologies(techResponse.data);
             } catch (error) {
@@ -44,7 +43,6 @@ function TechnologyList({isDrawerOpen}) {
 
         const fetchDepartments = async () => {
             try {
-                // const deptResponse = await axios.get('http://localhost:5560/api/Department');
                 const deptResponse = await axios.get('http://172.17.31.61:5160/api/department');
                 setDepartments(deptResponse.data);
             } catch (error) {
@@ -58,8 +56,8 @@ function TechnologyList({isDrawerOpen}) {
     }, []);
 
     const handleSort = (property) => {
-        const isAsc = orderBy === property && order === 'asc';
-        setOrder(isAsc ? 'desc' : 'asc');
+        const isDesc = orderBy === property && order === 'desc';
+        setOrder(isDesc ? 'asc' : 'desc');
         setOrderBy(property);
     };
 
@@ -68,9 +66,17 @@ function TechnologyList({isDrawerOpen}) {
         const valueB = b[orderBy] || '';
 
         if (typeof valueA === 'string' && typeof valueB === 'string') {
-            return order === 'asc' ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
+            return order === 'desc'
+                ? valueB.localeCompare(valueA)
+                : valueA.localeCompare(valueB);
+        } else if (valueA instanceof Date && valueB instanceof Date) {
+            return order === 'desc'
+                ? valueB - valueA
+                : valueA - valueB;
         } else {
-            return order === 'asc' ? (valueA > valueB ? 1 : -1) : (valueB > valueA ? 1 : -1);
+            return order === 'desc'
+                ? (valueA > valueB ? 1 : -1)
+                : (valueB > valueA ? 1 : -1);
         }
     });
 
@@ -96,8 +102,6 @@ function TechnologyList({isDrawerOpen}) {
     };
 
     const handleDelete = (id) => {
-        // axios.delete(`http://localhost:5574/api/Technology/${id}`)
-        // axios.delete(`http://172.17.31.61:5274/api/technology/${id}`)
         axios.patch(`http://172.17.31.61:5274/api/technology/${id}`)
             .then(response => {
                 setTechnologies(technologies.filter(tech => tech.id !== id));
@@ -109,7 +113,7 @@ function TechnologyList({isDrawerOpen}) {
         setConfirmOpen(false);
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         let validationErrors = {};
 
         // Name field validation
@@ -134,25 +138,13 @@ function TechnologyList({isDrawerOpen}) {
         setErrors({});
 
         if (currentTechnology.id) {
-            // axios.put(`http://localhost:5574/api/Technology/${currentTechnology.id}`, currentTechnology)
-            axios.put(`http://172.17.31.61:5274/api/technology/${currentTechnology.id}`, currentTechnology)
-                .then(response => {
-                    setTechnologies(technologies.map(tech => tech.id === currentTechnology.id ? response.data : tech));
-                })
-                .catch(error => {
-                    console.error('There was an error updating the technology!', error);
-                    setError(error);
-                });
+            await axios.put(`http://172.17.31.61:5274/api/technology/${currentTechnology.id}`, currentTechnology)
+            const response = await axios.get('http://172.17.31.61:5274/api/technology');
+            setTechnologies(response.data);
         } else {
-            // axios.post('http://localhost:5574/api/Technology', currentTechnology)
-            axios.post('http://172.17.31.61:5274/api/technology', currentTechnology)
-                .then(response => {
-                    setTechnologies([...technologies, response.data]);
-                })
-                .catch(error => {
-                    console.error('There was an error adding the technology!', error);
-                    setError(error);
-                });
+            await axios.post('http://172.17.31.61:5274/api/technology', currentTechnology)
+            const response = await axios.get('http://172.17.31.61:5274/api/technology');
+            setTechnologies(response.data);
         }
         setOpen(false);
     };    
@@ -253,7 +245,7 @@ function TechnologyList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'name'}
-                                    direction={orderBy === 'name' ? order : 'asc'}
+                                    direction={orderBy === 'name' ? order : 'desc'}
                                     onClick={() => handleSort('name')}
                                 >
                                     <b>Name</b>
@@ -262,7 +254,7 @@ function TechnologyList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'department'}
-                                    direction={orderBy === 'department' ? order : 'asc'}
+                                    direction={orderBy === 'department' ? order : 'desc'}
                                     onClick={() => handleSort('department')}
                                 >
                                     <b>Department</b>
@@ -271,7 +263,7 @@ function TechnologyList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'isActive'}
-                                    direction={orderBy === 'isActive' ? order : 'asc'}
+                                    direction={orderBy === 'isActive' ? order : 'desc'}
                                     onClick={() => handleSort('isActive')}
                                 >
                                     <b>Is Active</b>
@@ -280,7 +272,7 @@ function TechnologyList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'createdBy'}
-                                    direction={orderBy === 'createdBy' ? order : 'asc'}
+                                    direction={orderBy === 'createdBy' ? order : 'desc'}
                                     onClick={() => handleSort('createdBy')}
                                 >
                                     <b>Created By</b>
@@ -289,7 +281,7 @@ function TechnologyList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'createdDate'}
-                                    direction={orderBy === 'createdDate' ? order : 'asc'}
+                                    direction={orderBy === 'createdDate' ? order : 'desc'}
                                     onClick={() => handleSort('createdDate')}
                                 >
                                     <b>Created Date</b>
@@ -298,7 +290,7 @@ function TechnologyList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'updatedBy'}
-                                    direction={orderBy === 'updatedBy' ? order : 'asc'}
+                                    direction={orderBy === 'updatedBy' ? order : 'desc'}
                                     onClick={() => handleSort('updatedBy')}
                                 >
                                     <b>Updated By</b>
@@ -307,7 +299,7 @@ function TechnologyList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'updatedDate'}
-                                    direction={orderBy === 'updatedDate' ? order : 'asc'}
+                                    direction={orderBy === 'updatedDate' ? order : 'desc'}
                                     onClick={() => handleSort('updatedDate')}
                                 >
                                     <b>Updated Date</b>
@@ -324,9 +316,9 @@ function TechnologyList({isDrawerOpen}) {
                                 <TableCell>{technology.department}</TableCell>
                                 <TableCell>{technology.isActive ? 'Active' : 'Inactive'}</TableCell>
                                 <TableCell>{technology.createdBy}</TableCell>
-                                <TableCell>{new Date(technology.createdDate).toLocaleDateString()}</TableCell>
+                                <TableCell>{technology.createdDate}</TableCell>
                                 <TableCell>{technology.updatedBy || 'N/A'}</TableCell>
-                                <TableCell>{new Date(technology.updatedDate).toLocaleDateString()}</TableCell>
+                                <TableCell>{technology.updatedDate || 'N/A'}</TableCell>
                                 <TableCell >
                                     <IconButton onClick={() => handleUpdate(technology)}>
                                         <EditIcon color="primary" />
