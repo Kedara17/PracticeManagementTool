@@ -4,7 +4,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 import PaginationComponent from '../Components/PaginationComponent'; // Import your PaginationComponent
-import { InputLabel, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
+import { InputLabel,TablePagination, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
 
 function DepartmentList({isDrawerOpen}) {
     const [departments, setDepartments] = useState([]);
@@ -303,14 +303,23 @@ function DepartmentList({isDrawerOpen}) {
                         ))}
                     </TableBody>
                 </Table>
-                <PaginationComponent
+                {/* <PaginationComponent
                     count={filteredDepartments.length}
                     page={page}
                     rowsPerPage={rowsPerPage}
                     handlePageChange={handlePageChange}
                     handleRowsPerPageChange={handleRowsPerPageChange}
-                />
+                /> */}
             </TableContainer>
+            <TablePagination
+                rowsPerPageOptions={[10, 25, 100]}
+                component="div"
+                count={filteredDepartments.length}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                onPageChange={handlePageChange}
+                onRowsPerPageChange={handleRowsPerPageChange}
+            />
             <Dialog open={open} onClose={() => setOpen(false)}>
                 <DialogTitle>{currentDepartment.id ? 'Update Department' : 'Add Department'}</DialogTitle>
                 <DialogContent>
