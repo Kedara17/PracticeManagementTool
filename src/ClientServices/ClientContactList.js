@@ -6,9 +6,10 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 import PaginationComponent from '../Components/PaginationComponent'; // Import your PaginationComponent
 
-function ClientContactList({isDrawerOpen}) {
+function ClientContactList({ isDrawerOpen }) {
     const [ClientContact, setClientContact] = useState([]);
     const [Clients, setClient] = useState([]);
+    const [ContactType, setContactType] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [open, setOpen] = useState(false);
@@ -35,7 +36,7 @@ function ClientContactList({isDrawerOpen}) {
     useEffect(() => {
         const fetchClientContacts = async () => {
             try {
-                const clientContactResponse = await axios.get('http://172.17.31.61:5142/api/clientContact');
+                const clientContactResponse = await axios.get('http://localhost:5542/api/ClientContact');
                 setClientContact(clientContactResponse.data);
             } catch (error) {
                 console.error('There was an error fetching the technologies!', error);
@@ -46,16 +47,27 @@ function ClientContactList({isDrawerOpen}) {
 
         const fetchClient = async () => {
             try {
-                const clientResponse = await axios.get('http://172.17.31.61:5142/api/client');
+                const clientResponse = await axios.get('http://localhost:5542/api/Client');
                 setClient(clientResponse.data);
             } catch (error) {
-                console.error('There was an error fetching the departments!', error);
+                console.error('There was an error fetching the client!', error);
                 setError(error);
             }
         };
 
+        const fetchContactType = async () => {
+            try {
+                const contactTypeResponse = await axios.get('http://localhost:5542/api/ContactType');
+                setContactType(contactTypeResponse.data);
+            } catch (error) {
+                console.error('There was an error fetching the contactType!', error);
+                setError(error);
+            }
+        };    
+
         fetchClientContacts();
         fetchClient();
+        fetchContactType();
     }, []);
 
 
@@ -117,16 +129,19 @@ function ClientContactList({isDrawerOpen}) {
         let validationErrors = {};
 
         // Name field validation
-        if (!currentClientContact.contactValue.trim()) {
+        if (!currentClientContact.contactValue) {
             validationErrors.contactValue = "ContactValue is required";
-        } else if (ClientContact.some(conval => conval.contactValue.toLowerCase() === currentClientContact.contactValue.toLowerCase() && conval.id !== currentClientContact.id)) {
+        } else if(!currentClientContact.contactValue.length < 3 ) {
+            validationErrors.contactValue = "ContactValue must be at least 3 characters";
+        }
+        else if (ClientContact.some(conval => conval.contactValue.toLowerCase() === currentClientContact.contactValue.toLowerCase() && conval.id !== currentClientContact.id)) {
             validationErrors.contactValue = "ContactValue must be unique";
         }
         else {
             setErrors('');
         }
 
-        if (!currentClientContact.contactType.trim()) {
+        if (!currentClientContact.contactType) {
             validationErrors.contactType = "contactType is required";
         } else if (ClientContact.some(conval => conval.contactType === currentClientContact.contactType && conval.id !== currentClientContact.id)) {
             validationErrors.contactType = "contactType must be unique";
@@ -185,12 +200,14 @@ function ClientContactList({isDrawerOpen}) {
         if (name === "contactValue") {
             // Check if the name is empty or only whitespace
             if (!value.trim()) {
-                setErrors((prevErrors) => ({ ...prevErrors, contactValue: "Contact value cannot be empty" }));
+                setErrors((prevErrors) => ({ ...prevErrors, contactValue: "" }));
+            }else if(value.length < 3){
+                setErrors((prevErrors) => ({ ...prevErrors, contactValue: ""}))
             }
             // Check for uniqueness
             else if (ClientContact.some(conval => conval.contactValue && conval.contactValue.toLowerCase() === value.toLowerCase() && conval.id !== currentClientContact.id)) {
-                setErrors((prevErrors) => ({ ...prevErrors, contactValue: "Contact value must be unique" }));
-            }else if (value.length === 50) {
+                setErrors((prevErrors) => ({ ...prevErrors, contactValue: "" }));
+            } else if (value.length === 50) {
                 setErrors((prevErrors) => ({ ...prevErrors, contactValue: "More than 50 characters are not allowed" }));
             }
             // Clear the name error if valid
@@ -203,12 +220,12 @@ function ClientContactList({isDrawerOpen}) {
         if (name === "contactType") {
             // Check if the name is empty or only whitespace
             if (!value.trim()) {
-                setErrors((prevErrors) => ({ ...prevErrors, contactType: "Contact type cannot be empty" }));
+                setErrors((prevErrors) => ({ ...prevErrors, contactType: "" }));
             }
             // Check for uniqueness
             else if (Clients.some(contyp => contyp.contactType && contyp.contactType.toLowerCase() === value.toLowerCase() && contyp.id !== currentClientContact.id)) {
-                setErrors((prevErrors) => ({ ...prevErrors, contactType: "Contact type must be unique" }));
-            }else if (value.length === 50) {
+                setErrors((prevErrors) => ({ ...prevErrors, contactType: "" }));
+            } else if (value.length === 50) {
                 setErrors((prevErrors) => ({ ...prevErrors, contactType: "More than 50 characters are not allowed" }));
             }
             // Clear the name error if valid
@@ -264,7 +281,7 @@ function ClientContactList({isDrawerOpen}) {
     }
 
     return (
-        <div style={{ display: 'flex',flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 250 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 250 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
             <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
                 <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>Client Contact Table List</h3>
             </div>
@@ -420,6 +437,22 @@ function ClientContactList({isDrawerOpen}) {
                         ))}
                     </Select>
                     {errors.client && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.client}</Typography>}
+                    <InputLabel>ContactType</InputLabel>
+                    <Select
+                        margin="dense"
+                        name="contactType"
+                        value={currentClientContact.contactType}
+                        onChange={handleChange}
+                        fullWidth
+                        error={!!errors.contactType}
+                    >
+                        {ContactType.map((contactType) => (
+                            <MenuItem key={contactType.id} value={contactType.typeName}>
+                                {contactType.typeName}
+                            </MenuItem>
+                        ))}
+                    </Select>
+                    {errors.contactType && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.contactType}</Typography>}
                     <InputLabel>ContactValue</InputLabel>
                     <TextField
                         margin="dense"
@@ -429,19 +462,9 @@ function ClientContactList({isDrawerOpen}) {
                         fullWidth
                         error={!!errors.contactValue} // Display error if exists
                         helperText={errors.contactValue}
-                        inputProps={{maxLength: 50}}
+                        inputProps={{ maxLength: 50 }}
                     />
-                    <InputLabel>ContactType</InputLabel>
-                    <TextField
-                        margin="dense"
-                        name="contactType"
-                        value={currentClientContact.contactType}
-                        onChange={handleChange}
-                        fullWidth
-                        error={!!errors.contactType} // Display error if exists
-                        helperText={errors.contactType}
-                        inputProps={{maxLength: 50}}
-                    />
+
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleClose}>Cancel</Button>

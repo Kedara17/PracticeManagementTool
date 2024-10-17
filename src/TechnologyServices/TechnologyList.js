@@ -119,7 +119,10 @@ function TechnologyList({isDrawerOpen}) {
         // Name field validation
         if (!currentTechnology.name.trim()) {
             validationErrors.name = "Name is required";
-        } else if (technologies.some(tech => tech.name.toLowerCase() === currentTechnology.name.toLowerCase() && tech.id !== currentTechnology.id)) {
+        } else if(!currentTechnology.length < 3){
+            validationErrors.name = "Name must be at least 3 characters";
+        }
+        else if (technologies.some(tech => tech.name.toLowerCase() === currentTechnology.name.toLowerCase() && tech.id !== currentTechnology.id)) {
             validationErrors.name = "Name must be unique";
         }
 
@@ -156,6 +159,8 @@ function TechnologyList({isDrawerOpen}) {
             // Check if the title is empty or only whitespace
             if (!value.trim()) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
+            }else if(value.length < 3){
+                setErrors((prevErrors) => ({ ...prevErrors, name: ""}))
             }
             // Check for uniqueness
             else if (technologies.some(tech => tech.client === value && tech.id !== currentTechnology.id)) {

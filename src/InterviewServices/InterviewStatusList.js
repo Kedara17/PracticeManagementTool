@@ -95,6 +95,8 @@ function InterviewStatusList({isDrawerOpen}) {
 
         if (!currentInterviewStatus.status.trim()) {
             validationErrors.status = "Status is required";
+        }else if(!currentInterviewStatus.status.length < 3) {
+            validationErrors.status = "Status must be atleast 3 characters";
         }
 
         // If there are validation errors, update the state and prevent save
@@ -143,6 +145,8 @@ function InterviewStatusList({isDrawerOpen}) {
         if (name === "status") {
             if (value.length === 50) {
                 setErrors((prevErrors) => ({ ...prevErrors, status: "More than 50 characters are not allowed" }));
+            }else if(value.length < 3) {
+                setErrors((prevErrors) => ({ ...prevErrors, status: ""}))
             }
             // Clear the title error if valid
             else {

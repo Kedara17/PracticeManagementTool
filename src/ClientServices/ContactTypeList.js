@@ -100,7 +100,10 @@ function ContactTypeList({isDrawerOpen}) {
         // Name field validation
         if (!currentContactType.typeName.trim()) {
             validationErrors.typeName = "TypeName is required";
-        } else if (contactTypes.some(cont => cont.typeName.toLowerCase() === currentContactType.typeName.toLowerCase() && cont.id !== currentContactType.id)) {
+        } else if(!currentContactType.typeName.length < 3) {
+            validationErrors.typeName = "TypeName must be at least 3 characters";
+        }
+        else if (contactTypes.some(cont => cont.typeName.toLowerCase() === currentContactType.typeName.toLowerCase() && cont.id !== currentContactType.id)) {
             validationErrors.typeName = "TypeName must be unique";
         }
 
@@ -150,6 +153,8 @@ function ContactTypeList({isDrawerOpen}) {
         if (name === "typeName") {
             // Check if the title is empty or only whitespace
             if (!value.trim()) {
+                setErrors((prevErrors) => ({ ...prevErrors, typeName: "" }));
+            }else if(value.length < 3){
                 setErrors((prevErrors) => ({ ...prevErrors, typeName: "" }));
             }
             // Check for uniqueness

@@ -241,7 +241,10 @@ function EmployeeList({isDrawerOpen}) {
 
         if (!currentEmployee.name) {
             validationErrors.name = "Name  is required";
-        } else if (Employees.some(emp => emp.name.toLowerCase() === currentEmployee.name.toLowerCase() && emp.id !== currentEmployee.id)) {
+        } else if (!currentEmployee.name.length < 3) {
+            validationErrors.name = "Name must be at least 3 characters";
+        }
+        else if (Employees.some(emp => emp.name.toLowerCase() === currentEmployee.name.toLowerCase() && emp.id !== currentEmployee.id)) {
             validationErrors.name = "Name must be unique";
         }
         // Department field validation 
@@ -279,13 +282,10 @@ function EmployeeList({isDrawerOpen}) {
         }
         if (!currentEmployee.projection) {
             validationErrors.projection = "Projection is required";
-        }
+        } 
         if (!currentEmployee.password) {
             validationErrors.password = "Password is required";
         }
-        // if (!currentEmployee.profile) {
-        //     validationErrors.profile = "Profile is required";
-        // }
         if (!currentEmployee.profile || errors.profile) {
             validationErrors.profile = "Please select a valid PDF or DOC file";
         }
@@ -355,32 +355,21 @@ function EmployeeList({isDrawerOpen}) {
         }
     };
 
-    // const handleFileChange = (e) => {
-    //     const file = e.target.files[0];
-    //     setSelectedFile(file);
-
-    //     // Remove the profile error automatically when the file is selected
-    //     if (file) {
-    //         setErrors((prevErrors) => ({
-    //             ...prevErrors,
-    //             profile: undefined, // Clear the error for profile
-    //         }));
-    //     }
-    // };
-
     const handleChange = (e) => {
         const { name, value } = e.target;
         setCurrentEmployee({ ...currentEmployee, [name]: value });
-      
+
         if (name === "name") {
             // Check if the title is empty or only whitespace
             if (!value.trim()) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
+            } else if (value.lenth < 3) {
+                setErrors((prevErrors) => ({ ...prevErrors, name: "" }))
             }
             // Check for uniqueness
             else if (Employees.some(emp => emp.name.toLowerCase() === value.toLowerCase() && emp.id !== currentEmployee.id)) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
-            }else if (value.length === 50) {
+            } else if (value.length === 50) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "More than 50 characters are not allowed" }));
             }
             // Clear the title error if valid
@@ -435,7 +424,7 @@ function EmployeeList({isDrawerOpen}) {
             if (value) {
                 setErrors((prevErrors) => ({ ...prevErrors, projection: "" }));
             }
-        }        
+        }
         if (name === 'password') {
             if (!value) {
                 setErrors({ ...errors, password: 'Password is required' });
@@ -457,7 +446,7 @@ function EmployeeList({isDrawerOpen}) {
                 if (numericValue) {
                     setErrors((prevErrors) => ({
                         ...prevErrors,
-                        phoneNo: "" 
+                        phoneNo: ""
                     }));
                 }
             }
@@ -470,7 +459,7 @@ function EmployeeList({isDrawerOpen}) {
 
                 // Check if the file type is either PDF or DOC/DOCX
                 if (fileType === "application/pdf" ||
-                    fileType === "application/msword" ||
+                    fileType === "application/docx" ||
                     fileType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
 
                     setCurrentEmployee((prevEmployee) => ({
@@ -501,7 +490,7 @@ function EmployeeList({isDrawerOpen}) {
             if (value) {
                 setErrors((prevErrors) => ({ ...prevErrors, technology: "" }));
             }
-        }       
+        }
     };
     const validateForm = () => {
         let formIsValid = true;
@@ -575,7 +564,7 @@ function EmployeeList({isDrawerOpen}) {
     }
 
     return (
-        <div style={{ display: 'flex',flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 250 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 250 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
             <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
                 <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>Employee Table List</h3>
             </div>
@@ -827,7 +816,7 @@ function EmployeeList({isDrawerOpen}) {
                         fullWidth
                         error={!!errors.name}
                         helperText={errors.name}
-                        inputProps={{ maxLength: 50 }}                      
+                        inputProps={{ maxLength: 50 }}
                     />
                     <InputLabel>Designation</InputLabel>
                     <Select
@@ -853,8 +842,8 @@ function EmployeeList({isDrawerOpen}) {
                         value={currentEmployee.employeeID}
                         onChange={(e) => {
                             const value = e.target.value;
-                            const numericValue = value.replace(/\D/g, '');  
-                            handleChange({ target: { name: e.target.name, value: numericValue } }); 
+                            const numericValue = value.replace(/\D/g, '');
+                            handleChange({ target: { name: e.target.name, value: numericValue } });
                         }}
                         fullWidth
                         error={!!errors.employeeID}
@@ -949,7 +938,7 @@ function EmployeeList({isDrawerOpen}) {
                     <InputLabel>Joining Date</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                        className='datetime'
+                            className='datetime'
                             value={currentEmployee.joiningDate ? dayjs(currentEmployee.joiningDate) : null}
                             onChange={handleJoiningDateChange}
                             renderInput={(params) => (
@@ -961,7 +950,7 @@ function EmployeeList({isDrawerOpen}) {
                     <InputLabel>Relieving Date</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                         className='datetime'
+                            className='datetime'
                             value={currentEmployee.relievingDate ? dayjs(currentEmployee.relievingDate) : null}
                             onChange={handleRelievingDateChange}
                             renderInput={(params) => (
