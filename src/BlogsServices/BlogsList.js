@@ -151,6 +151,8 @@ function BlogsList({isDrawerOpen}) {
         // Title field validation
         if (!currentBlogs.title.trim()) {
             validationErrors.title = "Title is required";
+        }else if(!currentBlogs.title.length < 3) {
+            validationErrors.title = "Title must be atleast 3 characters";
         }
         if (!currentBlogs.author) {
             validationErrors.author = "Author is required";
@@ -223,6 +225,8 @@ function BlogsList({isDrawerOpen}) {
             // Check if the title is empty or only whitespace
             if (!value.trim()) {
                 setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
+            }else if(value.length < 3) {
+                setErrors((prevErrors) => ({ ...prevErrors, title: ""}))
             }
             // Check for uniqueness
             else if (blogs.some(web => web.title.toLowerCase() === value.toLowerCase() && web.id !== currentBlogs.id)) {
@@ -242,11 +246,11 @@ function BlogsList({isDrawerOpen}) {
         }
         if (name === "status") {
             if (value.length === 50) {
-                setErrors((prevErrors) => ({ ...prevErrors, title: "More than 50 characters are not allowed" }));
+                setErrors((prevErrors) => ({ ...prevErrors, status: "More than 50 characters are not allowed" }));
             }
             // Clear the title error if valid
             else {
-                setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
+                setErrors((prevErrors) => ({ ...prevErrors, status: "" }));
             }
         }
 

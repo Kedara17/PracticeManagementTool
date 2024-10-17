@@ -164,6 +164,8 @@ function InterviewList({isDrawerOpen}) {
         }
         if (!currentInterview.name) {
             validationErrors.name = "Name is required";
+        }else if(!currentInterview.name.length < 3) {
+            validationErrors.name = "Name must be atleast 3 characters";
         }
         if (!currentInterview.interviewDate) {
             validationErrors.interviewDate = "InterviewDate is required";
@@ -227,6 +229,8 @@ function InterviewList({isDrawerOpen}) {
         if (name === "sowRequirement") {
             if (value) {
                 setErrors((prevErrors) => ({ ...prevErrors, sowRequirement: "" }));
+            }else if(value.length < 3) {
+                setErrors((prevErrors) => ({ ...prevErrors, sowRequirement: ""}))
             }
         }
         if (name === "name") {
@@ -507,8 +511,8 @@ function InterviewList({isDrawerOpen}) {
                         error={!!errors.sowRequirement}
                     >
                         {SOWRequirement.map((sowRequirement) => (
-                            <MenuItem key={sowRequirement.id} value={sowRequirement.status}>
-                                {sowRequirement.status}
+                            <MenuItem key={sowRequirement.id} value={sowRequirement.teamSize}>
+                                {sowRequirement.teamSize}
                             </MenuItem>
                         ))}
                     </Select>
@@ -518,7 +522,11 @@ function InterviewList({isDrawerOpen}) {
                         margin="dense"
                         name="name"
                         value={currentInterview.name}
-                        onChange={handleChange}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            if (/^[A-Za-z\s]*$/.test(value))
+                                handleChange(e);
+                        }}
                         fullWidth
                         error={!!errors.name} // Display error if exists
                         helperText={errors.name}
@@ -526,6 +534,7 @@ function InterviewList({isDrawerOpen}) {
                     <InputLabel>InterviewDate</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
+                         className='datetime'
                             value={currentInterview.interviewDate ? dayjs(currentInterview.interviewDate) : null}
                             onChange={handleInterviewDateChange}
                             renderInput={(params) => (
@@ -539,7 +548,13 @@ function InterviewList({isDrawerOpen}) {
                         margin="dense"
                         name="yearsOfExperience"
                         value={currentInterview.yearsOfExperience}
-                        onChange={handleChange}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            // Allow only digits (numbers) and prevent letters and special characters
+                            if (/^\d*$/.test(value)) {
+                                handleChange(e); // Only update if the value is valid (numbers only)
+                            }
+                        }}
                         fullWidth
                         error={!!errors.yearsOfExperience} // Display error if exists
                         helperText={errors.yearsOfExperience}
@@ -548,7 +563,7 @@ function InterviewList({isDrawerOpen}) {
                     <Select
                         margin="dense"
                         name="status"
-                        value={currentInterview.interviewStatus}
+                        value={currentInterview.status}
                         onChange={handleChange}
                         fullWidth
                         error={!!errors.status}
@@ -563,6 +578,7 @@ function InterviewList({isDrawerOpen}) {
                     <InputLabel>On_Boarding</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
+                         className='datetime'
                             value={currentInterview.on_Boarding ? dayjs(currentInterview.on_Boarding) : null}
                             onChange={handleOnBoardingDateChange}
                             renderInput={(params) => (

@@ -178,7 +178,9 @@ function ProjectList({isDrawerOpen}) {
         // Name field validation
         if (!currentProject.projectName.trim()) {
             validationErrors.projectName = "ProjectName is required";
-        } else if (Projects.some(pro => pro.projectName.toLowerCase() === currentProject.projectName.toLowerCase() && pro.id !== currentProject.id)) {
+        } else if(!currentProject.projectName.length < 3) {
+            validationErrors.projectName = "ProjectName must be at least 3 characters";
+        }else if (Projects.some(pro => pro.projectName.toLowerCase() === currentProject.projectName.toLowerCase() && pro.id !== currentProject.id)) {
             validationErrors.projectName = "ProjectName must be unique";
         }
 
@@ -265,6 +267,8 @@ function ProjectList({isDrawerOpen}) {
             // Check if the title is empty or only whitespace
             if (!value.trim()) {
                 setErrors((prevErrors) => ({ ...prevErrors, projectName: "" }));
+            }else if(value.length < 3) {
+                setErrors((prevErrors) => ({ ...prevErrors, projectName: ""}))
             }
             // Check for uniqueness
             else if (Projects.some(pro => pro.projectName.toLowerCase() === value.toLowerCase() && pro.id !== currentProject.id)) {

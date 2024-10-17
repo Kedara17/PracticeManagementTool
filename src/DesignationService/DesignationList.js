@@ -97,7 +97,9 @@ function DesignationList({isDrawerOpen}) {
         // Name field validation
         if (!currentDesignation.name.trim()) {
             validationErrors.name = "Designation is required";
-        } else if (designations.some(des => des.name.toLowerCase() === currentDesignation.name.toLowerCase() && des.id !== currentDesignation.id)) {
+        }else if (currentDesignation.name.length < 3) {
+            validationErrors.name = "Name must be atleast 3 characters";
+        }  else if (designations.some(des => des.name.toLowerCase() === currentDesignation.name.toLowerCase() && des.id !== currentDesignation.id)) {
             validationErrors.name = "Name must be unique";
         }
 
@@ -146,7 +148,9 @@ function DesignationList({isDrawerOpen}) {
             // Check if the name is empty or only whitespace
             if (!value.trim()) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
-            }
+            }else if (value.length < 3) {
+                setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
+            } 
             // Check for uniqueness
             else if (designations.some(des => des.name.toLowerCase() === value.toLowerCase() && des.id !== currentDesignation.id)) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
