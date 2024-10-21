@@ -207,7 +207,7 @@ function EmployeeList({ isDrawerOpen }) {
         setCurrentEmployee({
             name: '',
             designation: '',
-            employeeId: '',
+            employeeID: '',
             emailId: '',
             department: '',
             reportingTo: '',
@@ -232,7 +232,7 @@ function EmployeeList({ isDrawerOpen }) {
     const handleDelete = (id) => {
         // axios.delete(`http://localhost:5033/api/Employee/${id}`)
         // axios.delete(`http://172.17.31.61:5033/api/employee/${id}`)
-        axios.patch(`http://172.17.31.61:5033/api/Employee/${id}`)
+        axios.patch(`http://172.17.31.61:5033/api/employee/${id}`)
             .then(response => {
                 setEmployees(Employees.filter(tech => tech.id !== id));
             })
@@ -290,7 +290,7 @@ function EmployeeList({ isDrawerOpen }) {
         }
         if (!currentEmployee.projection) {
             validationErrors.projection = "Projection is required";
-        } else if(!currentEmployee.projection.length <3) {
+        } else if (!currentEmployee.projection.length < 3) {
             validationErrors.projection = "Projection must be atleast 3 characters";
         }
         if (!currentEmployee.password) {
@@ -433,8 +433,8 @@ function EmployeeList({ isDrawerOpen }) {
         if (name === "projection") {
             if (value) {
                 setErrors((prevErrors) => ({ ...prevErrors, projection: "" }));
-            }else if (value.length < 3) {
-                setErrors((prevErrors) => ({ ...prevErrors, projection: ""}))
+            } else if (value.length < 3) {
+                setErrors((prevErrors) => ({ ...prevErrors, projection: "" }))
             }
         }
         if (name === 'password') {
@@ -521,8 +521,8 @@ function EmployeeList({ isDrawerOpen }) {
         return formIsValid;
     };
     const handleClose = () => {
-        setCurrentEmployee({ name: '', designation: '', employeeId: '', emailId: '', department: '', reportingTo: '', joiningDate: '', relievingDate: '', projection: '', password: '', profile: '', phoneNo: '', role: '', technology: [] }); // Reset the department fields
-        setErrors({ name: '', designation: '', employeeId: '', emailId: '', department: '', reportingTo: '', joiningDate: '', relievingDate: '', projection: '', password: '', profile: '', phoneNo: '', role: '', technology: '' }); // Reset the error state
+        setCurrentEmployee({ name: '', designation: '', employeeID: '', emailId: '', department: '', reportingTo: '', joiningDate: '', relievingDate: '', projection: '', password: '', profile: '', phoneNo: '', role: '', technology: [] }); // Reset the department fields
+        setErrors({ name: '', designation: '', employeeID: '', emailId: '', department: '', reportingTo: '', joiningDate: '', relievingDate: '', projection: '', password: '', profile: '', phoneNo: '', role: '', technology: '' }); // Reset the error state
         setOpen(false); // Close the dialog
     };
 
@@ -624,11 +624,11 @@ function EmployeeList({ isDrawerOpen }) {
                             </TableCell>
                             <TableCell>
                                 <TableSortLabel
-                                    active={orderBy === 'employeeId'}
-                                    direction={orderBy === 'employeeId' ? order : 'desc'}
-                                    onClick={() => handleSort('employeeId')}
+                                    active={orderBy === 'employeeID'}
+                                    direction={orderBy === 'employeeID' ? order : 'desc'}
+                                    onClick={() => handleSort('employeeID')}
                                 >
-                                    EmployeeId
+                                    EmployeeID
                                 </TableSortLabel>
                             </TableCell>
                             <TableCell>
@@ -811,7 +811,7 @@ function EmployeeList({ isDrawerOpen }) {
                     handlePageChange={handlePageChange}
                     handleRowsPerPageChange={handleRowsPerPageChange}
                 /> */}
-                
+
             </TableContainer>
             <TablePagination
                 rowsPerPageOptions={[10, 25, 100]}
@@ -931,38 +931,38 @@ function EmployeeList({ isDrawerOpen }) {
                         )}
                     /> */}
                     <InputLabel id="demo-simple-select-label">Technology</InputLabel>
-<Autocomplete
-    multiple
-    id="technologies-autocomplete"
-    options={(technologies && technologies.length > 0) ? technologies.map((tech) => tech.name) : []}  // Ensure technologies is an array
-    value={currentEmployee.technology || []}  // Ensure value is always an array
-    onChange={(event, newValue) => {
-        handleChange({
-            target: {
-                name: 'technology',
-                value: newValue || [],  // Ensure newValue is always an array
-            },
-        });
-    }}
-    renderInput={(params) => (
-        <TextField
-            {...params}
-            variant="outlined"
-            placeholder="Select technologies"
-            fullWidth
-            error={!!errors.technology}
-        />
-    )}
-    renderOption={(props, option, { selected }) => (
-        <li {...props}>
-            <Checkbox
-                style={{ marginRight: 8 }}
-                checked={selected}
-            />
-            <ListItemText primary={option} />
-        </li>
-    )}
-/>
+                    <Autocomplete
+                        multiple
+                        id="technologies-autocomplete"
+                        options={(technologies && technologies.length > 0) ? technologies.map((tech) => tech.name) : []}  // Ensure technologies is an array
+                        value={currentEmployee.technology || []}  // Ensure value is always an array
+                        onChange={(event, newValue) => {
+                            handleChange({
+                                target: {
+                                    name: 'technology',
+                                    value: newValue || [],  // Ensure newValue is always an array
+                                },
+                            });
+                        }}
+                        renderInput={(params) => (
+                            <TextField
+                                {...params}
+                                variant="outlined"
+                                placeholder="Select technologies"
+                                fullWidth
+                                error={!!errors.technology}
+                            />
+                        )}
+                        renderOption={(props, option, { selected }) => (
+                            <li {...props}>
+                                <Checkbox
+                                    style={{ marginRight: 8 }}
+                                    checked={selected}
+                                />
+                                <ListItemText primary={option} />
+                            </li>
+                        )}
+                    />
                     {errors.technology && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.technology}</Typography>}
                     <InputLabel>ReportingTo</InputLabel>
                     <Autocomplete
