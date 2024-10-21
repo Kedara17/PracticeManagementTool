@@ -249,13 +249,9 @@ function EmployeeList({ isDrawerOpen }) {
 
         if (!currentEmployee.name) {
             validationErrors.name = "Name  is required";
-        } else if (!currentEmployee.name.length < 3) {
+        } else if (currentEmployee.name.length < 3) {
             validationErrors.name = "Name must be at least 3 characters";
-        }
-        else if (Employees.some(emp => emp.name.toLowerCase() === currentEmployee.name.toLowerCase() && emp.id !== currentEmployee.id)) {
-            validationErrors.name = "Name must be unique";
-        }
-        // Department field validation 
+        }        
         if (!currentEmployee.designation) {
             validationErrors.designation = "Designation is required";
         }
@@ -290,7 +286,7 @@ function EmployeeList({ isDrawerOpen }) {
         }
         if (!currentEmployee.projection) {
             validationErrors.projection = "Projection is required";
-        } else if (!currentEmployee.projection.length < 3) {
+        } else if (currentEmployee.projection.length < 3) {
             validationErrors.projection = "Projection must be atleast 3 characters";
         }
         if (!currentEmployee.password) {
@@ -376,10 +372,7 @@ function EmployeeList({ isDrawerOpen }) {
             } else if (value.lenth < 3) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }))
             }
-            // Check for uniqueness
-            else if (Employees.some(emp => emp.name.toLowerCase() === value.toLowerCase() && emp.id !== currentEmployee.id)) {
-                setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
-            } else if (value.length === 50) {
+            else if (value.length === 50) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "More than 50 characters are not allowed" }));
             }
             // Clear the title error if valid

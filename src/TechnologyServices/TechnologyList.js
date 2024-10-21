@@ -119,7 +119,7 @@ function TechnologyList({isDrawerOpen}) {
         // Name field validation
         if (!currentTechnology.name.trim()) {
             validationErrors.name = "Name is required";
-        } else if(!currentTechnology.length < 3){
+        } else if(currentTechnology.length < 3){
             validationErrors.name = "Name must be at least 3 characters";
         }
         else if (technologies.some(tech => tech.name.toLowerCase() === currentTechnology.name.toLowerCase() && tech.id !== currentTechnology.id)) {

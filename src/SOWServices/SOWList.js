@@ -162,7 +162,7 @@ function SOWList({isDrawerOpen}) {
         // }
         if (!currentSOW.title) {
             validationErrors.title = "Title is required";
-        }else if(!currentSOW.title.length < 3) {
+        }else if(currentSOW.title.length < 3) {
             validationErrors.title = "Title must be atleast 3 characters";
         }
         if (!currentSOW.client) {
@@ -182,7 +182,7 @@ function SOWList({isDrawerOpen}) {
         }
         if (!currentSOW.comments) {
             validationErrors.comments = "Comments is required";
-        }else if(!currentSOW.comments.length < 3) {
+        }else if(currentSOW.comments.length < 3) {
             validationErrors.comments = "Comments must be atleast 3 characters";
         }
 

@@ -95,7 +95,7 @@ function InterviewStatusList({isDrawerOpen}) {
 
         if (!currentInterviewStatus.status.trim()) {
             validationErrors.status = "Status is required";
-        }else if(!currentInterviewStatus.status.length < 3) {
+        }else if(currentInterviewStatus.status.length < 3) {
             validationErrors.status = "Status must be atleast 3 characters";
         }
 

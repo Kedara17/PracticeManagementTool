@@ -183,7 +183,7 @@ function BlogsList({isDrawerOpen}) {
         // Title field validation
         if (!currentBlogs.title.trim()) {
             validationErrors.title = "Title is required";
-        }else if(!currentBlogs.title.length < 3) {
+        }else if(currentBlogs.title.length < 3) {
             validationErrors.title = "Title must be atleast 3 characters";
         }
         if (!currentBlogs.author) {
