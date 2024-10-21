@@ -36,7 +36,7 @@ function ClientContactList({ isDrawerOpen }) {
     useEffect(() => {
         const fetchClientContacts = async () => {
             try {
-                const clientContactResponse = await axios.get('http://localhost:5542/api/ClientContact');
+                const clientContactResponse = await axios.get('http://172.17.31.61:5142/api/clientContact');
                 setClientContact(clientContactResponse.data);
             } catch (error) {
                 console.error('There was an error fetching the technologies!', error);
@@ -47,7 +47,7 @@ function ClientContactList({ isDrawerOpen }) {
 
         const fetchClient = async () => {
             try {
-                const clientResponse = await axios.get('http://localhost:5542/api/Client');
+                const clientResponse = await axios.get('http://172.17.31.61:5142/api/client');
                 setClient(clientResponse.data);
             } catch (error) {
                 console.error('There was an error fetching the client!', error);
@@ -57,7 +57,7 @@ function ClientContactList({ isDrawerOpen }) {
 
         const fetchContactType = async () => {
             try {
-                const contactTypeResponse = await axios.get('http://localhost:5542/api/ContactType');
+                const contactTypeResponse = await axios.get('http://172.17.31.61:5142/api/contactType');
                 setContactType(contactTypeResponse.data);
             } catch (error) {
                 console.error('There was an error fetching the contactType!', error);
