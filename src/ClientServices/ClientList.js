@@ -141,25 +141,33 @@ function ClientList({isDrawerOpen}) {
         if (!currentClient.name.trim()) {
             validationErrors.name = "Name is required";
         } else if(!currentClient.name.length < 3){
-            validationErrors.name = "Name must be at least 3 characters";
+            validationErrors.name = "Name must be atleast 3 characters";
         }
         else if (Clients.some(cli => cli.name.toLowerCase() === currentClient.name.toLowerCase() && cli.id !== currentClient.id)) {
             validationErrors.name = "Name must be unique";
         }
         if (!currentClient.lineofBusiness) {
             validationErrors.lineofBusiness = "LineofBusiness is required";
+        }else if(!currentClient.lineofBusiness.length < 3) {
+            validationErrors.lineofBusiness = "LineofBusiness must be atleast 3 characters";
         }
         if (!currentClient.salesEmployee) {
             validationErrors.salesEmployee = "SalesEmployee is required";
         }
         if (!currentClient.country) {
             validationErrors.country = "Country is required";
+        }else if(!currentClient.country.length < 3) {
+            validationErrors.country = "Country must be atleast 3 characters";
         }
         if (!currentClient.city) {
             validationErrors.city = "City is required";
+        }else if(!currentClient.city.length < 3) {
+            validationErrors.city = "City must be atleast 3 characters";
         }
         if (!currentClient.state) {
             validationErrors.state = "State is required";
+        }else if(!currentClient.state.length < 3) {
+            validationErrors.state = "State must be atleast 3 characters";
         }
         if (!currentClient.address) {
             validationErrors.address = "Address is required";
@@ -208,6 +216,8 @@ function ClientList({isDrawerOpen}) {
             // Check if the title is empty or only whitespace
             if (!value.trim()) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
+            }else if(value.length < 3) {
+                setErrors((prevErrors) => ({...prevErrors, name: ""}));
             }
             // Check for uniqueness
             else if (Clients.some(cli => cli.name.toLowerCase() === value.toLowerCase() && cli.id !== currentClient.id)) {
@@ -223,6 +233,8 @@ function ClientList({isDrawerOpen}) {
         if (name === "lineofBusiness") {
             if (value.length === 50) {
                 setErrors((prevErrors) => ({ ...prevErrors, lineofBusiness: "More than 50 characters are not allowed" }));
+            }else if(value.length < 3) {
+                setErrors((prevErrors) => ({...prevErrors, lineofBusiness: ""}));
             }
             else {
                 setErrors((prevErrors) => ({ ...prevErrors, lineofBusiness: "" }));
@@ -238,6 +250,8 @@ function ClientList({isDrawerOpen}) {
         if (name === "country") {
              if (value.length === 50) {
                 setErrors((prevErrors) => ({ ...prevErrors, country: "More than 50 characters are not allowed" }));
+            }else if(value.length < 3) {
+                setErrors((prevErrors) => ({...prevErrors, country: ""}));
             }
             else {
                 setErrors((prevErrors) => ({ ...prevErrors, country: "" }));
@@ -246,6 +260,8 @@ function ClientList({isDrawerOpen}) {
         if (name === "city") {
             if (value.length === 50) {
                 setErrors((prevErrors) => ({ ...prevErrors, city: "More than 50 characters are not allowed" }));
+            }else if(value.length < 3) {
+                setErrors((prevErrors) => ({...prevErrors, city: ""}));
             }
             else {
                 setErrors((prevErrors) => ({ ...prevErrors, city: "" }));
@@ -254,6 +270,8 @@ function ClientList({isDrawerOpen}) {
         if (name === "state") {
              if (value.length === 50) {
                 setErrors((prevErrors) => ({ ...prevErrors, state: "More than 50 characters are not allowed" }));
+            }else if(value.length < 3) {
+                setErrors((prevErrors) => ({...prevErrors, state: ""}));
             }
             else {
                 setErrors((prevErrors) => ({ ...prevErrors, state: "" }));

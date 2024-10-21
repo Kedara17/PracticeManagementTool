@@ -282,7 +282,9 @@ function EmployeeList({isDrawerOpen}) {
         }
         if (!currentEmployee.projection) {
             validationErrors.projection = "Projection is required";
-        } 
+        } else if(!currentEmployee.projection.length <3) {
+            validationErrors.projection = "Projection must be atleast 3 characters";
+        }
         if (!currentEmployee.password) {
             validationErrors.password = "Password is required";
         }
@@ -423,6 +425,8 @@ function EmployeeList({isDrawerOpen}) {
         if (name === "projection") {
             if (value) {
                 setErrors((prevErrors) => ({ ...prevErrors, projection: "" }));
+            }else if (value.length < 3) {
+                setErrors((prevErrors) => ({ ...prevErrors, projection: ""}))
             }
         }
         if (name === 'password') {
@@ -885,7 +889,7 @@ function EmployeeList({isDrawerOpen}) {
                         ))}
                     </Select>
                     {errors.department && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.department}</Typography>}
-                    <InputLabel id="demo-simple-select-label">Technology</InputLabel>
+                    {/* <InputLabel id="demo-simple-select-label">Technology</InputLabel>
                     <Autocomplete
                         multiple
                         id="technologies-autocomplete"
@@ -917,7 +921,40 @@ function EmployeeList({isDrawerOpen}) {
                                 <ListItemText primary={option} />
                             </li>
                         )}
-                    />
+                    /> */}
+                    <InputLabel id="demo-simple-select-label">Technology</InputLabel>
+<Autocomplete
+    multiple
+    id="technologies-autocomplete"
+    options={(technologies && technologies.length > 0) ? technologies.map((tech) => tech.name) : []}  // Ensure technologies is an array
+    value={currentEmployee.technology || []}  // Ensure value is always an array
+    onChange={(event, newValue) => {
+        handleChange({
+            target: {
+                name: 'technology',
+                value: newValue || [],  // Ensure newValue is always an array
+            },
+        });
+    }}
+    renderInput={(params) => (
+        <TextField
+            {...params}
+            variant="outlined"
+            placeholder="Select technologies"
+            fullWidth
+            error={!!errors.technology}
+        />
+    )}
+    renderOption={(props, option, { selected }) => (
+        <li {...props}>
+            <Checkbox
+                style={{ marginRight: 8 }}
+                checked={selected}
+            />
+            <ListItemText primary={option} />
+        </li>
+    )}
+/>
                     {errors.technology && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.technology}</Typography>}
                     <InputLabel>ReportingTo</InputLabel>
                     <Autocomplete
