@@ -37,7 +37,7 @@ function ProjectList({isDrawerOpen}) {
         technology: []
     });
 
-    const [order, setOrder] = useState('asc'); // Order of sorting: 'asc' or 'desc'
+    const [order, setOrder] = useState('desc'); // Order of sorting: 'asc' or 'desc'
     const [orderBy, setOrderBy] = useState('createdDate'); // Column to sort by
     const [searchQuery, setSearchQuery] = useState(''); // State for search query
     const [errors, setErrors] = useState({
@@ -102,8 +102,8 @@ function ProjectList({isDrawerOpen}) {
     }, []);
 
     const handleSort = (property) => {
-        const isAsc = orderBy === property && order === 'asc';
-        setOrder(isAsc ? 'desc' : 'asc');
+        const isDesc = orderBy === property && order === 'desc';
+        setOrder(isDesc ? 'asc' : 'desc');
         setOrderBy(property);
     };
 
@@ -112,9 +112,17 @@ function ProjectList({isDrawerOpen}) {
         const valueB = b[orderBy] || '';
 
         if (typeof valueA === 'string' && typeof valueB === 'string') {
-            return order === 'asc' ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
+            return order === 'desc'
+                ? valueB.localeCompare(valueA)
+                : valueA.localeCompare(valueB);
+        } else if (valueA instanceof Date && valueB instanceof Date) {
+            return order === 'desc'
+                ? valueB - valueA
+                : valueA - valueB;
         } else {
-            return order === 'asc' ? (valueA > valueB ? 1 : -1) : (valueB > valueA ? 1 : -1);
+            return order === 'desc'
+                ? (valueA > valueB ? 1 : -1)
+                : (valueB > valueA ? 1 : -1);
         }
     });
 
@@ -437,7 +445,7 @@ function ProjectList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'client'}
-                                    direction={orderBy === 'client' ? order : 'asc'}
+                                    direction={orderBy === 'client' ? order : 'desc'}
                                     onClick={() => handleSort('client')}
                                 >
                                     <b>Client</b>
@@ -446,7 +454,7 @@ function ProjectList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'projectName'}
-                                    direction={orderBy === 'projectName' ? order : 'asc'}
+                                    direction={orderBy === 'projectName' ? order : 'desc'}
                                     onClick={() => handleSort('projectName')}
                                 >
                                     <b>ProjectName</b>
@@ -455,7 +463,7 @@ function ProjectList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'technicalProjectManager'}
-                                    direction={orderBy === 'technicalProjectManager' ? order : 'asc'}
+                                    direction={orderBy === 'technicalProjectManager' ? order : 'desc'}
                                     onClick={() => handleSort('technicalProjectManager')}
                                 >
                                     <b>TechnicalProjectManager</b>
@@ -464,7 +472,7 @@ function ProjectList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'salesContact'}
-                                    direction={orderBy === 'salesContact' ? order : 'asc'}
+                                    direction={orderBy === 'salesContact' ? order : 'desc'}
                                     onClick={() => handleSort('salesContact')}
                                 >
                                     <b>SalesContact</b>
@@ -473,7 +481,7 @@ function ProjectList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'pmo'}
-                                    direction={orderBy === 'pmo' ? order : 'asc'}
+                                    direction={orderBy === 'pmo' ? order : 'desc'}
                                     onClick={() => handleSort('pmo')}
                                 >
                                     <b>PMO</b>
@@ -482,7 +490,7 @@ function ProjectList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'sowSubmittedDate'}
-                                    direction={orderBy === 'sowSubmittedDate' ? order : 'asc'}
+                                    direction={orderBy === 'sowSubmittedDate' ? order : 'desc'}
                                     onClick={() => handleSort('sowSubmittedDate')}
                                 >
                                     <b>SOWSubmittedDate</b>
@@ -491,7 +499,7 @@ function ProjectList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'sowSigniedDate'}
-                                    direction={orderBy === 'sowSigniedDate' ? order : 'asc'}
+                                    direction={orderBy === 'sowSigniedDate' ? order : 'desc'}
                                     onClick={() => handleSort('sowSigniedDate')}
                                 >
                                     <b>SOWSigniedDate</b>
@@ -500,7 +508,7 @@ function ProjectList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'sowValidTill'}
-                                    direction={orderBy === 'sowValidTill' ? order : 'asc'}
+                                    direction={orderBy === 'sowValidTill' ? order : 'desc'}
                                     onClick={() => handleSort('sowValidTill')}
                                 >
                                     <b>SOWValidTill</b>
@@ -509,7 +517,7 @@ function ProjectList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'sowLastExtendedDate'}
-                                    direction={orderBy === 'sowLastExtendedDate' ? order : 'asc'}
+                                    direction={orderBy === 'sowLastExtendedDate' ? order : 'desc'}
                                     onClick={() => handleSort('sowLastExtendedDate')}
                                 >
                                     <b>SOWLastExtendedDate</b>
@@ -518,7 +526,7 @@ function ProjectList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'isActive'}
-                                    direction={orderBy === 'isActive' ? order : 'asc'}
+                                    direction={orderBy === 'isActive' ? order : 'desc'}
                                     onClick={() => handleSort('isActive')}
                                 >
                                     <b>Is Active</b>
@@ -527,7 +535,7 @@ function ProjectList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'createdBy'}
-                                    direction={orderBy === 'createdBy' ? order : 'asc'}
+                                    direction={orderBy === 'createdBy' ? order : 'desc'}
                                     onClick={() => handleSort('createdBy')}
                                 >
                                     <b>Created By</b>
@@ -536,7 +544,7 @@ function ProjectList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'createdDate'}
-                                    direction={orderBy === 'createdDate' ? order : 'asc'}
+                                    direction={orderBy === 'createdDate' ? order : 'desc'}
                                     onClick={() => handleSort('createdDate')}
                                 >
                                     <b>Created Date</b>
@@ -545,7 +553,7 @@ function ProjectList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'updatedBy'}
-                                    direction={orderBy === 'updatedBy' ? order : 'asc'}
+                                    direction={orderBy === 'updatedBy' ? order : 'desc'}
                                     onClick={() => handleSort('updatedBy')}
                                 >
                                     <b>Updated By</b>
@@ -554,7 +562,7 @@ function ProjectList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'updatedDate'}
-                                    direction={orderBy === 'updatedDate' ? order : 'asc'}
+                                    direction={orderBy === 'updatedDate' ? order : 'desc'}
                                     onClick={() => handleSort('updatedDate')}
                                 >
                                     <b>Updated Date</b>
