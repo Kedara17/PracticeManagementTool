@@ -106,7 +106,9 @@ function DepartmentList({isDrawerOpen}) {
         // Name field validation
         if (!currentDepartment.name.trim()) {
             validationErrors.name = "Name is required";
-        }  else if (departments.some(dep => dep.name.toLowerCase() === currentDepartment.name.toLowerCase() && dep.id !== currentDepartment.id)) {
+        }  else if (currentDepartment.name.length < 3) {
+            validationErrors.name = "Name must be at least 3 characters";
+         } else if (departments.some(dep => dep.name.toLowerCase() === currentDepartment.name.toLowerCase() && dep.id !== currentDepartment.id)) {
             validationErrors.name = "Name must be unique";
         }
         
@@ -140,8 +142,11 @@ function DepartmentList({isDrawerOpen}) {
         if (name === "name") {
             // Perform validation
             if (!value.trim()) {
-                setErrors((prevErrors) => ({ ...prevErrors, name: "Name is required" }));
-            }  // Check for uniqueness
+                setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
+            }  else if (value.length < 3) {
+                setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
+            } 
+             // Check for uniqueness
             else if (departments.some(dep => dep.name.toLowerCase() === value.toLowerCase() && dep.id !== currentDepartment.id)) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
             } else if (value.length === 50) {

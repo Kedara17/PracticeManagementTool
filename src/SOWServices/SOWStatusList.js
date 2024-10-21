@@ -96,7 +96,10 @@ function SOWStatusList({isDrawerOpen}) {
         // Name field validation
         if (!currentSOWStatus.status.trim()) {
             validationErrors.status = "Status is required";
-        } else if (SOWStatus.some(stat => stat.status === currentSOWStatus.status && stat.id !== currentSOWStatus.id)) {
+        } else if(!currentSOWStatus.status.length < 3){
+            validationErrors.status = "Status must be atleast 3 characters";
+        }
+        else if (SOWStatus.some(stat => stat.status === currentSOWStatus.status && stat.id !== currentSOWStatus.id)) {
             validationErrors.status = "Status must be unique";
         }
 
@@ -145,7 +148,9 @@ function SOWStatusList({isDrawerOpen}) {
             // Check if the name is empty or only whitespace
             if (!value.trim()) {
                 setErrors((prevErrors) => ({ ...prevErrors, status: "" }));
-            } 
+            } else if(value.length < 3) {
+                setErrors((prevErrors) => ({ ...prevErrors, status: ""}))
+            }
             // Check for uniqueness
             else if (SOWStatus.some(stat => stat.name === value && stat.id !== currentSOWStatus.id)) {
                 setErrors((prevErrors) => ({ ...prevErrors, status: "" }));

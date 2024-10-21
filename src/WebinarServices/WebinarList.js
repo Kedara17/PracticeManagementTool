@@ -135,6 +135,8 @@ function WebinarList({isDrawerOpen}) {
         // Title field validation
         if (!currentWebinar.title.trim()) {
             validationErrors.title = "Title is required";
+        } else if(!currentWebinar.title.length < 3) {
+            validationErrors.title = "Title must be atleast 3 characters";
         } else if (Webinars.some(web => web.title.toLowerCase() === currentWebinar.title.toLowerCase() && web.id !== currentWebinar.id)) {
             validationErrors.title = "Title must be unique";
         }
@@ -197,6 +199,8 @@ function WebinarList({isDrawerOpen}) {
             // Check if the title is empty or only whitespace
             if (!value.trim()) {
                 setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
+            }else if(value.length < 3) {
+                setErrors((prevErrors) => ({ ...prevErrors, title: ""}))
             }
             // Check for uniqueness
             else if (Webinars.some(web => web.title.toLowerCase() === value.toLowerCase() && web.id !== currentWebinar.id)) {
