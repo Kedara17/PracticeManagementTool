@@ -190,7 +190,8 @@ function DepartmentList({isDrawerOpen}) {
     }
 
     return (
-    <div style={{ display: 'flex', padding: '10px', marginLeft: isDrawerOpen ? 260 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
+    <div style={{ display: 'flex', padding: '10px', marginLeft: isDrawerOpen ? 240 : 0, 
+    transition: 'margin-left 0.3s', flexGrow: 1 }}>
         <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>Department Table List</h3>
         <div style={{ display: 'flex', marginBottom: '20px', width: '100%' }}>

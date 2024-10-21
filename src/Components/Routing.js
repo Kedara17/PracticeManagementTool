@@ -34,12 +34,11 @@ import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Home from './Home';
 import LoginPage from './LoginPage';
-import ProtectedRoute from './ProtectedRoute'; // Ensure this is correct
-//import EmployeeLoginPage from './EmployeeLoginPage';
-//import AdminLoginPage from './AdminLoginPage';
+import ProtectedRoute from './ProtectedRoute';
 import Profile from './Profile';
 
 function Routing() {
+
   return (
       <BrowserRouter>
       <Routes>

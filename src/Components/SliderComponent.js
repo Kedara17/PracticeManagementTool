@@ -9,7 +9,7 @@ function SliderComponent({ isDrawerOpen }) {
   
     useEffect(() => {
       // Adjust margin dynamically based on drawer state
-      setMarginLeft(isDrawerOpen ? 300 : 100);
+      setMarginLeft(isDrawerOpen ? 260 : 100);
     }, [isDrawerOpen]);
   
     const settings = {
