@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Table,TablePagination, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment, InputLabel } from '@mui/material';
+import { Table, TablePagination, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment, InputLabel } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
-import PaginationComponent from '../Components/PaginationComponent'; // Import your PaginationComponent
 
 function ContactTypeList({ isDrawerOpen }) {
     const [contactTypes, setcontactTypes] = useState([]);
@@ -19,7 +18,7 @@ function ContactTypeList({ isDrawerOpen }) {
         typeName: ''
     });
 
-    const [order, setOrder] = useState('asc'); // Order of sorting: 'asc' or 'desc'
+    const [order, setOrder] = useState('desc'); // Order of sorting: 'asc' or 'desc'
     const [orderBy, setOrderBy] = useState('createdDate'); // Column to sort by
     const [searchQuery, setSearchQuery] = useState(''); // State for search query
     const [errors, setErrors] = useState({
@@ -31,7 +30,6 @@ function ContactTypeList({ isDrawerOpen }) {
     useEffect(() => {
         const fetchContactType = async () => {
             try {
-                // const techResponse = await axios.get('http://172.17.31.61:5142/api/ContactType');
                 const contactTypeResponse = await axios.get('http://172.17.31.61:5142/api/contactType');
                 setcontactTypes(contactTypeResponse.data);
             } catch (error) {
@@ -45,8 +43,8 @@ function ContactTypeList({ isDrawerOpen }) {
     }, []);
 
     const handleSort = (property) => {
-        const isAsc = orderBy === property && order === 'asc';
-        setOrder(isAsc ? 'desc' : 'asc');
+        const isDesc = orderBy === property && order === 'desc';
+        setOrder(isDesc ? 'asc' : 'desc');
         setOrderBy(property);
     };
 
@@ -55,9 +53,17 @@ function ContactTypeList({ isDrawerOpen }) {
         const valueB = b[orderBy] || '';
 
         if (typeof valueA === 'string' && typeof valueB === 'string') {
-            return order === 'asc' ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
+            return order === 'desc'
+                ? valueB.localeCompare(valueA)
+                : valueA.localeCompare(valueB);
+        } else if (valueA instanceof Date && valueB instanceof Date) {
+            return order === 'desc'
+                ? valueB - valueA
+                : valueA - valueB;
         } else {
-            return order === 'asc' ? (valueA > valueB ? 1 : -1) : (valueB > valueA ? 1 : -1);
+            return order === 'desc'
+                ? (valueA > valueB ? 1 : -1)
+                : (valueB > valueA ? 1 : -1);
         }
     });
 
@@ -80,8 +86,6 @@ function ContactTypeList({ isDrawerOpen }) {
     };
 
     const handleDelete = (id) => {
-        //axios.delete(`http://localhost:5142/api/ContactType/${id}`)
-        // axios.delete(`http://172.17.31.61:5142/api/contactType/${id}`)
         axios.patch(`http://172.17.31.61:5142/api/contactType/${id}`)
             .then(response => {
                 setcontactTypes(contactTypes.filter(tech => tech.id !== id));
@@ -100,7 +104,7 @@ function ContactTypeList({ isDrawerOpen }) {
         // Name field validation
         if (!currentContactType.typeName.trim()) {
             validationErrors.typeName = "TypeName is required";
-        } else if(!currentContactType.typeName.length < 3) {
+        } else if (!currentContactType.typeName.length < 3) {
             validationErrors.typeName = "TypeName must be at least 3 characters";
         }
         else if (contactTypes.some(cont => cont.typeName.toLowerCase() === currentContactType.typeName.toLowerCase() && cont.id !== currentContactType.id)) {
@@ -117,13 +121,8 @@ function ContactTypeList({ isDrawerOpen }) {
         setErrors({});
 
         if (currentContactType.id) {
-            // Update existing ContactType
-            //axios.put(`http://localhost:5142/api/ContactType/${currentContactType.id}`, currentContactType)
             axios.put(`http://172.17.31.61:5142/api/contactType/${currentContactType.id}`, currentContactType)
                 .then(response => {
-                    console.log(response)
-                    //setcontactTypes([...contactTypes, response.data]);
-                    // setcontactTypes(response.data);
                     setcontactTypes(contactTypes.map(tech => tech.id === currentContactType.id ? response.data : tech));
                 })
                 .catch(error => {
@@ -132,8 +131,6 @@ function ContactTypeList({ isDrawerOpen }) {
                 });
 
         } else {
-            // Add new ContactType
-            //axios.post('http://localhost:5142/api/ContactType', currentContactType)
             axios.post('http://172.17.31.61:5142/api/contactType', currentContactType)
                 .then(response => {
                     setcontactTypes([...contactTypes, response.data]);
@@ -154,7 +151,7 @@ function ContactTypeList({ isDrawerOpen }) {
             // Check if the title is empty or only whitespace
             if (!value.trim()) {
                 setErrors((prevErrors) => ({ ...prevErrors, typeName: "" }));
-            }else if(value.length < 3){
+            } else if (value.length < 3) {
                 setErrors((prevErrors) => ({ ...prevErrors, typeName: "" }));
             }
             // Check for uniqueness
@@ -207,7 +204,7 @@ function ContactTypeList({ isDrawerOpen }) {
     }
 
     return (
-        <div style={{ display: 'flex',flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 240 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 240 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
             <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
                 <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>Contact Type Table List</h3>
             </div>
@@ -234,11 +231,10 @@ function ContactTypeList({ isDrawerOpen }) {
                 <Table>
                     <TableHead>
                         <TableRow>
-                            {/* <TableCell>Id</TableCell> */}
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'typeName'}
-                                    direction={orderBy === 'typeName' ? order : 'asc'}
+                                    direction={orderBy === 'typeName' ? order : 'desc'}
                                     onClick={() => handleSort('typeName')}
                                 >
                                     <b>TypeName</b>
@@ -247,7 +243,7 @@ function ContactTypeList({ isDrawerOpen }) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'isActive'}
-                                    direction={orderBy === 'isActive' ? order : 'asc'}
+                                    direction={orderBy === 'isActive' ? order : 'desc'}
                                     onClick={() => handleSort('isActive')}
                                 >
                                     <b>Is Active</b>
@@ -256,7 +252,7 @@ function ContactTypeList({ isDrawerOpen }) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'createdBy'}
-                                    direction={orderBy === 'createdBy' ? order : 'asc'}
+                                    direction={orderBy === 'createdBy' ? order : 'desc'}
                                     onClick={() => handleSort('createdBy')}
                                 >
                                     <b>Created By</b>
@@ -265,7 +261,7 @@ function ContactTypeList({ isDrawerOpen }) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'createdDate'}
-                                    direction={orderBy === 'createdDate' ? order : 'asc'}
+                                    direction={orderBy === 'createdDate' ? order : 'desc'}
                                     onClick={() => handleSort('createdDate')}
                                 >
                                     <b>Created Date</b>
@@ -274,7 +270,7 @@ function ContactTypeList({ isDrawerOpen }) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'updatedBy'}
-                                    direction={orderBy === 'updatedBy' ? order : 'asc'}
+                                    direction={orderBy === 'updatedBy' ? order : 'desc'}
                                     onClick={() => handleSort('updatedBy')}
                                 >
                                     <b>Updated By</b>
@@ -283,7 +279,7 @@ function ContactTypeList({ isDrawerOpen }) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'updatedDate'}
-                                    direction={orderBy === 'updatedDate' ? order : 'asc'}
+                                    direction={orderBy === 'updatedDate' ? order : 'desc'}
                                     onClick={() => handleSort('updatedDate')}
                                 >
                                     <b>Updated Date</b>
@@ -296,7 +292,6 @@ function ContactTypeList({ isDrawerOpen }) {
                         {filteredContactType.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((ContactType) => (
                             <TableRow key={ContactType.id}
                                 sx={{ backgroundColor: ContactType.isActive ? 'inherit' : '#FFCCCB' }} >
-                                {/* <TableCell>{ContactType.id}</TableCell> */}
                                 <TableCell>{ContactType.typeName}</TableCell>
                                 <TableCell>{ContactType.isActive ? 'Active' : 'Inactive'}</TableCell>
                                 <TableCell>{ContactType.createdBy}</TableCell>
@@ -315,14 +310,6 @@ function ContactTypeList({ isDrawerOpen }) {
                         ))}
                     </TableBody>
                 </Table>
-                {/* Pagination Component */}
-                {/* <PaginationComponent
-                    count={filteredContactType.length}
-                    page={page}
-                    rowsPerPage={rowsPerPage}
-                    handlePageChange={handlePageChange}
-                    handleRowsPerPageChange={handleRowsPerPageChange}
-                /> */}
             </TableContainer>
             <TablePagination
                 rowsPerPageOptions={[10, 25, 100]}
