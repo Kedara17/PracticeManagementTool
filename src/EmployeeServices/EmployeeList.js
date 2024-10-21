@@ -12,7 +12,7 @@ import dayjs from 'dayjs';
 import '../App.css';
 // import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
-function EmployeeList({isDrawerOpen}) {
+function EmployeeList({ isDrawerOpen }) {
     const [Employees, setEmployees] = useState([]);
     const [departments, setDepartments] = useState([]);
     const [designations, setDesignations] = useState([]);
@@ -46,7 +46,7 @@ function EmployeeList({isDrawerOpen}) {
 
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\W).{8,}$/;
 
-    const [order, setOrder] = useState('asc'); // Order of sorting: 'asc' or 'desc'
+    const [order, setOrder] = useState('desc'); // Order of sorting: 'asc' or 'desc'
     const [orderBy, setOrderBy] = useState('createdDate'); // Column to sort by
     const [searchQuery, setSearchQuery] = useState(''); // State for search query  
     const [errors, setErrors] = useState({
@@ -149,8 +149,8 @@ function EmployeeList({isDrawerOpen}) {
     }, []);
 
     const handleSort = (property) => {
-        const isAsc = orderBy === property && order === 'asc';
-        setOrder(isAsc ? 'desc' : 'asc');
+        const isDesc = orderBy === property && order === 'desc';
+        setOrder(isDesc ? 'asc' : 'desc');
         setOrderBy(property);
     };
 
@@ -163,9 +163,17 @@ function EmployeeList({isDrawerOpen}) {
         const valueB = b[orderBy] || '';
 
         if (typeof valueA === 'string' && typeof valueB === 'string') {
-            return order === 'asc' ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
+            return order === 'desc'
+                ? valueB.localeCompare(valueA)
+                : valueA.localeCompare(valueB);
+        } else if (valueA instanceof Date && valueB instanceof Date) {
+            return order === 'desc'
+                ? valueB - valueA
+                : valueA - valueB;
         } else {
-            return order === 'asc' ? (valueA > valueB ? 1 : -1) : (valueB > valueA ? 1 : -1);
+            return order === 'desc'
+                ? (valueA > valueB ? 1 : -1)
+                : (valueB > valueA ? 1 : -1);
         }
     });
 
@@ -371,7 +379,7 @@ function EmployeeList({isDrawerOpen}) {
     const handleChange = (e) => {
         const { name, value } = e.target;
         setCurrentEmployee({ ...currentEmployee, [name]: value });
-      
+
         if (name === "name") {
             // Check if the title is empty or only whitespace
             if (!value.trim()) {
@@ -380,7 +388,7 @@ function EmployeeList({isDrawerOpen}) {
             // Check for uniqueness
             else if (Employees.some(emp => emp.name.toLowerCase() === value.toLowerCase() && emp.id !== currentEmployee.id)) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
-            }else if (value.length === 50) {
+            } else if (value.length === 50) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "More than 50 characters are not allowed" }));
             }
             // Clear the title error if valid
@@ -435,7 +443,7 @@ function EmployeeList({isDrawerOpen}) {
             if (value) {
                 setErrors((prevErrors) => ({ ...prevErrors, projection: "" }));
             }
-        }        
+        }
         if (name === 'password') {
             if (!value) {
                 setErrors({ ...errors, password: 'Password is required' });
@@ -457,7 +465,7 @@ function EmployeeList({isDrawerOpen}) {
                 if (numericValue) {
                     setErrors((prevErrors) => ({
                         ...prevErrors,
-                        phoneNo: "" 
+                        phoneNo: ""
                     }));
                 }
             }
@@ -501,7 +509,7 @@ function EmployeeList({isDrawerOpen}) {
             if (value) {
                 setErrors((prevErrors) => ({ ...prevErrors, technology: "" }));
             }
-        }       
+        }
     };
     const validateForm = () => {
         let formIsValid = true;
@@ -575,7 +583,7 @@ function EmployeeList({isDrawerOpen}) {
     }
 
     return (
-        <div style={{ display: 'flex',flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 250 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 250 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
             <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
                 <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>Employee Table List</h3>
             </div>
@@ -606,7 +614,7 @@ function EmployeeList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'name'}
-                                    direction={orderBy === 'name' ? order : 'asc'}
+                                    direction={orderBy === 'name' ? order : 'desc'}
                                     onClick={() => handleSort('name')}
                                 >
                                     Name
@@ -615,7 +623,7 @@ function EmployeeList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'designation'}
-                                    direction={orderBy === 'designation' ? order : 'asc'}
+                                    direction={orderBy === 'designation' ? order : 'desc'}
                                     onClick={() => handleSort('designation')}
                                 >
                                     Designation
@@ -624,7 +632,7 @@ function EmployeeList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'employeeId'}
-                                    direction={orderBy === 'employeeId' ? order : 'asc'}
+                                    direction={orderBy === 'employeeId' ? order : 'desc'}
                                     onClick={() => handleSort('employeeId')}
                                 >
                                     EmployeeId
@@ -633,7 +641,7 @@ function EmployeeList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'emailId'}
-                                    direction={orderBy === 'emailId' ? order : 'asc'}
+                                    direction={orderBy === 'emailId' ? order : 'desc'}
                                     onClick={() => handleSort('emailId')}
                                 >
                                     EmailId
@@ -642,7 +650,7 @@ function EmployeeList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'department'}
-                                    direction={orderBy === 'department' ? order : 'asc'}
+                                    direction={orderBy === 'department' ? order : 'desc'}
                                     onClick={() => handleSort('department')}
                                 >
                                     Department
@@ -651,7 +659,7 @@ function EmployeeList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'reportingTo'}
-                                    direction={orderBy === 'reportingTo' ? order : 'asc'}
+                                    direction={orderBy === 'reportingTo' ? order : 'desc'}
                                     onClick={() => handleSort('reportingTo')}
                                 >
                                     ReportingTo
@@ -660,7 +668,7 @@ function EmployeeList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'joiningDate'}
-                                    direction={orderBy === 'joiningDate' ? order : 'asc'}
+                                    direction={orderBy === 'joiningDate' ? order : 'desc'}
                                     onClick={() => handleSort('joiningDate')}
                                 >
                                     JoiningDate
@@ -669,7 +677,7 @@ function EmployeeList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'relievingDate'}
-                                    direction={orderBy === 'relievingDate' ? order : 'asc'}
+                                    direction={orderBy === 'relievingDate' ? order : 'desc'}
                                     onClick={() => handleSort('relievingDate')}
                                 >
                                     RelievingDate
@@ -678,7 +686,7 @@ function EmployeeList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'projection'}
-                                    direction={orderBy === 'projection' ? order : 'asc'}
+                                    direction={orderBy === 'projection' ? order : 'desc'}
                                     onClick={() => handleSort('projection')}
                                 >
                                     Projection
@@ -687,7 +695,7 @@ function EmployeeList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'phoneNo'}
-                                    direction={orderBy === 'phoneNo' ? order : 'asc'}
+                                    direction={orderBy === 'phoneNo' ? order : 'desc'}
                                     onClick={() => handleSort('phoneNo')}
                                 >
                                     PhoneNo
@@ -696,7 +704,7 @@ function EmployeeList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'profile'}
-                                    direction={orderBy === 'profile' ? order : 'asc'}
+                                    direction={orderBy === 'profile' ? order : 'desc'}
                                     onClick={() => handleSort('profile')}
                                 >
                                     Profile
@@ -705,7 +713,7 @@ function EmployeeList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'role'}
-                                    direction={orderBy === 'role' ? order : 'asc'}
+                                    direction={orderBy === 'role' ? order : 'desc'}
                                     onClick={() => handleSort('role')}
                                 >
                                     Role
@@ -714,7 +722,7 @@ function EmployeeList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'isActive'}
-                                    direction={orderBy === 'isActive' ? order : 'asc'}
+                                    direction={orderBy === 'isActive' ? order : 'desc'}
                                     onClick={() => handleSort('isActive')}
                                 >
                                     Is Active
@@ -723,7 +731,7 @@ function EmployeeList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'createdBy'}
-                                    direction={orderBy === 'createdBy' ? order : 'asc'}
+                                    direction={orderBy === 'createdBy' ? order : 'desc'}
                                     onClick={() => handleSort('createdBy')}
                                 >
                                     Created By
@@ -732,7 +740,7 @@ function EmployeeList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'createdDate'}
-                                    direction={orderBy === 'createdDate' ? order : 'asc'}
+                                    direction={orderBy === 'createdDate' ? order : 'desc'}
                                     onClick={() => handleSort('createdDate')}
                                 >
                                     Created Date
@@ -741,7 +749,7 @@ function EmployeeList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'updatedBy'}
-                                    direction={orderBy === 'updatedBy' ? order : 'asc'}
+                                    direction={orderBy === 'updatedBy' ? order : 'desc'}
                                     onClick={() => handleSort('updatedBy')}
                                 >
                                     Updated By
@@ -750,7 +758,7 @@ function EmployeeList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'updatedDate'}
-                                    direction={orderBy === 'updatedDate' ? order : 'asc'}
+                                    direction={orderBy === 'updatedDate' ? order : 'desc'}
                                     onClick={() => handleSort('updatedDate')}
                                 >
                                     Updated Date
@@ -774,7 +782,6 @@ function EmployeeList({isDrawerOpen}) {
                                 <TableCell>{Employee.projection}</TableCell>
                                 <TableCell>{Employee.phoneNo}</TableCell>
                                 {/* <TableCell>{Employee.profile}</TableCell> */}
-                                <TableCell>{Employee.role}</TableCell>
                                 <TableCell>
                                     {Employee.profile ? (
                                         <>
@@ -784,6 +791,7 @@ function EmployeeList({isDrawerOpen}) {
                                         'N/A'
                                     )}
                                 </TableCell>
+                                <TableCell>{Employee.role}</TableCell>
                                 <TableCell>{Employee.isActive ? 'Active' : 'Inactive'}</TableCell>
                                 <TableCell>{Employee.createdBy}</TableCell>
                                 <TableCell>{new Date(Employee.createdDate).toLocaleString()}</TableCell>
@@ -827,7 +835,7 @@ function EmployeeList({isDrawerOpen}) {
                         fullWidth
                         error={!!errors.name}
                         helperText={errors.name}
-                        inputProps={{ maxLength: 50 }}                      
+                        inputProps={{ maxLength: 50 }}
                     />
                     <InputLabel>Designation</InputLabel>
                     <Select
@@ -853,8 +861,8 @@ function EmployeeList({isDrawerOpen}) {
                         value={currentEmployee.employeeID}
                         onChange={(e) => {
                             const value = e.target.value;
-                            const numericValue = value.replace(/\D/g, '');  
-                            handleChange({ target: { name: e.target.name, value: numericValue } }); 
+                            const numericValue = value.replace(/\D/g, '');
+                            handleChange({ target: { name: e.target.name, value: numericValue } });
                         }}
                         fullWidth
                         error={!!errors.employeeID}
@@ -949,7 +957,7 @@ function EmployeeList({isDrawerOpen}) {
                     <InputLabel>Joining Date</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                        className='datetime'
+                            className='datetime'
                             value={currentEmployee.joiningDate ? dayjs(currentEmployee.joiningDate) : null}
                             onChange={handleJoiningDateChange}
                             renderInput={(params) => (
@@ -961,7 +969,7 @@ function EmployeeList({isDrawerOpen}) {
                     <InputLabel>Relieving Date</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                         className='datetime'
+                            className='datetime'
                             value={currentEmployee.relievingDate ? dayjs(currentEmployee.relievingDate) : null}
                             onChange={handleRelievingDateChange}
                             renderInput={(params) => (
