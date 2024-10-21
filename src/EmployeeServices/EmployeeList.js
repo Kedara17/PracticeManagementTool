@@ -624,9 +624,9 @@ function EmployeeList({ isDrawerOpen }) {
                             </TableCell>
                             <TableCell>
                                 <TableSortLabel
-                                    active={orderBy === 'employeeID'}
-                                    direction={orderBy === 'employeeID' ? order : 'desc'}
-                                    onClick={() => handleSort('employeeID')}
+                                    active={orderBy === 'employeeId'}
+                                    direction={orderBy === 'employeeId' ? order : 'asc'}
+                                    onClick={() => handleSort('employeeId')}
                                 >
                                     EmployeeID
                                 </TableSortLabel>
