@@ -1,17 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Select,TablePagination, MenuItem, Table, InputLabel, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
+import { Select, TablePagination, MenuItem, Table, InputLabel, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
-import PaginationComponent from '../Components/PaginationComponent'; // Import your PaginationComponent
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import '../App.css';
 
-function POCList({isDrawerOpen}) {
+function POCList({ isDrawerOpen }) {
     const [POCs, setPOCs] = useState([]);
     const [Clients, setClients] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -30,10 +29,10 @@ function POCList({isDrawerOpen}) {
         completedDate: '',
         document: ''
     });
-    const [order, setOrder] = useState('asc'); // Order of sorting: 'asc' or 'desc'
+    const [order, setOrder] = useState('desc'); // Order of sorting: 'asc' or 'desc'
     const [orderBy, setOrderBy] = useState('createdDate'); // Column to sort by
     const [searchQuery, setSearchQuery] = useState(''); // State for search query
-    const options = ['InProgress','InReview','Completed'];
+    const options = ['InProgress', 'InReview', 'Completed'];
     const [errors, setErrors] = useState({
         title: '',
         client: '',
@@ -47,7 +46,6 @@ function POCList({isDrawerOpen}) {
     useEffect(() => {
         const fetchPOCs = async () => {
             try {
-                // const pocResponse = await axios.get('http://localhost:5254/api/POC');
                 const pocResponse = await axios.get('http://172.17.31.61:5254/api/poc');
                 setPOCs(pocResponse.data);
             } catch (error) {
@@ -59,7 +57,6 @@ function POCList({isDrawerOpen}) {
 
         const fetchClients = async () => {
             try {
-                // const clientResponse = await axios.get('http://localhost:5142/api/Client');
                 const clientResponse = await axios.get('http://172.17.31.61:5142/api/client');
                 setClients(clientResponse.data);
             } catch (error) {
@@ -73,8 +70,8 @@ function POCList({isDrawerOpen}) {
     }, []);
 
     const handleSort = (property) => {
-        const isAsc = orderBy === property && order === 'asc';
-        setOrder(isAsc ? 'desc' : 'asc');
+        const isDesc = orderBy === property && order === 'desc';
+        setOrder(isDesc ? 'asc' : 'desc');
         setOrderBy(property);
     };
 
@@ -83,25 +80,33 @@ function POCList({isDrawerOpen}) {
         const valueB = b[orderBy] || '';
 
         if (typeof valueA === 'string' && typeof valueB === 'string') {
-            return order === 'asc' ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
+            return order === 'desc'
+                ? valueB.localeCompare(valueA)
+                : valueA.localeCompare(valueB);
+        } else if (valueA instanceof Date && valueB instanceof Date) {
+            return order === 'desc'
+                ? valueB - valueA
+                : valueA - valueB;
         } else {
-            return order === 'asc' ? (valueA > valueB ? 1 : -1) : (valueB > valueA ? 1 : -1);
+            return order === 'desc'
+                ? (valueA > valueB ? 1 : -1)
+                : (valueB > valueA ? 1 : -1);
         }
     });
 
-        const filteredPOCs = POCs.filter(poc => 
+    const filteredPOCs = sortedPOCs.filter(poc =>
         (poc && poc.title.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        
+
         (poc && poc.client && poc.client.toLowerCase().includes(searchQuery.toLowerCase())) ||
-    
+
         (poc && poc.status && poc.status.toLowerCase().includes(searchQuery.toLowerCase())) ||
 
         (poc && poc.targetDate && poc.targetDate.toLowerCase().includes(searchQuery.toLowerCase())) ||
-        
+
         (poc && poc.completedDate && poc.completedDate.toLowerCase().includes(searchQuery.toLowerCase())) ||
-       
-        (poc && poc.document && poc.document.toLowerCase().includes(searchQuery.toLowerCase())) 
-       
+
+        (poc && poc.document && poc.document.toLowerCase().includes(searchQuery.toLowerCase()))
+
     );
 
     const handleAdd = () => {
@@ -122,8 +127,6 @@ function POCList({isDrawerOpen}) {
     };
 
     const handleDelete = (id) => {
-        // axios.delete(`http://localhost:5254/api/POC/${id}`)
-        // axios.delete(`http://172.17.31.61:5254/api/poc/${id}`)
         axios.patch(`http://172.17.31.61:5254/api/poc/${id}`)
             .then(response => {
                 setPOCs(POCs.filter(tech => tech.id !== id));
@@ -137,13 +140,14 @@ function POCList({isDrawerOpen}) {
 
     const handleSave = async () => {
         let validationErrors = {};
-        
+
         if (!currentPOC.title.trim()) {
             validationErrors.title = "POC title is required";
+
         }else if(currentPOC.title.length < 3) {
             validationErrors.title = "POC title must be atleast 3 characters";
         }
-         else if (POCs.some(tech => tech.title.toLowerCase() === currentPOC.title.toLowerCase() && tech.id !== currentPOC.id)) {
+        else if (POCs.some(tech => tech.title.toLowerCase() === currentPOC.title.toLowerCase() && tech.id !== currentPOC.id)) {
             validationErrors.title = "POC title must be unique";
         }
         if (!currentPOC.client) {
@@ -186,11 +190,9 @@ function POCList({isDrawerOpen}) {
 
             currentPOC.document = documentPath;
             if (currentPOC.id) {
-                // axios.put(`http://localhost:5254/api/poc/${currentPOC.id}`, currentPOC)
                 const response = axios.put(`http://localhost:5254/api/POC/${currentPOC.id}`, currentPOC)
                 setPOCs(POCs.map(poc => poc.id === currentPOC.id ? response.data : poc));
             } else {
-                // axios.post('http://localhost:5254/api/poc', currentPOC)
                 const response = axios.post('http://localhost:5254/api/POC', currentPOC)
                 setPOCs([...POCs, response.data]);
             }
@@ -209,8 +211,8 @@ function POCList({isDrawerOpen}) {
         if (name === "title") {
             if (value.length === 200) {
                 setErrors((prevErrors) => ({ ...prevErrors, title: "More than 200 characters are not allowed" }));
-            }else if(value.length < 3) {
-                setErrors((prevErrors) => ({ ...prevErrors, title: ""}))
+            } else if (value.length < 3) {
+                setErrors((prevErrors) => ({ ...prevErrors, title: "" }))
             }
             else {
                 setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
@@ -337,7 +339,7 @@ function POCList({isDrawerOpen}) {
     }
 
     return (
-        <div style={{ display: 'flex',flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 240 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 240 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
             <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
                 <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>POC Table List</h3>
             </div>
@@ -367,7 +369,7 @@ function POCList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'title'}
-                                    direction={orderBy === 'title' ? order : 'asc'}
+                                    direction={orderBy === 'title' ? order : 'desc'}
                                     onClick={() => handleSort('title')}
                                 >
                                     Title
@@ -376,7 +378,7 @@ function POCList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'client'}
-                                    direction={orderBy === 'client' ? order : 'asc'}
+                                    direction={orderBy === 'client' ? order : 'desc'}
                                     onClick={() => handleSort('client')}
                                 >
                                     Client
@@ -385,7 +387,7 @@ function POCList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'status'}
-                                    direction={orderBy === 'status' ? order : 'asc'}
+                                    direction={orderBy === 'status' ? order : 'desc'}
                                     onClick={() => handleSort('status')}
                                 >
                                     Status
@@ -394,7 +396,7 @@ function POCList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'targetDate'}
-                                    direction={orderBy === 'targetDate' ? order : 'asc'}
+                                    direction={orderBy === 'targetDate' ? order : 'desc'}
                                     onClick={() => handleSort('targetDate')}
                                 >
                                     TargetDate
@@ -403,7 +405,7 @@ function POCList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'completedDate'}
-                                    direction={orderBy === 'completedDate' ? order : 'asc'}
+                                    direction={orderBy === 'completedDate' ? order : 'desc'}
                                     onClick={() => handleSort('completedDate')}
                                 >
                                     CompletedDate
@@ -412,7 +414,7 @@ function POCList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'document'}
-                                    direction={orderBy === 'document' ? order : 'asc'}
+                                    direction={orderBy === 'document' ? order : 'desc'}
                                     onClick={() => handleSort('document')}
                                 >
                                     Document
@@ -421,7 +423,7 @@ function POCList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'isActive'}
-                                    direction={orderBy === 'isActive' ? order : 'asc'}
+                                    direction={orderBy === 'isActive' ? order : 'desc'}
                                     onClick={() => handleSort('isActive')}
                                 >
                                     Is Active
@@ -430,7 +432,7 @@ function POCList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'createdBy'}
-                                    direction={orderBy === 'createdBy' ? order : 'asc'}
+                                    direction={orderBy === 'createdBy' ? order : 'desc'}
                                     onClick={() => handleSort('createdBy')}
                                 >
                                     Created By
@@ -439,7 +441,7 @@ function POCList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'createdDate'}
-                                    direction={orderBy === 'createdDate' ? order : 'asc'}
+                                    direction={orderBy === 'createdDate' ? order : 'desc'}
                                     onClick={() => handleSort('createdDate')}
                                 >
                                     Created Date
@@ -448,7 +450,7 @@ function POCList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'updatedBy'}
-                                    direction={orderBy === 'updatedBy' ? order : 'asc'}
+                                    direction={orderBy === 'updatedBy' ? order : 'desc'}
                                     onClick={() => handleSort('updatedBy')}
                                 >
                                     Updated By
@@ -457,7 +459,7 @@ function POCList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'updatedDate'}
-                                    direction={orderBy === 'updatedDate' ? order : 'asc'}
+                                    direction={orderBy === 'updatedDate' ? order : 'desc'}
                                     onClick={() => handleSort('updatedDate')}
                                 >
                                     Updated Date
@@ -476,11 +478,11 @@ function POCList({isDrawerOpen}) {
                                 <TableCell>{poc.targetDate}</TableCell>
                                 <TableCell>{poc.completedDate}</TableCell>
                                 <TableCell>{poc.document}</TableCell>
-                                <TableCell>{poc.isActive ? 'Yes' : 'No'}</TableCell>
+                                <TableCell>{poc.isActive ? 'Active' : 'Inactive'}</TableCell>
                                 <TableCell>{poc.createdBy}</TableCell>
-                                <TableCell>{new Date(poc.createdDate).toLocaleDateString()}</TableCell>
+                                <TableCell>{poc.createdDate}</TableCell>
                                 <TableCell>{poc.updatedBy || 'N/A'}</TableCell>
-                                <TableCell>{new Date(poc.updatedDate).toLocaleDateString()}</TableCell>
+                                <TableCell>{poc.updatedDate}</TableCell>
                                 <TableCell >
                                     <IconButton onClick={() => handleUpdate(poc)}>
                                         <EditIcon color="primary" />
@@ -493,13 +495,6 @@ function POCList({isDrawerOpen}) {
                         ))}
                     </TableBody>
                 </Table>
-                {/* <PaginationComponent
-                    count={filteredPOCs.length}
-                    page={page}
-                    rowsPerPage={rowsPerPage}
-                    handlePageChange={handlePageChange}
-                    handleRowsPerPageChange={handleRowsPerPageChange}
-                /> */}
             </TableContainer>
             <TablePagination
                 rowsPerPageOptions={[10, 25, 100]}
@@ -553,16 +548,16 @@ function POCList({isDrawerOpen}) {
                         value={currentPOC.status}
                         onChange={handleChange}
                         fullWidth
-                        error={!!errors.status} 
+                        error={!!errors.status}
                         inputProps={{ maxLength: 50 }}
-                        >
-                            {options.map((option, index) => (
-                                <MenuItem key={index} value={option}>
-                                    {option}
-                                    </MenuItem>
-                            ))}
-                            </Select>
-                            {errors.status && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.status}</Typography>}                                         
+                    >
+                        {options.map((option, index) => (
+                            <MenuItem key={index} value={option}>
+                                {option}
+                            </MenuItem>
+                        ))}
+                    </Select>
+                    {errors.status && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.status}</Typography>}
                     <InputLabel>TargetDate</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
@@ -587,11 +582,11 @@ function POCList({isDrawerOpen}) {
                         />
                     </LocalizationProvider>
                     {errors.completedDate && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.completedDate}</Typography>}
-                    <InputLabel>POC Document</InputLabel>                                       
+                    <InputLabel>POC Document</InputLabel>
                     <TextField
                         type="file"
                         margin="dense"
-                        name="document"                                            
+                        name="document"
                         onChange={handleChange}
                         fullWidth
                         required={!currentPOC.id}

@@ -1,17 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Select,TablePagination, MenuItem, Table, InputLabel, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
+import { Select, TablePagination, MenuItem, Table, InputLabel, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
-import PaginationComponent from '../Components/PaginationComponent'; // Import your PaginationComponent
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import '../App.css';
 
-function InterviewList({isDrawerOpen}) {
+function InterviewList({ isDrawerOpen }) {
     const [Interviews, setInterviews] = useState([]);
     const [SOWRequirement, setSOWRequirement] = useState([]);
     const [InterviewStatus, setInterviewStatus] = useState([]);
@@ -33,7 +32,7 @@ function InterviewList({isDrawerOpen}) {
         recruiter: ''
     });
 
-    const [order, setOrder] = useState('asc'); // Order of sorting: 'asc' or 'desc'
+    const [order, setOrder] = useState('desc'); // Order of sorting: 'asc' or 'desc'
     const [orderBy, setOrderBy] = useState('createdDate'); // Column to sort by
     const [searchQuery, setSearchQuery] = useState(''); // State for search query
     const [errors, setErrors] = useState({
@@ -96,8 +95,8 @@ function InterviewList({isDrawerOpen}) {
     }, []);
 
     const handleSort = (property) => {
-        const isAsc = orderBy === property && order === 'asc';
-        setOrder(isAsc ? 'desc' : 'asc');
+        const isDesc = orderBy === property && order === 'desc';
+        setOrder(isDesc ? 'asc' : 'desc');
         setOrderBy(property);
     };
 
@@ -106,9 +105,17 @@ function InterviewList({isDrawerOpen}) {
         const valueB = b[orderBy] || '';
 
         if (typeof valueA === 'string' && typeof valueB === 'string') {
-            return order === 'asc' ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
+            return order === 'desc'
+                ? valueB.localeCompare(valueA)
+                : valueA.localeCompare(valueB);
+        } else if (valueA instanceof Date && valueB instanceof Date) {
+            return order === 'desc'
+                ? valueB - valueA
+                : valueA - valueB;
         } else {
-            return order === 'asc' ? (valueA > valueB ? 1 : -1) : (valueB > valueA ? 1 : -1);
+            return order === 'desc'
+                ? (valueA > valueB ? 1 : -1)
+                : (valueB > valueA ? 1 : -1);
         }
     });
 
@@ -142,8 +149,6 @@ function InterviewList({isDrawerOpen}) {
     };
 
     const handleDelete = (id) => {
-        //axios.delete(`http://localhost:5200/api/Interview/${id}`)
-        // axios.delete(`http://172.17.31.61:5200/api/interview/${id}`)
         axios.patch(`http://172.17.31.61:5200/api/interview/${id}`)
             .then(response => {
                 setInterviews(Interviews.filter(tech => tech.id !== id));
@@ -164,6 +169,7 @@ function InterviewList({isDrawerOpen}) {
         }
         if (!currentInterview.name) {
             validationErrors.name = "Name is required";
+
         }else if(currentInterview.name.length < 3) {
             validationErrors.name = "Name must be atleast 3 characters";
         }
@@ -193,13 +199,8 @@ function InterviewList({isDrawerOpen}) {
         setErrors({});
 
         if (currentInterview.id) {
-            // Update existing Interview
-            //axios.put(`http://localhost:5200/api/Interview/${currentInterview.id}`, currentInterview)
             axios.put(`http://172.17.31.61:5200/api/interview/${currentInterview.id}`, currentInterview)
                 .then(response => {
-                    console.log(response)
-                    //setInterviews([...Interviews, response.data]);
-                    // setInterviews(response.data);
                     setInterviews(Interviews.map(tech => tech.id === currentInterview.id ? response.data : tech));
                 })
                 .catch(error => {
@@ -208,8 +209,6 @@ function InterviewList({isDrawerOpen}) {
                 });
 
         } else {
-            // Add new Interview
-            //axios.post('http://localhost:5200/api/Interview', currentInterview)
             axios.post('http://172.17.31.61:5200/api/interview', currentInterview)
                 .then(response => {
                     setInterviews([...Interviews, response.data]);
@@ -229,8 +228,8 @@ function InterviewList({isDrawerOpen}) {
         if (name === "sowRequirement") {
             if (value) {
                 setErrors((prevErrors) => ({ ...prevErrors, sowRequirement: "" }));
-            }else if(value.length < 3) {
-                setErrors((prevErrors) => ({ ...prevErrors, sowRequirement: ""}))
+            } else if (value.length < 3) {
+                setErrors((prevErrors) => ({ ...prevErrors, sowRequirement: "" }))
             }
         }
         if (name === "name") {
@@ -324,7 +323,7 @@ function InterviewList({isDrawerOpen}) {
     }
 
     return (
-        <div style={{ display: 'flex',flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 240 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 240 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
             <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
                 <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>Interview Table List</h3>
             </div>
@@ -354,7 +353,7 @@ function InterviewList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'sowRequirement'}
-                                    direction={orderBy === 'sowRequirement' ? order : 'asc'}
+                                    direction={orderBy === 'sowRequirement' ? order : 'desc'}
                                     onClick={() => handleSort('sowRequirement')}
                                 >
                                     <b>SOWRequirement</b>
@@ -363,7 +362,7 @@ function InterviewList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'name'}
-                                    direction={orderBy === 'name' ? order : 'asc'}
+                                    direction={orderBy === 'name' ? order : 'desc'}
                                     onClick={() => handleSort('name')}
                                 >
                                     <b>Name</b>
@@ -372,7 +371,7 @@ function InterviewList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'interviewDate'}
-                                    direction={orderBy === 'interviewDate' ? order : 'asc'}
+                                    direction={orderBy === 'interviewDate' ? order : 'desc'}
                                     onClick={() => handleSort('interviewDate')}
                                 >
                                     <b>InterviewDate</b>
@@ -381,7 +380,7 @@ function InterviewList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'yearsOfExperience'}
-                                    direction={orderBy === 'yearsOfExperience' ? order : 'asc'}
+                                    direction={orderBy === 'yearsOfExperience' ? order : 'desc'}
                                     onClick={() => handleSort('yearsOfExperience')}
                                 >
                                     <b>YearsOfExperience</b>
@@ -390,15 +389,16 @@ function InterviewList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'status'}
-                                    direction={orderBy === 'status' ? order : 'asc'}
+                                    direction={orderBy === 'status' ? order : 'desc'}
                                     onClick={() => handleSort('status')}
                                 >
-                                    <b>Status</b>                                </TableSortLabel>
+                                    <b>Status</b>
+                                </TableSortLabel>
                             </TableCell>
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'on_Boarding'}
-                                    direction={orderBy === 'on_Boarding' ? order : 'asc'}
+                                    direction={orderBy === 'on_Boarding' ? order : 'desc'}
                                     onClick={() => handleSort('on_Boarding')}
                                 >
                                     <b>On_Boarding</b>
@@ -407,7 +407,7 @@ function InterviewList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'recuriter'}
-                                    direction={orderBy === 'recuriter' ? order : 'asc'}
+                                    direction={orderBy === 'recuriter' ? order : 'desc'}
                                     onClick={() => handleSort('recuriter')}
                                 >
                                     <b>Recuriter</b>
@@ -416,7 +416,7 @@ function InterviewList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'isActive'}
-                                    direction={orderBy === 'isActive' ? order : 'asc'}
+                                    direction={orderBy === 'isActive' ? order : 'desc'}
                                     onClick={() => handleSort('isActive')}
                                 >
                                     <b>Is Active</b>
@@ -425,7 +425,7 @@ function InterviewList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'createdBy'}
-                                    direction={orderBy === 'createdBy' ? order : 'asc'}
+                                    direction={orderBy === 'createdBy' ? order : 'desc'}
                                     onClick={() => handleSort('createdBy')}
                                 >
                                     <b>Created By</b>
@@ -434,7 +434,7 @@ function InterviewList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'createdDate'}
-                                    direction={orderBy === 'createdDate' ? order : 'asc'}
+                                    direction={orderBy === 'createdDate' ? order : 'desc'}
                                     onClick={() => handleSort('createdDate')}
                                 >
                                     <b>Created Date</b>
@@ -443,7 +443,7 @@ function InterviewList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'updatedBy'}
-                                    direction={orderBy === 'updatedBy' ? order : 'asc'}
+                                    direction={orderBy === 'updatedBy' ? order : 'desc'}
                                     onClick={() => handleSort('updatedBy')}
                                 >
                                     <b>Updated By</b>
@@ -452,7 +452,7 @@ function InterviewList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'updatedDate'}
-                                    direction={orderBy === 'updatedDate' ? order : 'asc'}
+                                    direction={orderBy === 'updatedDate' ? order : 'desc'}
                                     onClick={() => handleSort('updatedDate')}
                                 >
                                     <b>Updated Date</b>
@@ -465,7 +465,6 @@ function InterviewList({isDrawerOpen}) {
                         {filteredInterviews.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((Interview) => (
                             <TableRow key={Interview.id}
                                 sx={{ backgroundColor: Interview.isActive ? 'inherit' : '#FFCCCB' }} >
-                                {/* <TableCell>{Interview.id}</TableCell> */}
                                 <TableCell>{Interview.sowRequirement}</TableCell>
                                 <TableCell>{Interview.name}</TableCell>
                                 <TableCell>{Interview.interviewDate}</TableCell>
@@ -475,9 +474,9 @@ function InterviewList({isDrawerOpen}) {
                                 <TableCell>{Interview.recruiter}</TableCell>
                                 <TableCell>{Interview.isActive ? 'Active' : 'Inactive'}</TableCell>
                                 <TableCell>{Interview.createdBy}</TableCell>
-                                <TableCell>{new Date(Interview.createdDate).toLocaleString()}</TableCell>
+                                <TableCell>{Interview.createdDate}</TableCell>
                                 <TableCell>{Interview.updatedBy || 'N/A'}</TableCell>
-                                <TableCell>{new Date(Interview.updatedDate).toLocaleString() || 'N/A'}</TableCell>
+                                <TableCell>{Interview.updatedDate || 'N/A'}</TableCell>
                                 <TableCell >
                                     <IconButton onClick={() => handleUpdate(Interview)}>
                                         <EditIcon color="primary" />
@@ -490,13 +489,6 @@ function InterviewList({isDrawerOpen}) {
                         ))}
                     </TableBody>
                 </Table>
-                {/* <PaginationComponent
-                    count={filteredInterviews.length}
-                    page={page}
-                    rowsPerPage={rowsPerPage}
-                    handlePageChange={handlePageChange}
-                    handleRowsPerPageChange={handleRowsPerPageChange}
-                /> */}
             </TableContainer>
             <TablePagination
                 rowsPerPageOptions={[10, 25, 100]}
@@ -543,7 +535,7 @@ function InterviewList({isDrawerOpen}) {
                     <InputLabel>InterviewDate</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                         className='datetime'
+                            className='datetime'
                             value={currentInterview.interviewDate ? dayjs(currentInterview.interviewDate) : null}
                             onChange={handleInterviewDateChange}
                             renderInput={(params) => (
@@ -587,7 +579,7 @@ function InterviewList({isDrawerOpen}) {
                     <InputLabel>On_Boarding</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                         className='datetime'
+                            className='datetime'
                             value={currentInterview.on_Boarding ? dayjs(currentInterview.on_Boarding) : null}
                             onChange={handleOnBoardingDateChange}
                             renderInput={(params) => (

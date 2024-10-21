@@ -4,7 +4,6 @@ import { Autocomplete,TablePagination, ListItemText, Checkbox, Select, MenuItem,
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
-import PaginationComponent from '../Components/PaginationComponent'; // Import your PaginationComponent
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -167,7 +166,6 @@ function ProjectList({isDrawerOpen}) {
     };
 
     const handleDelete = (id) => {
-        //axios.delete(`http://localhost:5151/api/Project/${id}`)
         axios.delete(`http://172.17.31.61:5151/api/project/${id}`)
             .then(response => {
                 setProjects(Projects.filter(tech => tech.id !== id));
@@ -238,13 +236,8 @@ function ProjectList({isDrawerOpen}) {
         };
 
         if (currentProject.id) {
-            // Update existing Project
-            //axios.put(`http://localhost:5151/api/Project/${currentProject.id}`, currentProject)
             axios.put(`http://172.17.31.61:5151/api/project/${currentProject.id}`, projectToSave)
                 .then(response => {
-                    console.log(response)
-                    //setProjects([...Projects, response.data]);
-                    // setProjects(response.data);
                     setProjects(Projects.map(tech => tech.id === currentProject.id ? response.data : tech));
                 })
                 .catch(error => {
@@ -253,8 +246,6 @@ function ProjectList({isDrawerOpen}) {
                 });
 
         } else {
-            // Add new Project
-            //axios.post('http://localhost:5151/api/Project', currentProject)
             axios.post('http://172.17.31.61:5151/api/project', projectToSave)
                 .then(response => {
                     setProjects([...Projects, response.data]);
@@ -441,7 +432,6 @@ function ProjectList({isDrawerOpen}) {
                 <Table>
                     <TableHead>
                         <TableRow>
-                            {/* <TableCell>ID</TableCell> */}
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'client'}
@@ -575,7 +565,6 @@ function ProjectList({isDrawerOpen}) {
                         {filteredProjects.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((Project) => (
                             <TableRow key={Project.id}
                                 sx={{ backgroundColor: Project.isActive ? 'inherit' : '#FFCCCB' }} >
-                                {/* <TableCell>{Project.id}</TableCell> */}
                                 <TableCell>{Project.client}</TableCell>
                                 <TableCell>{Project.projectName}</TableCell>
                                 <TableCell>{Project.technicalProjectManager}</TableCell>
@@ -602,13 +591,6 @@ function ProjectList({isDrawerOpen}) {
                         ))}
                     </TableBody>
                 </Table>
-                {/* <PaginationComponent
-                    count={filteredProjects.length}
-                    page={page}
-                    rowsPerPage={rowsPerPage}
-                    handlePageChange={handlePageChange}
-                    handleRowsPerPageChange={handleRowsPerPageChange}
-                /> */}
             </TableContainer>
             <TablePagination
                 rowsPerPageOptions={[10, 25, 100]}

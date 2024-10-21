@@ -1,17 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Select,TablePagination, MenuItem, Table, InputLabel, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
+import { Select, TablePagination, MenuItem, Table, InputLabel, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
-import PaginationComponent from '../Components/PaginationComponent'; // Import your PaginationComponent
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import '../App.css';
 
-function SOWList({isDrawerOpen}) {
+function SOWList({ isDrawerOpen }) {
     const [SOWs, setSOWs] = useState([]);
     const [Clients, setClients] = useState([]);
     const [Projects, setProjects] = useState([]);
@@ -32,7 +31,7 @@ function SOWList({isDrawerOpen}) {
         status: '',
         comments: ''
     });
-    const [order, setOrder] = useState('asc'); // Order of sorting: 'asc' or 'desc'
+    const [order, setOrder] = useState('desc'); // Order of sorting: 'asc' or 'desc'
     const [orderBy, setOrderBy] = useState('createdDate'); // Column to sort by
     const [searchQuery, setSearchQuery] = useState(''); // State for search query
     const [errors, setErrors] = useState({
@@ -93,8 +92,8 @@ function SOWList({isDrawerOpen}) {
     }, []);
 
     const handleSort = (property) => {
-        const isAsc = orderBy === property && order === 'asc';
-        setOrder(isAsc ? 'desc' : 'asc');
+        const isDesc = orderBy === property && order === 'desc';
+        setOrder(isDesc ? 'asc' : 'desc');
         setOrderBy(property);
     };
 
@@ -103,9 +102,17 @@ function SOWList({isDrawerOpen}) {
         const valueB = b[orderBy] || '';
 
         if (typeof valueA === 'string' && typeof valueB === 'string') {
-            return order === 'asc' ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
+            return order === 'desc'
+                ? valueB.localeCompare(valueA)
+                : valueA.localeCompare(valueB);
+        } else if (valueA instanceof Date && valueB instanceof Date) {
+            return order === 'desc'
+                ? valueB - valueA
+                : valueA - valueB;
         } else {
-            return order === 'asc' ? (valueA > valueB ? 1 : -1) : (valueB > valueA ? 1 : -1);
+            return order === 'desc'
+                ? (valueA > valueB ? 1 : -1)
+                : (valueB > valueA ? 1 : -1);
         }
     });
 
@@ -142,8 +149,6 @@ function SOWList({isDrawerOpen}) {
     };
 
     const handleDelete = (id) => {
-        //axios.delete(`http://localhost:5041/api/SOW/${id}`)
-        // axios.delete(`http://172.17.31.61:5041/api/sow/${id}`)
         axios.patch(`http://172.17.31.61:5041/api/sow/${id}`)
             .then(response => {
                 setSOWs(SOWs.filter(tech => tech.id !== id));
@@ -162,7 +167,8 @@ function SOWList({isDrawerOpen}) {
         // }
         if (!currentSOW.title) {
             validationErrors.title = "Title is required";
-        }else if(currentSOW.title.length < 3) {
+
+        }else if(currentSOW.title.length < 3) {      
             validationErrors.title = "Title must be atleast 3 characters";
         }
         if (!currentSOW.client) {
@@ -182,6 +188,7 @@ function SOWList({isDrawerOpen}) {
         }
         if (!currentSOW.comments) {
             validationErrors.comments = "Comments is required";
+
         }else if(currentSOW.comments.length < 3) {
             validationErrors.comments = "Comments must be atleast 3 characters";
         }
@@ -196,13 +203,8 @@ function SOWList({isDrawerOpen}) {
         setErrors({});
 
         if (currentSOW.id) {
-            // Update existing SOW
-            //axios.put(`http://localhost:5041/api/SOW/${currentSOW.id}`, currentSOW)
             axios.put(`http://172.17.31.61:5041/api/sow/${currentSOW.id}`, currentSOW)
                 .then(response => {
-                    console.log(response)
-                    //setSOWs([...SOWs, response.data]);
-                    // setSOWs(response.data);
                     setSOWs(SOWs.map(tech => tech.id === currentSOW.id ? response.data : tech));
                 })
                 .catch(error => {
@@ -211,8 +213,6 @@ function SOWList({isDrawerOpen}) {
                 });
 
         } else {
-            // Add new SOW
-            //axios.post('http://localhost:5041/api/SOW', currentSOW)
             axios.post('http://172.17.31.61:5041/api/sow', currentSOW)
                 .then(response => {
                     setSOWs([...SOWs, response.data]);
@@ -226,7 +226,7 @@ function SOWList({isDrawerOpen}) {
 
     };
 
-        const handleChange = (e) => {
+    const handleChange = (e) => {
         const { name, value } = e.target;
         setCurrentSOW({ ...currentSOW, [name]: value });
         if (name === "client") {
@@ -234,11 +234,11 @@ function SOWList({isDrawerOpen}) {
                 setErrors((prevErrors) => ({ ...prevErrors, client: "" }));
             }
         }
-        if (name === "title") {            
-             if (value.length === 200) {
+        if (name === "title") {
+            if (value.length === 200) {
                 setErrors((prevErrors) => ({ ...prevErrors, title: "More than 200 characters are not allowed" }));
-            }else if(value.length < 3) {
-                setErrors((prevErrors) => ({ ...prevErrors, title: ""}))
+            } else if (value.length < 3) {
+                setErrors((prevErrors) => ({ ...prevErrors, title: "" }))
             }
             // Clear the title error if valid
             else {
@@ -272,8 +272,8 @@ function SOWList({isDrawerOpen}) {
         if (name === "comments") {
             if (value.length === 500) {
                 setErrors((prevErrors) => ({ ...prevErrors, comments: "More than 500 characters are not allowed" }));
-            }else if(value.length < 3) {
-                setErrors((prevErrors) => ({ ...prevErrors, comments: ""}))
+            } else if (value.length < 3) {
+                setErrors((prevErrors) => ({ ...prevErrors, comments: "" }))
             }
             // Clear the title error if valid
             else {
@@ -338,7 +338,7 @@ function SOWList({isDrawerOpen}) {
     }
 
     return (
-        <div style={{ display: 'flex',flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 240 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 240 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
             <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
                 <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>SOW Table List</h3>
             </div>
@@ -368,7 +368,7 @@ function SOWList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'title'}
-                                    direction={orderBy === 'title' ? order : 'asc'}
+                                    direction={orderBy === 'title' ? order : 'desc'}
                                     onClick={() => handleSort('title')}
                                 >
                                     <b>Title</b>
@@ -377,7 +377,7 @@ function SOWList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'client'}
-                                    direction={orderBy === 'client' ? order : 'asc'}
+                                    direction={orderBy === 'client' ? order : 'desc'}
                                     onClick={() => handleSort('client')}
                                 >
                                     <b>Client</b>
@@ -386,7 +386,7 @@ function SOWList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'project'}
-                                    direction={orderBy === 'project' ? order : 'asc'}
+                                    direction={orderBy === 'project' ? order : 'desc'}
                                     onClick={() => handleSort('project')}
                                 >
                                     <b>Project</b>
@@ -395,7 +395,7 @@ function SOWList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'preparedDate'}
-                                    direction={orderBy === 'preparedDate' ? order : 'asc'}
+                                    direction={orderBy === 'preparedDate' ? order : 'desc'}
                                     onClick={() => handleSort('preparedDate')}
                                     error={!!errors.preparedDate}
                                 >
@@ -405,7 +405,7 @@ function SOWList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'submittedDate'}
-                                    direction={orderBy === 'submittedDate' ? order : 'asc'}
+                                    direction={orderBy === 'submittedDate' ? order : 'desc'}
                                     onClick={() => handleSort('submittedDate')}
                                     error={!!errors.submittedDate}
                                 >
@@ -415,7 +415,7 @@ function SOWList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'status'}
-                                    direction={orderBy === 'status' ? order : 'asc'}
+                                    direction={orderBy === 'status' ? order : 'desc'}
                                     onClick={() => handleSort('status')}
                                 >
                                     <b>Status</b>
@@ -424,7 +424,7 @@ function SOWList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'comments'}
-                                    direction={orderBy === 'comments' ? order : 'asc'}
+                                    direction={orderBy === 'comments' ? order : 'desc'}
                                     onClick={() => handleSort('comments')}
                                 >
                                     <b>Comments</b>
@@ -433,7 +433,7 @@ function SOWList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'isActive'}
-                                    direction={orderBy === 'isActive' ? order : 'asc'}
+                                    direction={orderBy === 'isActive' ? order : 'desc'}
                                     onClick={() => handleSort('isActive')}
                                 >
                                     <b>Is Active</b>
@@ -442,7 +442,7 @@ function SOWList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'createdBy'}
-                                    direction={orderBy === 'createdBy' ? order : 'asc'}
+                                    direction={orderBy === 'createdBy' ? order : 'desc'}
                                     onClick={() => handleSort('createdBy')}
                                 >
                                     <b>Created By</b>
@@ -451,7 +451,7 @@ function SOWList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'createdDate'}
-                                    direction={orderBy === 'createdDate' ? order : 'asc'}
+                                    direction={orderBy === 'createdDate' ? order : 'desc'}
                                     onClick={() => handleSort('createdDate')}
                                 >
                                     <b>Created Date</b>
@@ -460,7 +460,7 @@ function SOWList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'updatedBy'}
-                                    direction={orderBy === 'updatedBy' ? order : 'asc'}
+                                    direction={orderBy === 'updatedBy' ? order : 'desc'}
                                     onClick={() => handleSort('updatedBy')}
                                 >
                                     <b>Updated By</b>
@@ -469,7 +469,7 @@ function SOWList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'updatedDate'}
-                                    direction={orderBy === 'updatedDate' ? order : 'asc'}
+                                    direction={orderBy === 'updatedDate' ? order : 'desc'}
                                     onClick={() => handleSort('updatedDate')}
                                 >
                                     <b>Updated Date</b>
@@ -482,7 +482,6 @@ function SOWList({isDrawerOpen}) {
                         {filteredSOWs.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((SOW) => (
                             <TableRow key={SOW.id}
                                 sx={{ backgroundColor: SOW.isActive ? 'inherit' : '#FFCCCB' }} >
-                                {/* <TableCell>{SOW.id}</TableCell> */}
                                 <TableCell>{SOW.title}</TableCell>
                                 <TableCell>{SOW.client}</TableCell>
                                 <TableCell>{SOW.project}</TableCell>
@@ -492,9 +491,9 @@ function SOWList({isDrawerOpen}) {
                                 <TableCell>{SOW.comments}</TableCell>
                                 <TableCell>{SOW.isActive ? 'Active' : 'Inactive'}</TableCell>
                                 <TableCell>{SOW.createdBy}</TableCell>
-                                <TableCell>{new Date(SOW.createdDate).toLocaleString()}</TableCell>
+                                <TableCell>{SOW.createdDate}</TableCell>
                                 <TableCell>{SOW.updatedBy || 'N/A'}</TableCell>
-                                <TableCell>{new Date(SOW.updatedDate).toLocaleString() || 'N/A'}</TableCell>
+                                <TableCell>{SOW.updatedDate || 'N/A'}</TableCell>
                                 <TableCell >
                                     <IconButton onClick={() => handleUpdate(SOW)}>
                                         <EditIcon color="primary" />
@@ -507,13 +506,6 @@ function SOWList({isDrawerOpen}) {
                         ))}
                     </TableBody>
                 </Table>
-                {/* <PaginationComponent
-                    count={filteredSOWs.length}
-                    page={page}
-                    rowsPerPage={rowsPerPage}
-                    handlePageChange={handlePageChange}
-                    handleRowsPerPageChange={handleRowsPerPageChange}
-                /> */}
             </TableContainer>
             <TablePagination
                 rowsPerPageOptions={[10, 25, 100]}
@@ -540,7 +532,7 @@ function SOWList({isDrawerOpen}) {
                         fullWidth
                         error={!!errors.title}
                         helperText={errors.title}
-                        inputProps={{maxLength: 200}}
+                        inputProps={{ maxLength: 200 }}
                     />
                     <InputLabel>Client</InputLabel>
                     <Select
@@ -566,7 +558,7 @@ function SOWList({isDrawerOpen}) {
                         onChange={handleChange}
                         fullWidth
                         error={!!errors.project}
-                        inputProps={{maxLength: 200}}
+                        inputProps={{ maxLength: 200 }}
                     >
                         {Projects.map((project) => (
                             <MenuItem key={project.id} value={project.projectName}>
@@ -578,7 +570,7 @@ function SOWList({isDrawerOpen}) {
                     <InputLabel>PreparedDate</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                        className='datetime'
+                            className='datetime'
                             value={currentSOW.preparedDate ? dayjs(currentSOW.preparedDate) : null}
                             onChange={handlePreparedDateChange}
                             renderInput={(params) => (
@@ -590,7 +582,7 @@ function SOWList({isDrawerOpen}) {
                     <InputLabel>SubmittedDate</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                        className='datetime'
+                            className='datetime'
                             value={currentSOW.submittedDate ? dayjs(currentSOW.submittedDate) : null}
                             onChange={handleSubmittedDateChange}
                             renderInput={(params) => (
@@ -624,7 +616,7 @@ function SOWList({isDrawerOpen}) {
                         fullWidth
                         error={!!errors.comments} // Display error if exists
                         helperText={errors.comments}
-                        inputProps={{maxLength: 500}}
+                        inputProps={{ maxLength: 500 }}
                     />
                 </DialogContent>
                 <DialogActions>
