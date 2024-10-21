@@ -379,7 +379,7 @@ function BlogsList({isDrawerOpen}) {
     }
 
     return (
-        <div style={{ display: 'flex',flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 250 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
+        <div style={{ display: 'flex',flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 240 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
             <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
                 <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>Blogs Table List</h3>
             </div>
