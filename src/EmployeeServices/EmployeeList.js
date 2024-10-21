@@ -4,13 +4,11 @@ import { ListItemText, Checkbox, Select, MenuItem, Table, InputLabel, TableBody,
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
-import PaginationComponent from '../Components/PaginationComponent'; // Import your PaginationComponent
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import '../App.css';
-// import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
 function EmployeeList({ isDrawerOpen }) {
     const [Employees, setEmployees] = useState([]);
@@ -70,7 +68,6 @@ function EmployeeList({ isDrawerOpen }) {
     useEffect(() => {
         const fetchEmployees = async () => {
             try {
-                // const empResponse = await axios.get('http://localhost:5033/api/Employee');
                 const empResponse = await axios.get('http://172.17.31.61:5033/api/Employee');
                 setEmployees(empResponse.data);
             } catch (error) {
@@ -82,7 +79,6 @@ function EmployeeList({ isDrawerOpen }) {
 
         const fetchReportingTo = async () => {
             try {
-                // const repoResponse = await axios.get('http://localhost:5033/api/Employee');
                 const repoResponse = await axios.get('http://172.17.31.61:5033/api/Employee');
                 setReporting(repoResponse.data);
             } catch (error) {
@@ -94,7 +90,6 @@ function EmployeeList({ isDrawerOpen }) {
 
         const fetchDepartments = async () => {
             try {
-                // const deptResponse = await axios.get('http://localhost:5560/api/Department');
                 const deptResponse = await axios.get('http://172.17.31.61:5160/api/department');
                 setDepartments(deptResponse.data);
             } catch (error) {
@@ -106,7 +101,6 @@ function EmployeeList({ isDrawerOpen }) {
 
         const fetchDesignations = async () => {
             try {
-                // const desigResponse = await axios.get('http://localhost:5501/api/Designation');
                 const desigResponse = await axios.get('http://172.17.31.61:5201/api/designation');
                 setDesignations(desigResponse.data);
             } catch (error) {
@@ -118,7 +112,6 @@ function EmployeeList({ isDrawerOpen }) {
 
         const fetchTechnologies = async () => {
             try {
-                // const techResponse = await axios.get('http://localhost:5574/api/Technology');
                 const techResponse = await axios.get('http://172.17.31.61:5274/api/technology');
                 setTechnologies(techResponse.data);
             } catch (error) {
@@ -130,7 +123,6 @@ function EmployeeList({ isDrawerOpen }) {
 
         const fetchRole = async () => {
             try {
-                // const roleResponse = await axios.get('http://localhost:5763/api/Role');
                 const roleResponse = await axios.get('http://172.17.31.61:5063/api/role');
                 setRoles(roleResponse.data);
             } catch (error) {
@@ -230,8 +222,6 @@ function EmployeeList({ isDrawerOpen }) {
     };
 
     const handleDelete = (id) => {
-        // axios.delete(`http://localhost:5033/api/Employee/${id}`)
-        // axios.delete(`http://172.17.31.61:5033/api/employee/${id}`)
         axios.patch(`http://172.17.31.61:5033/api/employee/${id}`)
             .then(response => {
                 setEmployees(Employees.filter(tech => tech.id !== id));
@@ -603,7 +593,6 @@ function EmployeeList({ isDrawerOpen }) {
                 <Table>
                     <TableHead>
                         <TableRow>
-                            {/* <TableCell>ID</TableCell> */}
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'name'}
@@ -774,7 +763,6 @@ function EmployeeList({ isDrawerOpen }) {
                                 <TableCell>{Employee.relievingDate}</TableCell>
                                 <TableCell>{Employee.projection}</TableCell>
                                 <TableCell>{Employee.phoneNo}</TableCell>
-                                {/* <TableCell>{Employee.profile}</TableCell> */}
                                 <TableCell>
                                     {Employee.profile ? (
                                         <>
@@ -790,8 +778,6 @@ function EmployeeList({ isDrawerOpen }) {
                                 <TableCell>{new Date(Employee.createdDate).toLocaleString()}</TableCell>
                                 <TableCell>{Employee.updatedBy || 'N/A'}</TableCell>
                                 <TableCell>{new Date(Employee.updatedDate).toLocaleString() || 'N/A'}</TableCell>
-                                {/* <TableCell>{Employee.password}</TableCell> */}
-
                                 <TableCell >
                                     <IconButton onClick={() => handleUpdate(Employee)}>
                                         <EditIcon color="primary" />
@@ -804,14 +790,6 @@ function EmployeeList({ isDrawerOpen }) {
                         ))}
                     </TableBody>
                 </Table>
-                {/* <PaginationComponent 
-                    count={filteredEmployees.length}
-                    page={page}
-                    rowsPerPage={rowsPerPage}
-                    handlePageChange={handlePageChange}
-                    handleRowsPerPageChange={handleRowsPerPageChange}
-                /> */}
-
             </TableContainer>
             <TablePagination
                 rowsPerPageOptions={[10, 25, 100]}
@@ -897,39 +875,6 @@ function EmployeeList({ isDrawerOpen }) {
                         ))}
                     </Select>
                     {errors.department && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.department}</Typography>}
-                    {/* <InputLabel id="demo-simple-select-label">Technology</InputLabel>
-                    <Autocomplete
-                        multiple
-                        id="technologies-autocomplete"
-                        options={technologies.map((tech) => tech.name)}
-                        value={currentEmployee.technology}
-                        onChange={(event, newValue) => {
-                            handleChange({
-                                target: {
-                                    name: 'technology',
-                                    value: newValue,
-                                },
-                            });
-                        }}
-                        renderInput={(params) => (
-                            <TextField
-                                {...params}
-                                variant="outlined"
-                                placeholder="Select technologies"
-                                fullWidth
-                                error={!!errors.technology}
-                            />
-                        )}
-                        renderOption={(props, option, { selected }) => (
-                            <li {...props}>
-                                <Checkbox
-                                    style={{ marginRight: 8 }}
-                                    checked={selected}
-                                />
-                                <ListItemText primary={option} />
-                            </li>
-                        )}
-                    /> */}
                     <InputLabel id="demo-simple-select-label">Technology</InputLabel>
                     <Autocomplete
                         multiple
