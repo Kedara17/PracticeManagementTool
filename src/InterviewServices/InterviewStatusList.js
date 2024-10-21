@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment, InputLabel } from '@mui/material';
+import { Table,TablePagination, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment, InputLabel } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
@@ -95,6 +95,8 @@ function InterviewStatusList({isDrawerOpen}) {
 
         if (!currentInterviewStatus.status.trim()) {
             validationErrors.status = "Status is required";
+        }else if(!currentInterviewStatus.status.length < 3) {
+            validationErrors.status = "Status must be atleast 3 characters";
         }
 
         // If there are validation errors, update the state and prevent save
@@ -143,6 +145,8 @@ function InterviewStatusList({isDrawerOpen}) {
         if (name === "status") {
             if (value.length === 50) {
                 setErrors((prevErrors) => ({ ...prevErrors, status: "More than 50 characters are not allowed" }));
+            }else if(value.length < 3) {
+                setErrors((prevErrors) => ({ ...prevErrors, status: ""}))
             }
             // Clear the title error if valid
             else {
@@ -295,14 +299,23 @@ function InterviewStatusList({isDrawerOpen}) {
                         ))}
                     </TableBody>
                 </Table>
-                <PaginationComponent
+                {/* <PaginationComponent
                     count={filteredInterviewStatus.length}
                     page={page}
                     rowsPerPage={rowsPerPage}
                     handlePageChange={handlePageChange}
                     handleRowsPerPageChange={handleRowsPerPageChange}
-                />
+                /> */}
             </TableContainer>
+            <TablePagination
+                rowsPerPageOptions={[10, 25, 100]}
+                component="div"
+                count={filteredInterviewStatus.length}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                onPageChange={handlePageChange}
+                onRowsPerPageChange={handleRowsPerPageChange}
+            />
             <Dialog open={open} onClose={() => setOpen(false)}>
                 <DialogTitle>{currentInterviewStatus.id ? 'Update InterviewStatus' : 'Add InterviewStatus'}</DialogTitle>
                 <DialogContent>

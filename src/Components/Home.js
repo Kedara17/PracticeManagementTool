@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Routes, Route, Link } from 'react-router-dom';
 import { AppBar,Divider, Toolbar, IconButton, Typography, Drawer, Box, List, ListItem, ListItemText, Avatar, Menu, MenuItem, CssBaseline } from '@mui/material';
 import MenuOutlinedIcon from '@mui/icons-material/MenuOutlined';
 import BadgeIcon from '@mui/icons-material/Badge';
@@ -38,7 +38,6 @@ import SOWRequirementList from '../SOWServices/SOWRequirementList';
 import SOWStatusList from '../SOWServices/SOWStatusList';
 import POCList from '../POCServices/POCList';
 
-
 function Home() {
 
   const [isDrawerOpen, setDrawerOpen] = useState(false);
@@ -66,6 +65,18 @@ function Home() {
       setRole(userRole);
     }
   }, []);
+
+  const [userData, setUserData] = useState({
+    photo: '/profile.avif',
+  });
+
+  useEffect(() => {
+    const storedData = localStorage.getItem('userData');
+    if (storedData) {
+      setUserData(JSON.parse(storedData)); 
+    }
+  }, []);
+
   
   const toggleDrawer = () => {
     setDrawerOpen(!isDrawerOpen);
@@ -81,7 +92,11 @@ function Home() {
 
   // Handle profile menu open and close
   const handleProfileMenuClick = (event) => setProfileMenuAnchorEl(event.currentTarget);
-  const handleProfileMenuClose = () => setProfileMenuAnchorEl(null);
+  
+  const handleProfileMenuClose = () => {
+    setProfileMenuAnchorEl(null); 
+    navigate('/profile'); 
+  };
 
   // Handle sub-menu open and close
   const handleSubMenuOpen = (event, menu) => {
@@ -107,12 +122,13 @@ function Home() {
   const renderEmployeeForm = () => (
     <>
       <ListItem button onClick={(event) => handleClick(event, 'employee')}>
-        <ListItemText primary="Employee" />
+        <ListItemText primary="Employees" />
         <SupervisorAccountIcon />
       </ListItem>
       <Menu
         anchorEl={anchorEl?.employee}
         open={Boolean(anchorEl?.employee)}
+        onClick={handleClose}
         onClose={handleClose}
         sx={{ mt: 2 }}
           anchorOrigin={{
@@ -120,7 +136,7 @@ function Home() {
           horizontal: 'right',
         }}
       >
-        <MenuItem onClick={() => setView('employee')}>Employee List</MenuItem>
+        <MenuItem  component={Link} to="employees/employeelist">Employee List</MenuItem>
       </Menu>
     </>
   )
@@ -134,6 +150,7 @@ function Home() {
       <Menu
         anchorEl={anchorEl?.department}
         open={Boolean(anchorEl?.department)}
+        onClick={handleClose}
         onClose={handleClose}
         sx={{ mt: 2 }}
           anchorOrigin={{
@@ -141,7 +158,8 @@ function Home() {
           horizontal: 'right',
         }}
       >
-        <MenuItem onClick={() => setView('department')}>Department List</MenuItem>
+        {/* <MenuItem onClick={() => setView('department')}>Department List</MenuItem> */}
+        <MenuItem component={Link} to="department/departmentlist">Department List</MenuItem>
       </Menu>
 
       <ListItem button onClick={(event) => handleClick(event, 'designation')}>
@@ -151,6 +169,7 @@ function Home() {
               <Menu
                 anchorEl={anchorEl?.designation}
                 open={Boolean(anchorEl?.designation)}
+                onClick={handleClose}
                 onClose={handleClose}
                 sx={{ mt: 2 }}
                 anchorOrigin={{
@@ -158,7 +177,7 @@ function Home() {
                   horizontal: 'right',
                 }}
               >
-                <MenuItem onClick={() => setView('designation')}>Designation List</MenuItem>
+                <MenuItem component={Link} to="designation/designationlist">Designation List</MenuItem>
               </Menu>        
 
               
@@ -170,6 +189,7 @@ function Home() {
               <Menu
                 anchorEl={anchorEl?.technology}
                 open={Boolean(anchorEl?.technology)}
+                onClick={handleClose}
                 onClose={handleClose}
                 sx={{ mt: 2 }}
                 anchorOrigin={{
@@ -177,7 +197,7 @@ function Home() {
                   horizontal: 'right',
                 }}
               >
-                <MenuItem onClick={() => setView('technology')}>Technology List</MenuItem>
+                <MenuItem component={Link} to="technology/technologylist">Technology List</MenuItem>
               </Menu>
       {renderOtherRoleForms()}
 
@@ -195,6 +215,7 @@ function Home() {
               <Menu
                 anchorEl={anchorEl?.client}
                 open={Boolean(anchorEl?.client)}
+                onClick={handleClose}
                 onClose={handleClose}
                 sx={{ mt: 2 }}
                 anchorOrigin={{
@@ -202,9 +223,9 @@ function Home() {
                   horizontal: 'right',
                 }}
               >
-                <MenuItem onClick={() => setView('client')}>Client List</MenuItem>
-                <MenuItem onClick={() => setView('clientcontact')}>Client Contact</MenuItem>
-                <MenuItem onClick={() => setView('contacttype')}>Client Contact Type List</MenuItem>
+                <MenuItem component={Link} to="client/clientlist">Client List</MenuItem>
+                <MenuItem component={Link} to="client/clientcontact">Client Contact</MenuItem>
+                <MenuItem component={Link} to="client/clientcontacttype">Client Contact Type List</MenuItem>
               </Menu>
 
               <ListItem button onClick={(event) => handleClick(event, 'project')}>
@@ -214,6 +235,7 @@ function Home() {
               <Menu
                 anchorEl={anchorEl?.project}
                 open={Boolean(anchorEl?.project)}
+                onClick={handleClose}
                 onClose={handleClose}
                 sx={{ mt: 2 }}
                 anchorOrigin={{
@@ -221,8 +243,8 @@ function Home() {
                   horizontal: 'right',
                 }}
               >
-                <MenuItem onClick={() => setView('project')}>Project List</MenuItem>
-                <MenuItem onClick={() => setView('projectemployee')}>Project Employee</MenuItem>
+                <MenuItem component={Link} to="project/projectlist">Project List</MenuItem>
+                <MenuItem component={Link} to="project/projectemployee">Project Employee</MenuItem>
               </Menu>
 
               <ListItem button onClick={(event) => handleClick(event, 'sow')}>
@@ -232,6 +254,7 @@ function Home() {
               <Menu
                 anchorEl={anchorEl?.sow}
                 open={Boolean(anchorEl?.sow)}
+                onClick={handleClose}
                 onClose={handleClose}
                 sx={{ mt: 2 }}
                 anchorOrigin={{
@@ -239,10 +262,10 @@ function Home() {
                   horizontal: 'right',
                 }}
               >
-                <MenuItem onClick={() => setView('sow')}>SOW List</MenuItem>
-                <MenuItem onClick={() => setView('sowproposedteam')}>SOW Proposed Team List</MenuItem>
-                <MenuItem onClick={() => setView('sowrequirement')}>SOW Requirement List</MenuItem>
-                <MenuItem onClick={() => setView('sowstatus')}>SOW Status List</MenuItem>
+                <MenuItem component={Link} to="sow/sowlist">SOW List</MenuItem>
+                <MenuItem component={Link} to="sow/sowproposedteamlist">SOW Proposed Team List</MenuItem>
+                <MenuItem component={Link} to="sow/sowrequirementlist">SOW Requirement List</MenuItem>
+                <MenuItem component={Link} to="sow/sowstatuslist">SOW Status List</MenuItem>
               </Menu>
 
               <ListItem button onClick={(event) => handleClick(event, 'interviews')}>
@@ -252,6 +275,7 @@ function Home() {
               <Menu
                 anchorEl={anchorEl?.interviews}
                 open={Boolean(anchorEl?.interviews)}
+                onClick={handleClose}
                 onClose={handleClose}
                 sx={{ mt: 2 }}
                 anchorOrigin={{
@@ -259,8 +283,8 @@ function Home() {
                   horizontal: 'right',
                 }}
               >
-                <MenuItem onClick={() => setView('interview')}>Interview List</MenuItem>
-                <MenuItem onClick={() => setView('interviewstatus')}>Interview Status List</MenuItem>
+                <MenuItem component={Link} to="interview/interviewlist">Interview List</MenuItem>
+                <MenuItem component={Link} to="interview/interviewstatuslist">Interview Status List</MenuItem>
               </Menu>
 
               <ListItem button onClick={(event) => handleClick(event, 'webinar')}>
@@ -270,6 +294,7 @@ function Home() {
               <Menu
                 anchorEl={anchorEl?.webinar}
                 open={Boolean(anchorEl?.webinar)}
+                onClick={handleClose}
                 onClose={handleClose}
                 sx={{ mt: 2 }}
                 anchorOrigin={{
@@ -277,7 +302,7 @@ function Home() {
                   horizontal: 'right',
                 }}
               >
-                <MenuItem onClick={() => setView('webinar')}>Webinar List</MenuItem>
+                <MenuItem component={Link} to="webinars/webinarlist">Webinar List</MenuItem>
               </Menu>
 
               <ListItem button onClick={(event) => handleClick(event, 'blogs')}>
@@ -287,6 +312,7 @@ function Home() {
               <Menu
                 anchorEl={anchorEl?.blogs}
                 open={Boolean(anchorEl?.blogs)}
+                onClick={handleClose}
                 onClose={handleClose}
                 sx={{ mt: 2 }}
                 anchorOrigin={{
@@ -294,7 +320,7 @@ function Home() {
                   horizontal: 'right',
                 }}
               >
-                <MenuItem onClick={() => setView('blogs')}>Blogs List</MenuItem>
+                <MenuItem component={Link} to="blogs/blogslist">Blogs List</MenuItem>
               </Menu>
 
               <ListItem button onClick={(event) => handleClick(event, 'poc')}>
@@ -304,6 +330,7 @@ function Home() {
               <Menu
                 anchorEl={anchorEl?.poc}
                 open={Boolean(anchorEl?.poc)}
+                onClick={handleClose}
                 onClose={handleClose}
                 sx={{ mt: 2 }}
                 anchorOrigin={{
@@ -311,7 +338,7 @@ function Home() {
                   horizontal: 'right',
                 }}
               >
-                <MenuItem onClick={() => setView('poc')}>POC List</MenuItem>
+                <MenuItem component={Link} to="poc/poclist">POC List</MenuItem>
               </Menu>
 
               <ListItem button onClick={(event) => handleClick(event, 'certifications')}>
@@ -321,6 +348,7 @@ function Home() {
               <Menu
                 anchorEl={anchorEl?.certifications}
                 open={Boolean(anchorEl?.certifications)}
+                onClick={handleClose}
                 onClose={handleClose}
                 sx={{ mt: 2 }}
                 anchorOrigin={{
@@ -328,7 +356,7 @@ function Home() {
                   horizontal: 'right',
                 }}
               >
-                <MenuItem onClick={() => setView('certifications')}>Certifications List</MenuItem>
+                <MenuItem component={Link} to="certifications/certificationslist">Certifications List</MenuItem>
               </Menu>
 
               <ListItem button onClick={(event) => handleClick(event, 'successstories')}>
@@ -338,6 +366,7 @@ function Home() {
               <Menu
                 anchorEl={anchorEl?.successstories}
                 open={Boolean(anchorEl?.successstories)}
+                onClick={handleClose}
                 onClose={handleClose}
                 sx={{ mt: 2 }}
                 anchorOrigin={{
@@ -345,7 +374,7 @@ function Home() {
                   horizontal: 'right',
                 }}
               >
-                <MenuItem onClick={() => setView('successstories')}>Success Stories List</MenuItem>
+                <MenuItem component={Link} to="successstories/successstorieslist">Success Stories List</MenuItem>
               </Menu>
 
               <ListItem button onClick={(event) => handleClick(event, 'trainings')}>
@@ -355,6 +384,7 @@ function Home() {
               <Menu
                 anchorEl={anchorEl?.trainings}
                 open={Boolean(anchorEl?.trainings)}
+                onClick={handleClose}
                 onClose={handleClose}
                 sx={{ mt: 2 }}
                 anchorOrigin={{
@@ -362,8 +392,8 @@ function Home() {
                   horizontal: 'right',
                 }}
               >
-                <MenuItem onClick={() => setView('trainings')}>Trainings List</MenuItem>
-                <MenuItem onClick={() => setView('trainingteam')}>Training Team List</MenuItem>
+                <MenuItem component={Link} to="trainings/trainingslist">Trainings List</MenuItem>
+                <MenuItem component={Link} to="trainings/trainingteamlist">Training Team List</MenuItem>
               </Menu>
 
               <ListItem button onClick={(event) => handleClick(event, 'bestperformers')}>
@@ -373,6 +403,7 @@ function Home() {
               <Menu
                 anchorEl={anchorEl?.bestperformers}
                 open={Boolean(anchorEl?.bestperformers)}
+                onClick={handleClose}
                 onClose={handleClose}
                 sx={{ mt: 2 }}
                 anchorOrigin={{
@@ -380,7 +411,7 @@ function Home() {
                   horizontal: 'right',
                 }}
               >
-                <MenuItem onClick={() => setView('bestperformers')}>Best Performers List</MenuItem>
+                <MenuItem component={Link} to="bestperformers/bestperformerslist">Best Performers List</MenuItem>
               </Menu>
 
               <ListItem button onClick={(event) => handleClick(event, 'newleadenquiry')}>
@@ -390,6 +421,7 @@ function Home() {
               <Menu
                 anchorEl={anchorEl?.newleadenquriy}
                 open={Boolean(anchorEl?.newleadenquiry)}
+                onClick={handleClose}
                 onClose={handleClose}
                 sx={{ mt: 2 }}
                 anchorOrigin={{
@@ -397,17 +429,17 @@ function Home() {
                   horizontal: 'right',
                 }}
               >
-                <MenuItem onClick={() => setView('newleadenquiry')}>New Lead Enquiry List</MenuItem>
-                <MenuItem onClick={() => setView('newleadenquirytechnology')}>New Lead Enquiry Technology List</MenuItem>
-                <MenuItem onClick={() => setView('newleadenquiryfollowup')}>New Lead Enquiry Follow Up List</MenuItem>
-                <MenuItem onClick={() => setView('newleadenquirydocuments')}>New Lead Enquiry Documents List</MenuItem>
+                <MenuItem component={Link} to="newleadenquiry/newleadenquirylist">New Lead Enquiry List</MenuItem>
+                <MenuItem component={Link} to="newleadenquiry/newleadenquirytechnologylist">New Lead Enquiry Technology List</MenuItem>
+                <MenuItem component={Link} to="newleadenquiry/newleadenquiryfollowuplist">New Lead Enquiry Follow Up List</MenuItem>
+                <MenuItem component={Link} to="newleadenquiry/newleadenquirydocumentslist">New Lead Enquiry Documents List</MenuItem>
               </Menu>
     </>
   );
 
 
   return (
-    <div>
+    <div style={{fontFamily:'Montserrat'}}>
       <Box sx={{ display: 'flex' }}>
       <CssBaseline />
 
@@ -448,7 +480,7 @@ function Home() {
               {username || 'U'}
             </Typography>
             <IconButton onClick={handleProfileMenuClick} color="inherit">
-              <Avatar sx={{ bgcolor: '#00aae7' }}>{username[0] || 'U'}</Avatar>
+              <Avatar src={userData.photo} sx={{ bgcolor: '#00aae7' }}>{username[0] || 'U'}</Avatar>
             </IconButton>
           </div>
 
@@ -456,7 +488,7 @@ function Home() {
           <Menu
             anchorEl={profileMenuAnchorEl}
             open={Boolean(profileMenuAnchorEl)}
-            onClose={handleProfileMenuClose}
+            onClose={() => setProfileMenuAnchorEl(null)}
           >
             <MenuItem onClick={handleProfileMenuClose}>Profile</MenuItem>
             <MenuItem onClick={handleLogout}>Logout</MenuItem>
@@ -502,9 +534,31 @@ function Home() {
       </Menu>
 
       {/* Main Content */}
-      <Box component="main" sx={{ flexGrow: 1, bgcolor: '#f5f5f5', p: 3, height: '100vh' }}>
+      <Box component="main" sx={{ flexGrow: 1, bgcolor: '#f5f5f5', p: 3, height: '100vh', overflow: 'auto' }}>
         <Toolbar />
-        {view === 'slider' && <SliderComponent  isDrawerOpen={isDrawerOpen} />} {/* Display the slider by default */}
+        <Routes>
+          <Route path='/' element={<SliderComponent  isDrawerOpen={isDrawerOpen} />} />
+          <Route path='department/departmentlist' element={<DepartmentList isDrawerOpen={isDrawerOpen} />} />
+          <Route path='designation/designationlist' element={<DesignationList isDrawerOpen={isDrawerOpen} />} />
+          <Route path='technology/technologylist' element={<TechnologyList isDrawerOpen={isDrawerOpen} />} />
+          <Route path='employees/employeelist' element={<EmployeeList isDrawerOpen={isDrawerOpen} />} />
+          <Route path='blogs/blogslist' element={<BlogsList isDrawerOpen={isDrawerOpen} />} />
+          <Route path='client/clientlist' element={<ClientList isDrawerOpen={isDrawerOpen} />} />
+          <Route path='client/clientcontactlist' element={<ClientContactList isDrawerOpen={isDrawerOpen} />} />
+          <Route path='client/clientcontacttypelist' element={<ContactTypeList isDrawerOpen={isDrawerOpen} />} />
+          <Route path='project/projectlist' element={<ProjectList isDrawerOpen={isDrawerOpen} />} />
+          <Route path='project/projectemployeelist' element={<ProjectEmployeeList isDrawerOpen={isDrawerOpen} />} />
+          <Route path='interview/interviewlist' element={<InterviewList isDrawerOpen={isDrawerOpen} />} />
+          <Route path='interview/interviewstatuslist' element={<InterviewStatusList isDrawerOpen={isDrawerOpen} />} />
+          <Route path='webinars/webinarslist' element={<WebinarList isDrawerOpen={isDrawerOpen} />} />
+          <Route path='sow/sowlist' element={<SOWList isDrawerOpen={isDrawerOpen} />} />
+          <Route path='sow/sowproposedteamlist' element={<SOWProposedTeamList isDrawerOpen={isDrawerOpen} />} />
+          <Route path='sow/sowrequirementlist' element={<SOWRequirementList isDrawerOpen={isDrawerOpen} />} />
+          <Route path='sow/sowstatuslist' element={<SOWStatusList isDrawerOpen={isDrawerOpen} />} />
+          <Route path='poc/poclist' element={<POCList isDrawerOpen={isDrawerOpen} />} />
+        </Routes>
+
+        {/* {view === 'slider' && <SliderComponent  isDrawerOpen={isDrawerOpen} />}
         {view === 'department' && <DepartmentList isDrawerOpen={isDrawerOpen} />}
         {view === 'designation' && <DesignationList isDrawerOpen={isDrawerOpen} />}
         {view === 'technology' && <TechnologyList isDrawerOpen={isDrawerOpen} />}
@@ -522,7 +576,7 @@ function Home() {
         {view === 'sowproposedteam' && <SOWProposedTeamList isDrawerOpen={isDrawerOpen} />}
         {view === 'sowrequirement' && <SOWRequirementList isDrawerOpen={isDrawerOpen} />}
         {view === 'sowstatus' && <SOWStatusList isDrawerOpen={isDrawerOpen} />}
-        {view === 'poc' && <POCList isDrawerOpen={isDrawerOpen} />}
+        {view === 'poc' && <POCList isDrawerOpen={isDrawerOpen} />} */}
       </Box>
     </div>
   )

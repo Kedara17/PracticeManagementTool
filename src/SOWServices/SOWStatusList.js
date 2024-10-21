@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment, InputLabel } from '@mui/material';
+import { Table,TablePagination, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment, InputLabel } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
@@ -96,7 +96,10 @@ function SOWStatusList({isDrawerOpen}) {
         // Name field validation
         if (!currentSOWStatus.status.trim()) {
             validationErrors.status = "Status is required";
-        } else if (SOWStatus.some(stat => stat.status === currentSOWStatus.status && stat.id !== currentSOWStatus.id)) {
+        } else if(!currentSOWStatus.status.length < 3){
+            validationErrors.status = "Status must be atleast 3 characters";
+        }
+        else if (SOWStatus.some(stat => stat.status === currentSOWStatus.status && stat.id !== currentSOWStatus.id)) {
             validationErrors.status = "Status must be unique";
         }
 
@@ -145,7 +148,9 @@ function SOWStatusList({isDrawerOpen}) {
             // Check if the name is empty or only whitespace
             if (!value.trim()) {
                 setErrors((prevErrors) => ({ ...prevErrors, status: "" }));
-            } 
+            } else if(value.length < 3) {
+                setErrors((prevErrors) => ({ ...prevErrors, status: ""}))
+            }
             // Check for uniqueness
             else if (SOWStatus.some(stat => stat.name === value && stat.id !== currentSOWStatus.id)) {
                 setErrors((prevErrors) => ({ ...prevErrors, status: "" }));
@@ -301,14 +306,23 @@ function SOWStatusList({isDrawerOpen}) {
                         ))}
                     </TableBody>
                 </Table>
-                <PaginationComponent
+                {/* <PaginationComponent
                     count={filteredSOWStatus.length}
                     page={page}
                     rowsPerPage={rowsPerPage}
                     handlePageChange={handlePageChange}
                     handleRowsPerPageChange={handleRowsPerPageChange}
-                />
+                /> */}
             </TableContainer>
+            <TablePagination
+                rowsPerPageOptions={[10, 25, 100]}
+                component="div"
+                count={filteredSOWStatus.length}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                onPageChange={handlePageChange}
+                onRowsPerPageChange={handleRowsPerPageChange}
+            />
             <Dialog open={open} onClose={() => setOpen(false)}>
                 <DialogTitle>{currentSOWStatus.id ? 'Update SOWStatus' : 'Add SOWStatus'}</DialogTitle>
                 <DialogContent>

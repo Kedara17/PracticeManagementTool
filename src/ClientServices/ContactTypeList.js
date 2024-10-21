@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment, InputLabel } from '@mui/material';
+import { Table,TablePagination, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment, InputLabel } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
@@ -100,7 +100,10 @@ function ContactTypeList({ isDrawerOpen }) {
         // Name field validation
         if (!currentContactType.typeName.trim()) {
             validationErrors.typeName = "TypeName is required";
-        } else if (contactTypes.some(cont => cont.typeName.toLowerCase() === currentContactType.typeName.toLowerCase() && cont.id !== currentContactType.id)) {
+        } else if(!currentContactType.typeName.length < 3) {
+            validationErrors.typeName = "TypeName must be at least 3 characters";
+        }
+        else if (contactTypes.some(cont => cont.typeName.toLowerCase() === currentContactType.typeName.toLowerCase() && cont.id !== currentContactType.id)) {
             validationErrors.typeName = "TypeName must be unique";
         }
 
@@ -150,6 +153,8 @@ function ContactTypeList({ isDrawerOpen }) {
         if (name === "typeName") {
             // Check if the title is empty or only whitespace
             if (!value.trim()) {
+                setErrors((prevErrors) => ({ ...prevErrors, typeName: "" }));
+            }else if(value.length < 3){
                 setErrors((prevErrors) => ({ ...prevErrors, typeName: "" }));
             }
             // Check for uniqueness
@@ -311,14 +316,23 @@ function ContactTypeList({ isDrawerOpen }) {
                     </TableBody>
                 </Table>
                 {/* Pagination Component */}
-                <PaginationComponent
+                {/* <PaginationComponent
                     count={filteredContactType.length}
                     page={page}
                     rowsPerPage={rowsPerPage}
                     handlePageChange={handlePageChange}
                     handleRowsPerPageChange={handleRowsPerPageChange}
-                />
+                /> */}
             </TableContainer>
+            <TablePagination
+                rowsPerPageOptions={[10, 25, 100]}
+                component="div"
+                count={filteredContactType.length}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                onPageChange={handlePageChange}
+                onRowsPerPageChange={handleRowsPerPageChange}
+            />
             <Dialog open={open} onClose={() => setOpen(false)}>
                 <DialogTitle>{currentContactType.id ? 'Update ContactType' : 'Add ContactType'}</DialogTitle>
                 <DialogContent>

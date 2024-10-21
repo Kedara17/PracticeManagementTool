@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Select, MenuItem, Table, InputLabel, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
+import { Select,TablePagination, MenuItem, Table, InputLabel, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
@@ -140,7 +140,10 @@ function POCList({isDrawerOpen}) {
         
         if (!currentPOC.title.trim()) {
             validationErrors.title = "POC title is required";
-        } else if (POCs.some(tech => tech.title.toLowerCase() === currentPOC.title.toLowerCase() && tech.id !== currentPOC.id)) {
+        }else if(!currentPOC.title.length < 3) {
+            validationErrors.title = "POC title must be atleast 3 characters";
+        }
+         else if (POCs.some(tech => tech.title.toLowerCase() === currentPOC.title.toLowerCase() && tech.id !== currentPOC.id)) {
             validationErrors.title = "POC title must be unique";
         }
         if (!currentPOC.client) {
@@ -206,6 +209,8 @@ function POCList({isDrawerOpen}) {
         if (name === "title") {
             if (value.length === 200) {
                 setErrors((prevErrors) => ({ ...prevErrors, title: "More than 200 characters are not allowed" }));
+            }else if(value.length < 3) {
+                setErrors((prevErrors) => ({ ...prevErrors, title: ""}))
             }
             else {
                 setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
@@ -488,14 +493,23 @@ function POCList({isDrawerOpen}) {
                         ))}
                     </TableBody>
                 </Table>
-                <PaginationComponent
+                {/* <PaginationComponent
                     count={filteredPOCs.length}
                     page={page}
                     rowsPerPage={rowsPerPage}
                     handlePageChange={handlePageChange}
                     handleRowsPerPageChange={handleRowsPerPageChange}
-                />
+                /> */}
             </TableContainer>
+            <TablePagination
+                rowsPerPageOptions={[10, 25, 100]}
+                component="div"
+                count={filteredPOCs.length}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                onPageChange={handlePageChange}
+                onRowsPerPageChange={handleRowsPerPageChange}
+            />
             <Dialog open={open} onClose={() => setOpen(false)}>
                 <DialogTitle>{currentPOC.id ? 'Update POC' : 'Add POC'}</DialogTitle>
                 <DialogContent>

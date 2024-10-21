@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Select, MenuItem, Table, InputLabel, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
+import { Select,TablePagination, MenuItem, Table, InputLabel, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
@@ -162,6 +162,8 @@ function SOWList({isDrawerOpen}) {
         // }
         if (!currentSOW.title) {
             validationErrors.title = "Title is required";
+        }else if(!currentSOW.title.length < 3) {
+            validationErrors.title = "Title must be atleast 3 characters";
         }
         if (!currentSOW.client) {
             validationErrors.client = "Client is required";
@@ -180,6 +182,8 @@ function SOWList({isDrawerOpen}) {
         }
         if (!currentSOW.comments) {
             validationErrors.comments = "Comments is required";
+        }else if(!currentSOW.comments.length < 3) {
+            validationErrors.comments = "Comments must be atleast 3 characters";
         }
 
         // If there are validation errors, update the state and prevent save
@@ -233,6 +237,8 @@ function SOWList({isDrawerOpen}) {
         if (name === "title") {            
              if (value.length === 200) {
                 setErrors((prevErrors) => ({ ...prevErrors, title: "More than 200 characters are not allowed" }));
+            }else if(value.length < 3) {
+                setErrors((prevErrors) => ({ ...prevErrors, title: ""}))
             }
             // Clear the title error if valid
             else {
@@ -266,6 +272,8 @@ function SOWList({isDrawerOpen}) {
         if (name === "comments") {
             if (value.length === 500) {
                 setErrors((prevErrors) => ({ ...prevErrors, comments: "More than 500 characters are not allowed" }));
+            }else if(value.length < 3) {
+                setErrors((prevErrors) => ({ ...prevErrors, comments: ""}))
             }
             // Clear the title error if valid
             else {
@@ -499,14 +507,23 @@ function SOWList({isDrawerOpen}) {
                         ))}
                     </TableBody>
                 </Table>
-                <PaginationComponent
+                {/* <PaginationComponent
                     count={filteredSOWs.length}
                     page={page}
                     rowsPerPage={rowsPerPage}
                     handlePageChange={handlePageChange}
                     handleRowsPerPageChange={handleRowsPerPageChange}
-                />
+                /> */}
             </TableContainer>
+            <TablePagination
+                rowsPerPageOptions={[10, 25, 100]}
+                component="div"
+                count={filteredSOWs.length}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                onPageChange={handlePageChange}
+                onRowsPerPageChange={handleRowsPerPageChange}
+            />
             <Dialog open={open} onClose={() => setOpen(false)}>
                 <DialogTitle>{currentSOW.id ? 'Update SOW' : 'Add SOW'}</DialogTitle>
                 <DialogContent>

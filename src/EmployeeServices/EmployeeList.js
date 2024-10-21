@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { ListItemText, Checkbox, Select, MenuItem, Table, InputLabel, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment, FormHelperText, Autocomplete } from '@mui/material';
+import { ListItemText, Checkbox, Select, MenuItem, Table, InputLabel, TableBody, TableCell, TableContainer, TablePagination, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment, FormHelperText, Autocomplete } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
@@ -249,7 +249,10 @@ function EmployeeList({ isDrawerOpen }) {
 
         if (!currentEmployee.name) {
             validationErrors.name = "Name  is required";
-        } else if (Employees.some(emp => emp.name.toLowerCase() === currentEmployee.name.toLowerCase() && emp.id !== currentEmployee.id)) {
+        } else if (!currentEmployee.name.length < 3) {
+            validationErrors.name = "Name must be at least 3 characters";
+        }
+        else if (Employees.some(emp => emp.name.toLowerCase() === currentEmployee.name.toLowerCase() && emp.id !== currentEmployee.id)) {
             validationErrors.name = "Name must be unique";
         }
         // Department field validation 
@@ -287,13 +290,12 @@ function EmployeeList({ isDrawerOpen }) {
         }
         if (!currentEmployee.projection) {
             validationErrors.projection = "Projection is required";
+        } else if(!currentEmployee.projection.length <3) {
+            validationErrors.projection = "Projection must be atleast 3 characters";
         }
         if (!currentEmployee.password) {
             validationErrors.password = "Password is required";
         }
-        // if (!currentEmployee.profile) {
-        //     validationErrors.profile = "Profile is required";
-        // }
         if (!currentEmployee.profile || errors.profile) {
             validationErrors.profile = "Please select a valid PDF or DOC file";
         }
@@ -363,19 +365,6 @@ function EmployeeList({ isDrawerOpen }) {
         }
     };
 
-    // const handleFileChange = (e) => {
-    //     const file = e.target.files[0];
-    //     setSelectedFile(file);
-
-    //     // Remove the profile error automatically when the file is selected
-    //     if (file) {
-    //         setErrors((prevErrors) => ({
-    //             ...prevErrors,
-    //             profile: undefined, // Clear the error for profile
-    //         }));
-    //     }
-    // };
-
     const handleChange = (e) => {
         const { name, value } = e.target;
         setCurrentEmployee({ ...currentEmployee, [name]: value });
@@ -384,6 +373,8 @@ function EmployeeList({ isDrawerOpen }) {
             // Check if the title is empty or only whitespace
             if (!value.trim()) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
+            } else if (value.lenth < 3) {
+                setErrors((prevErrors) => ({ ...prevErrors, name: "" }))
             }
             // Check for uniqueness
             else if (Employees.some(emp => emp.name.toLowerCase() === value.toLowerCase() && emp.id !== currentEmployee.id)) {
@@ -442,6 +433,8 @@ function EmployeeList({ isDrawerOpen }) {
         if (name === "projection") {
             if (value) {
                 setErrors((prevErrors) => ({ ...prevErrors, projection: "" }));
+            }else if (value.length < 3) {
+                setErrors((prevErrors) => ({ ...prevErrors, projection: ""}))
             }
         }
         if (name === 'password') {
@@ -478,7 +471,7 @@ function EmployeeList({ isDrawerOpen }) {
 
                 // Check if the file type is either PDF or DOC/DOCX
                 if (fileType === "application/pdf" ||
-                    fileType === "application/msword" ||
+                    fileType === "application/docx" ||
                     fileType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
 
                     setCurrentEmployee((prevEmployee) => ({
@@ -811,14 +804,24 @@ function EmployeeList({ isDrawerOpen }) {
                         ))}
                     </TableBody>
                 </Table>
-                <PaginationComponent
+                {/* <PaginationComponent 
                     count={filteredEmployees.length}
                     page={page}
                     rowsPerPage={rowsPerPage}
                     handlePageChange={handlePageChange}
                     handleRowsPerPageChange={handleRowsPerPageChange}
-                />
+                /> */}
+                
             </TableContainer>
+            <TablePagination
+                rowsPerPageOptions={[10, 25, 100]}
+                component="div"
+                count={filteredEmployees.length}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                onPageChange={handlePageChange}
+                onRowsPerPageChange={handleRowsPerPageChange}
+            />
             <Dialog open={open} onClose={() => setOpen(false)}>
                 <DialogTitle>{currentEmployee.id ? 'Update Employee' : 'Add Employee'}</DialogTitle>
                 <DialogContent>
@@ -894,7 +897,7 @@ function EmployeeList({ isDrawerOpen }) {
                         ))}
                     </Select>
                     {errors.department && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.department}</Typography>}
-                    <InputLabel id="demo-simple-select-label">Technology</InputLabel>
+                    {/* <InputLabel id="demo-simple-select-label">Technology</InputLabel>
                     <Autocomplete
                         multiple
                         id="technologies-autocomplete"
@@ -926,7 +929,40 @@ function EmployeeList({ isDrawerOpen }) {
                                 <ListItemText primary={option} />
                             </li>
                         )}
-                    />
+                    /> */}
+                    <InputLabel id="demo-simple-select-label">Technology</InputLabel>
+<Autocomplete
+    multiple
+    id="technologies-autocomplete"
+    options={(technologies && technologies.length > 0) ? technologies.map((tech) => tech.name) : []}  // Ensure technologies is an array
+    value={currentEmployee.technology || []}  // Ensure value is always an array
+    onChange={(event, newValue) => {
+        handleChange({
+            target: {
+                name: 'technology',
+                value: newValue || [],  // Ensure newValue is always an array
+            },
+        });
+    }}
+    renderInput={(params) => (
+        <TextField
+            {...params}
+            variant="outlined"
+            placeholder="Select technologies"
+            fullWidth
+            error={!!errors.technology}
+        />
+    )}
+    renderOption={(props, option, { selected }) => (
+        <li {...props}>
+            <Checkbox
+                style={{ marginRight: 8 }}
+                checked={selected}
+            />
+            <ListItemText primary={option} />
+        </li>
+    )}
+/>
                     {errors.technology && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.technology}</Typography>}
                     <InputLabel>ReportingTo</InputLabel>
                     <Autocomplete

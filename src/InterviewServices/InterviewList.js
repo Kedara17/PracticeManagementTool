@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Select, MenuItem, Table, InputLabel, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
+import { Select,TablePagination, MenuItem, Table, InputLabel, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
@@ -164,6 +164,8 @@ function InterviewList({isDrawerOpen}) {
         }
         if (!currentInterview.name) {
             validationErrors.name = "Name is required";
+        }else if(!currentInterview.name.length < 3) {
+            validationErrors.name = "Name must be atleast 3 characters";
         }
         if (!currentInterview.interviewDate) {
             validationErrors.interviewDate = "InterviewDate is required";
@@ -227,6 +229,8 @@ function InterviewList({isDrawerOpen}) {
         if (name === "sowRequirement") {
             if (value) {
                 setErrors((prevErrors) => ({ ...prevErrors, sowRequirement: "" }));
+            }else if(value.length < 3) {
+                setErrors((prevErrors) => ({ ...prevErrors, sowRequirement: ""}))
             }
         }
         if (name === "name") {
@@ -486,14 +490,23 @@ function InterviewList({isDrawerOpen}) {
                         ))}
                     </TableBody>
                 </Table>
-                <PaginationComponent
+                {/* <PaginationComponent
                     count={filteredInterviews.length}
                     page={page}
                     rowsPerPage={rowsPerPage}
                     handlePageChange={handlePageChange}
                     handleRowsPerPageChange={handleRowsPerPageChange}
-                />
+                /> */}
             </TableContainer>
+            <TablePagination
+                rowsPerPageOptions={[10, 25, 100]}
+                component="div"
+                count={filteredInterviews.length}
+                rowsPerPage={rowsPerPage}
+                page={page}
+                onPageChange={handlePageChange}
+                onRowsPerPageChange={handleRowsPerPageChange}
+            />
             <Dialog open={open} onClose={() => setOpen(false)}>
                 <DialogTitle>{currentInterview.id ? 'Update Interview' : 'Add Interview'}</DialogTitle>
                 <DialogContent>
@@ -507,8 +520,8 @@ function InterviewList({isDrawerOpen}) {
                         error={!!errors.sowRequirement}
                     >
                         {SOWRequirement.map((sowRequirement) => (
-                            <MenuItem key={sowRequirement.id} value={sowRequirement.status}>
-                                {sowRequirement.status}
+                            <MenuItem key={sowRequirement.id} value={sowRequirement.teamSize}>
+                                {sowRequirement.teamSize}
                             </MenuItem>
                         ))}
                     </Select>
@@ -518,7 +531,11 @@ function InterviewList({isDrawerOpen}) {
                         margin="dense"
                         name="name"
                         value={currentInterview.name}
-                        onChange={handleChange}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            if (/^[A-Za-z\s]*$/.test(value))
+                                handleChange(e);
+                        }}
                         fullWidth
                         error={!!errors.name} // Display error if exists
                         helperText={errors.name}
@@ -526,6 +543,7 @@ function InterviewList({isDrawerOpen}) {
                     <InputLabel>InterviewDate</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
+                         className='datetime'
                             value={currentInterview.interviewDate ? dayjs(currentInterview.interviewDate) : null}
                             onChange={handleInterviewDateChange}
                             renderInput={(params) => (
@@ -539,7 +557,13 @@ function InterviewList({isDrawerOpen}) {
                         margin="dense"
                         name="yearsOfExperience"
                         value={currentInterview.yearsOfExperience}
-                        onChange={handleChange}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            // Allow only digits (numbers) and prevent letters and special characters
+                            if (/^\d*$/.test(value)) {
+                                handleChange(e); // Only update if the value is valid (numbers only)
+                            }
+                        }}
                         fullWidth
                         error={!!errors.yearsOfExperience} // Display error if exists
                         helperText={errors.yearsOfExperience}
@@ -548,7 +572,7 @@ function InterviewList({isDrawerOpen}) {
                     <Select
                         margin="dense"
                         name="status"
-                        value={currentInterview.interviewStatus}
+                        value={currentInterview.status}
                         onChange={handleChange}
                         fullWidth
                         error={!!errors.status}
@@ -563,6 +587,7 @@ function InterviewList({isDrawerOpen}) {
                     <InputLabel>On_Boarding</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
+                         className='datetime'
                             value={currentInterview.on_Boarding ? dayjs(currentInterview.on_Boarding) : null}
                             onChange={handleOnBoardingDateChange}
                             renderInput={(params) => (
