@@ -143,7 +143,8 @@ function POCList({ isDrawerOpen }) {
 
         if (!currentPOC.title.trim()) {
             validationErrors.title = "POC title is required";
-        } else if (!currentPOC.title.length < 3) {
+
+        }else if(currentPOC.title.length < 3) {
             validationErrors.title = "POC title must be atleast 3 characters";
         }
         else if (POCs.some(tech => tech.title.toLowerCase() === currentPOC.title.toLowerCase() && tech.id !== currentPOC.id)) {

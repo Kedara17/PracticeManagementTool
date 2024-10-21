@@ -137,7 +137,8 @@ function ClientContactList({ isDrawerOpen }) {
         // Name field validation
         if (!currentClientContact.contactValue) {
             validationErrors.contactValue = "ContactValue is required";
-        } else if (!currentClientContact.contactValue.length < 3) {
+
+        } else if(currentClientContact.contactValue.length < 3 ) {       
             validationErrors.contactValue = "ContactValue must be at least 3 characters";
         }
         else if (ClientContact.some(conval => conval.contactValue.toLowerCase() === currentClientContact.contactValue.toLowerCase() && conval.id !== currentClientContact.id)) {

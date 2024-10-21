@@ -169,7 +169,8 @@ function InterviewList({ isDrawerOpen }) {
         }
         if (!currentInterview.name) {
             validationErrors.name = "Name is required";
-        } else if (!currentInterview.name.length < 3) {
+
+        }else if(currentInterview.name.length < 3) {
             validationErrors.name = "Name must be atleast 3 characters";
         }
         if (!currentInterview.interviewDate) {

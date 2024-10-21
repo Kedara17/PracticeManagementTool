@@ -184,7 +184,7 @@ function ProjectList({isDrawerOpen}) {
         // Name field validation
         if (!currentProject.projectName.trim()) {
             validationErrors.projectName = "ProjectName is required";
-        } else if(!currentProject.projectName.length < 3) {
+        } else if(currentProject.projectName.length < 3) {
             validationErrors.projectName = "ProjectName must be at least 3 characters";
         }else if (Projects.some(pro => pro.projectName.toLowerCase() === currentProject.projectName.toLowerCase() && pro.id !== currentProject.id)) {
             validationErrors.projectName = "ProjectName must be unique";

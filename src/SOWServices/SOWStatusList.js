@@ -102,7 +102,7 @@ function SOWStatusList({ isDrawerOpen }) {
         // Name field validation
         if (!currentSOWStatus.status.trim()) {
             validationErrors.status = "Status is required";
-        } else if (!currentSOWStatus.status.length < 3) {
+        } else if(currentSOWStatus.status.length < 3){       
             validationErrors.status = "Status must be atleast 3 characters";
         }
         else if (SOWStatus.some(stat => stat.status === currentSOWStatus.status && stat.id !== currentSOWStatus.id)) {

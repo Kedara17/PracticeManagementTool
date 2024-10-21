@@ -147,7 +147,8 @@ function ClientList({ isDrawerOpen }) {
         // Name field validation
         if (!currentClient.name.trim()) {
             validationErrors.name = "Name is required";
-        } else if (!currentClient.name.length < 3) {
+
+        } else if(currentClient.name.length < 3){
             validationErrors.name = "Name must be atleast 3 characters";
         }
         else if (Clients.some(cli => cli.name.toLowerCase() === currentClient.name.toLowerCase() && cli.id !== currentClient.id)) {
