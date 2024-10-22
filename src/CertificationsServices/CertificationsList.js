@@ -42,7 +42,7 @@ const CertificationsList = () => {
         isActive: true // New field to track isActive status
     });
 
-    const [order, setOrder] = useState('asc'); // Order of sorting: 'asc' or 'desc'
+    const [order, setOrder] = useState('desc'); // Order of sorting: 'asc' or 'desc'
     const [orderBy, setOrderBy] = useState('createdDate'); // Column to sort by
     const [searchQuery, setSearchQuery] = useState(''); // State for search query
     const [errors, setErrors] = useState({
@@ -95,11 +95,20 @@ const CertificationsList = () => {
         const valueB = b[orderBy] || '';
 
         if (typeof valueA === 'string' && typeof valueB === 'string') {
-            return order === 'asc' ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
+            return order === 'desc'
+                ? valueB.localeCompare(valueA)
+                : valueA.localeCompare(valueB);
+        } else if (valueA instanceof Date && valueB instanceof Date) {
+            return order === 'desc'
+                ? valueB - valueA
+                : valueA - valueB;
         } else {
-            return order === 'asc' ? (valueA > valueB ? 1 : -1) : (valueB > valueA ? 1 : -1);
+            return order === 'desc'
+                ? (valueA > valueB ? 1 : -1)
+                : (valueB > valueA ? 1 : -1);
         }
     });
+
 
     const filteredCertifications = sortedCertifications.filter((certification) =>
         (certification.name && typeof certification.name === 'string' &&
@@ -134,7 +143,7 @@ const CertificationsList = () => {
                 setCertifications(certifications.filter(tech => tech.id !== id));
             })
             .catch(error => {
-                console.error('There was an error deleting the technology!', error);
+                console.error('There was an error deleting the certification!', error);
                 setError(error);
             });
         setConfirmOpen(false);
@@ -162,7 +171,7 @@ const CertificationsList = () => {
 
 
 
-    const handleSave = () => {
+    const handleSave = async() => {
         let validationErrors = {};
 
         // Name field validation
@@ -179,38 +188,25 @@ const CertificationsList = () => {
             return;
         }
 
-        // Clear any previous errors if validation passes
         setErrors({});
 
         if (currentCertifications.id) {
-            // Update existing Designation
-            // axios.put(`http://localhost:5501/api/Designation/${currentDesignation.id}`, currentDesignation)
-            axios.put(`http://localhost:5019/api/Certifications/${currentCertifications.id}`, currentCertifications)
-                .then(response => {
-                    //setDesignations([...Designations, response.data]);
-                    // setDesignations(response.data);
-                    setCertifications(certifications.map(tech => tech.id === currentCertifications.id ? response.data : tech));
-                })
-                .catch(error => {
-                    console.error('There was an error updating the Certifications!', error);
-                    setError(error);
-                });
+           
+            await axios.put(`http://localhost:5019/api/Certifications/${currentCertifications.id}`, currentCertifications)
+            
+            const response = await axios.get('http://localhost:5019/api/Certifications');
+            setCertifications(response.data);
 
         } else {
             // Add new Designation
             // axios.post('http://localhost:5501/api/Designation', currentDesignation)
-            axios.post('http://localhost:5019/api/Certifications', currentCertifications)
-                .then(response => {
-                    setCertifications([...certifications, response.data]);
-                })
-                .catch(error => {
-                    console.error('There was an error adding the Certifications!', error);
-                    setError(error);
-                });
+            await axios.post('http://localhost:5019/api/Certifications', currentCertifications)
+            const response = await axios.get('http://localhost:5019/api/Certifications');
+            setCertifications(response.data);
         }
         setOpen(false);
-    };
-
+    };    
+    
 
 
 
@@ -431,9 +427,9 @@ const CertificationsList = () => {
                                 <TableCell>{certification.validTill}</TableCell>
                                 <TableCell>{certification.isActive ? 'Active' : 'InActive'}</TableCell>
                                 <TableCell>{certification.createdBy}</TableCell>
-                                <TableCell>{new Date(certification.createdDate).toLocaleDateString()}</TableCell>
+                                <TableCell>{(certification.createdDate)}</TableCell>
                                 <TableCell>{certification.updatedBy || 'N/A'}</TableCell>
-                                <TableCell>{new Date(certification.updatedDate).toLocaleDateString()}</TableCell>
+                                <TableCell>{(certification.updatedDate) || 'N/A'}</TableCell>
                                 <TableCell >
                                     <IconButton onClick={() => handleUpdate(certification)}>
                                         <EditIcon color="primary" />
@@ -490,8 +486,8 @@ const CertificationsList = () => {
                         value={currentCertifications.status}
                         onChange={handleChange}
                         fullWidth
-                        error={!!errors.comments} // Display error if exists
-                        helperText={errors.comments}
+                        error={!!errors.status} // Display error if exists
+                        helperText={errors.status}
                     />
 
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
