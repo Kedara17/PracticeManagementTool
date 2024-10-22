@@ -190,111 +190,111 @@ function DepartmentList({ isDrawerOpen }) {
     }
 
     return (
-        <div style={{
-            display: 'flex', padding: '10px', marginLeft: isDrawerOpen ? 240 : 0,
-            transition: 'margin-left 0.3s', flexGrow: 1
-        }}>
-            <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>Department</h3>
-                <div style={{ display: 'flex', marginBottom: '20px', width: '100%' }}>
-                    <TextField
-                        label="Search"
-                        variant="outlined"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        InputProps={{
-                            endAdornment: (
-                                <InputAdornment position="end">
-                                    <IconButton edge="end">
-                                        <SearchIcon />
+    <div style={{ display: 'flex',flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 240 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
+        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <h3 style={{ marginBottom: '20px', fontSize: '25px', display:'flex', justifyContent:'center' }}>Department </h3>
+        <div style={{ display: 'flex', marginBottom: '20px', width: '100%' }}>
+            <TextField
+                label="Search"
+                variant="outlined"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                InputProps={{
+                    endAdornment: (
+                        <InputAdornment position="end">
+                            <IconButton edge="end">
+                                <SearchIcon />
+                            </IconButton>
+                        </InputAdornment>
+                    ),
+                }}
+                style={{ flexGrow: 1, marginRight: '10px' }}
+            />
+            <Button variant="contained" sx={{ backgroundColor: '#00aae7' }} onClick={handleAdd}>Add Department</Button>
+        </div>
+            <TableContainer component={Paper} style={{ width: '100%' }}>
+                <Table>
+                    <TableHead>
+                        <TableRow>
+                            {/* Sorting logic */}
+                            <TableCell>
+                                <TableSortLabel
+                                    active={orderBy === 'name'}
+                                    direction={orderBy === 'name' ? order : 'desc'}
+                                    onClick={() => handleSort('name')}
+                                >
+                                    <b>Name</b>
+                                </TableSortLabel>
+                            </TableCell>
+                            {/* <TableCell>Name</TableCell> */}
+                            <TableCell>
+                                <TableSortLabel
+                                    active={orderBy === 'isActive'}
+                                    direction={orderBy === 'isActive' ? order : 'desc'}
+                                    onClick={() => handleSort('isActive')}
+                                >
+                                    <b>Is Active</b>
+                                </TableSortLabel>
+                            </TableCell>
+                            <TableCell>
+                                <TableSortLabel
+                                    active={orderBy === 'createdBy'}
+                                    direction={orderBy === 'createdBy' ? order : 'desc'}
+                                    onClick={() => handleSort('createdBy')}
+                                >
+                                    <b>Created By</b>
+                                </TableSortLabel>
+                            </TableCell>
+                            <TableCell>
+                                <TableSortLabel
+                                    active={orderBy === 'createdDate'}
+                                    direction={orderBy === 'createdDate' ? order : 'desc'}
+                                    onClick={() => handleSort('createdDate')}
+                                >
+                                    <b>Created Date</b>
+                                </TableSortLabel>
+                            </TableCell>
+                            <TableCell>
+                                <TableSortLabel
+                                    active={orderBy === 'updatedBy'}
+                                    direction={orderBy === 'updatedBy' ? order : 'desc'}
+                                    onClick={() => handleSort('updatedBy')}
+                                >
+                                    <b>Updated By</b>
+                                </TableSortLabel>
+                            </TableCell>
+                            <TableCell>
+                                <TableSortLabel
+                                    active={orderBy === 'updatedDate'}
+                                    direction={orderBy === 'updatedDate' ? order : 'desc'}
+                                    onClick={() => handleSort('updatedDate')}
+                                >
+                                    <b>Updated Date</b>
+                                </TableSortLabel>
+                            </TableCell>
+                            <TableCell
+                            
+                            ><b>Actions</b></TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {filteredDepartments.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((Department) => (
+                            <TableRow key={Department.id}
+                                sx={{ backgroundColor: Department.isActive ? 'inherit' : '#FFCCCB' }} >
+                                
+                                <TableCell>{Department.name}</TableCell>
+                                <TableCell>{Department.isActive ? 'Active' : 'Inactive'}</TableCell>
+                                <TableCell>{Department.createdBy}</TableCell>
+                                <TableCell>{Department.createdDate}</TableCell>
+                                <TableCell>{Department.updatedBy || 'N/A'}</TableCell>
+                                <TableCell>{Department.updatedDate || 'N/A'}</TableCell>
+                                <TableCell >
+                                    <IconButton onClick={() => handleUpdate(Department)}>
+                                        <EditIcon color="primary" />
                                     </IconButton>
-                                </InputAdornment>
-                            ),
-                        }}
-                        style={{ marginRight: '20px', flexGrow: 1 }}
-                    />
-                    <Button variant="contained" sx={{ backgroundColor: '#00aae7' }} onClick={handleAdd}>Add Department</Button>
-                </div>
-                <TableContainer component={Paper} style={{ width: '100%' }}>
-                    <Table>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>
-                                    <TableSortLabel
-                                        active={orderBy === 'name'}
-                                        direction={orderBy === 'name' ? order : 'desc'}
-                                        onClick={() => handleSort('name')}
-                                    >
-                                        <b>Name</b>
-                                    </TableSortLabel>
-                                </TableCell>
-                                <TableCell>
-                                    <TableSortLabel
-                                        active={orderBy === 'isActive'}
-                                        direction={orderBy === 'isActive' ? order : 'desc'}
-                                        onClick={() => handleSort('isActive')}
-                                    >
-                                        <b>Is Active</b>
-                                    </TableSortLabel>
-                                </TableCell>
-                                <TableCell>
-                                    <TableSortLabel
-                                        active={orderBy === 'createdBy'}
-                                        direction={orderBy === 'createdBy' ? order : 'desc'}
-                                        onClick={() => handleSort('createdBy')}
-                                    >
-                                        <b>Created By</b>
-                                    </TableSortLabel>
-                                </TableCell>
-                                <TableCell>
-                                    <TableSortLabel
-                                        active={orderBy === 'createdDate'}
-                                        direction={orderBy === 'createdDate' ? order : 'desc'}
-                                        onClick={() => handleSort('createdDate')}
-                                    >
-                                        <b>Created Date</b>
-                                    </TableSortLabel>
-                                </TableCell>
-                                <TableCell>
-                                    <TableSortLabel
-                                        active={orderBy === 'updatedBy'}
-                                        direction={orderBy === 'updatedBy' ? order : 'desc'}
-                                        onClick={() => handleSort('updatedBy')}
-                                    >
-                                        <b>Updated By</b>
-                                    </TableSortLabel>
-                                </TableCell>
-                                <TableCell>
-                                    <TableSortLabel
-                                        active={orderBy === 'updatedDate'}
-                                        direction={orderBy === 'updatedDate' ? order : 'desc'}
-                                        onClick={() => handleSort('updatedDate')}
-                                    >
-                                        <b>Updated Date</b>
-                                    </TableSortLabel>
-                                </TableCell>
-                                <TableCell
-
-                                ><b>Actions</b></TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {filteredDepartments.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((Department) => (
-                                <TableRow key={Department.id}
-                                    sx={{ backgroundColor: Department.isActive ? 'inherit' : '#FFCCCB' }} >
-                                    <TableCell>{Department.name}</TableCell>
-                                    <TableCell>{Department.isActive ? 'Active' : 'Inactive'}</TableCell>
-                                    <TableCell>{Department.createdBy}</TableCell>
-                                    <TableCell>{Department.createdDate}</TableCell>
-                                    <TableCell>{Department.updatedBy || 'N/A'}</TableCell>
-                                    <TableCell>{Department.updatedDate || 'N/A'}</TableCell>
-                                    <TableCell >
-                                        <IconButton onClick={() => handleUpdate(Department)}>
-                                            <EditIcon color="primary" />
-                                        </IconButton>
-                                        <IconButton onClick={() => confirmDelete(Department.id)}>
-                                            <DeleteIcon color="error" />
-                                        </IconButton>
+                                    <IconButton onClick={() => confirmDelete(Department.id)}>
+                                        <DeleteIcon color="error" />        
+                                     </IconButton>
                                     </TableCell>
                                 </TableRow>
                             ))}
