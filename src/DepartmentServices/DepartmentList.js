@@ -190,10 +190,9 @@ function DepartmentList({isDrawerOpen}) {
     }
 
     return (
-    <div style={{ display: 'flex', padding: '10px', marginLeft: isDrawerOpen ? 240 : 0, 
-    transition: 'margin-left 0.3s', flexGrow: 1 }}>
-        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>Department Table List</h3>
+    <div style={{ display: 'flex',flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 240 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
+        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <h3 style={{ marginBottom: '20px', fontSize: '25px', display:'flex', justifyContent:'center' }}>Department Table List</h3>
         <div style={{ display: 'flex', marginBottom: '20px', width: '100%' }}>
             <TextField
                 label="Search"
@@ -209,7 +208,7 @@ function DepartmentList({isDrawerOpen}) {
                         </InputAdornment>
                     ),
                 }}
-                style={{ marginRight: '20px', flexGrow: 1 }}
+                style={{ flexGrow: 1, marginRight: '10px' }}
             />
             <Button variant="contained" sx={{ backgroundColor: '#00aae7' }} onClick={handleAdd}>Add Department</Button>
         </div>

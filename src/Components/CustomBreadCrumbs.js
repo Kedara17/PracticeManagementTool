@@ -22,7 +22,8 @@ const CustomBreadcrumbs = ({ paths, isDrawerOpen, currentPath }) => {
                             textDecoration: 'none',
                             color: path.link === currentPath ? '#00aae7' : 'inherit', 
                             pointerEvents: path.link === currentPath ? 'none' : 'auto', 
-                            fontFamily: 'Montserrat'
+                            fontFamily: 'Montserrat',
+                            fontSize: '15px'
                         }}
                     >
                         {path.label}

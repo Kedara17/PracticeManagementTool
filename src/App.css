@@ -29,3 +29,8 @@
 .drawer-invisible-scrollbar::-webkit-scrollbar {
     display: none; /* Hide scrollbar for Chrome, Safari, and Opera */
 }
+
+.drawer-text {
+    font-family: 'Montserrat', sans-serif !important;
+}
+
