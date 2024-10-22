@@ -38,6 +38,7 @@ import SOWRequirementList from '../SOWServices/SOWRequirementList';
 import SOWStatusList from '../SOWServices/SOWStatusList';
 import POCList from '../POCServices/POCList';
 import CertificationsList from '../CertificationsServices/CertificationsList';
+import SuccessStoriesList from '../SuccessStoriesServices/SuccessStoriesList';
 
 function Home() {
 
@@ -558,6 +559,7 @@ function Home() {
           <Route path='sow/sowstatuslist' element={<SOWStatusList isDrawerOpen={isDrawerOpen} />} />
           <Route path='poc/poclist' element={<POCList isDrawerOpen={isDrawerOpen} />} />
           <Route path='certifications/certificationslist' element={<CertificationsList isDrawerOpen={isDrawerOpen} />} />
+          <Route path='successStories/successStoriesList' element={<SuccessStoriesList isDrawerOpen={isDrawerOpen} />} />
         </Routes>
 
         {/* {view === 'slider' && <SliderComponent  isDrawerOpen={isDrawerOpen} />}
