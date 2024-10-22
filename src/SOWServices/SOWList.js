@@ -162,6 +162,8 @@ function SOWList({isDrawerOpen}) {
         // }
         if (!currentSOW.title) {
             validationErrors.title = "Title is required";
+        }else if(!currentSOW.title.length < 3) {
+            validationErrors.title = "Title must be atleast 3 characters";
         }
         if (!currentSOW.client) {
             validationErrors.client = "Client is required";
@@ -180,6 +182,8 @@ function SOWList({isDrawerOpen}) {
         }
         if (!currentSOW.comments) {
             validationErrors.comments = "Comments is required";
+        }else if(!currentSOW.comments.length < 3) {
+            validationErrors.comments = "Comments must be atleast 3 characters";
         }
 
         // If there are validation errors, update the state and prevent save
@@ -233,6 +237,8 @@ function SOWList({isDrawerOpen}) {
         if (name === "title") {            
              if (value.length === 200) {
                 setErrors((prevErrors) => ({ ...prevErrors, title: "More than 200 characters are not allowed" }));
+            }else if(value.length < 3) {
+                setErrors((prevErrors) => ({ ...prevErrors, title: ""}))
             }
             // Clear the title error if valid
             else {
@@ -266,6 +272,8 @@ function SOWList({isDrawerOpen}) {
         if (name === "comments") {
             if (value.length === 500) {
                 setErrors((prevErrors) => ({ ...prevErrors, comments: "More than 500 characters are not allowed" }));
+            }else if(value.length < 3) {
+                setErrors((prevErrors) => ({ ...prevErrors, comments: ""}))
             }
             // Clear the title error if valid
             else {

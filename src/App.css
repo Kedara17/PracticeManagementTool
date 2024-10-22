@@ -13,7 +13,7 @@
     width: 339px;
 }
 .date {
-    width: 351px;
+    width: 338px;
 }
 .time {
     width: 351px;
@@ -28,9 +28,5 @@
 
 .drawer-invisible-scrollbar::-webkit-scrollbar {
     display: none; /* Hide scrollbar for Chrome, Safari, and Opera */
-}
-
-.drawer-text {
-    font-family: 'Montserrat', sans-serif !important;
 }
 

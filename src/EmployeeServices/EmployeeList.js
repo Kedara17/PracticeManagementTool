@@ -241,7 +241,10 @@ function EmployeeList({isDrawerOpen}) {
 
         if (!currentEmployee.name) {
             validationErrors.name = "Name  is required";
-        } else if (Employees.some(emp => emp.name.toLowerCase() === currentEmployee.name.toLowerCase() && emp.id !== currentEmployee.id)) {
+        } else if (!currentEmployee.name.length < 3) {
+            validationErrors.name = "Name must be at least 3 characters";
+        }
+        else if (Employees.some(emp => emp.name.toLowerCase() === currentEmployee.name.toLowerCase() && emp.id !== currentEmployee.id)) {
             validationErrors.name = "Name must be unique";
         }
         // Department field validation 
@@ -279,13 +282,12 @@ function EmployeeList({isDrawerOpen}) {
         }
         if (!currentEmployee.projection) {
             validationErrors.projection = "Projection is required";
+        } else if(!currentEmployee.projection.length <3) {
+            validationErrors.projection = "Projection must be atleast 3 characters";
         }
         if (!currentEmployee.password) {
             validationErrors.password = "Password is required";
         }
-        // if (!currentEmployee.profile) {
-        //     validationErrors.profile = "Profile is required";
-        // }
         if (!currentEmployee.profile || errors.profile) {
             validationErrors.profile = "Please select a valid PDF or DOC file";
         }
@@ -355,32 +357,21 @@ function EmployeeList({isDrawerOpen}) {
         }
     };
 
-    // const handleFileChange = (e) => {
-    //     const file = e.target.files[0];
-    //     setSelectedFile(file);
-
-    //     // Remove the profile error automatically when the file is selected
-    //     if (file) {
-    //         setErrors((prevErrors) => ({
-    //             ...prevErrors,
-    //             profile: undefined, // Clear the error for profile
-    //         }));
-    //     }
-    // };
-
     const handleChange = (e) => {
         const { name, value } = e.target;
         setCurrentEmployee({ ...currentEmployee, [name]: value });
-      
+
         if (name === "name") {
             // Check if the title is empty or only whitespace
             if (!value.trim()) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
+            } else if (value.lenth < 3) {
+                setErrors((prevErrors) => ({ ...prevErrors, name: "" }))
             }
             // Check for uniqueness
             else if (Employees.some(emp => emp.name.toLowerCase() === value.toLowerCase() && emp.id !== currentEmployee.id)) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
-            }else if (value.length === 50) {
+            } else if (value.length === 50) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "More than 50 characters are not allowed" }));
             }
             // Clear the title error if valid
@@ -434,8 +425,10 @@ function EmployeeList({isDrawerOpen}) {
         if (name === "projection") {
             if (value) {
                 setErrors((prevErrors) => ({ ...prevErrors, projection: "" }));
+            }else if (value.length < 3) {
+                setErrors((prevErrors) => ({ ...prevErrors, projection: ""}))
             }
-        }        
+        }
         if (name === 'password') {
             if (!value) {
                 setErrors({ ...errors, password: 'Password is required' });
@@ -457,7 +450,7 @@ function EmployeeList({isDrawerOpen}) {
                 if (numericValue) {
                     setErrors((prevErrors) => ({
                         ...prevErrors,
-                        phoneNo: "" 
+                        phoneNo: ""
                     }));
                 }
             }
@@ -470,7 +463,7 @@ function EmployeeList({isDrawerOpen}) {
 
                 // Check if the file type is either PDF or DOC/DOCX
                 if (fileType === "application/pdf" ||
-                    fileType === "application/msword" ||
+                    fileType === "application/docx" ||
                     fileType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
 
                     setCurrentEmployee((prevEmployee) => ({
@@ -487,7 +480,7 @@ function EmployeeList({isDrawerOpen}) {
                     // Set error if an invalid file type is selected
                     setErrors((prevErrors) => ({
                         ...prevErrors,
-                        profile: "Please select a PDF or DOC file"
+                        profile: "Only PDF or DOC files are allowed"
                     }));
                 }
             }
@@ -501,7 +494,7 @@ function EmployeeList({isDrawerOpen}) {
             if (value) {
                 setErrors((prevErrors) => ({ ...prevErrors, technology: "" }));
             }
-        }       
+        }
     };
     const validateForm = () => {
         let formIsValid = true;
@@ -837,7 +830,7 @@ function EmployeeList({isDrawerOpen}) {
                         fullWidth
                         error={!!errors.name}
                         helperText={errors.name}
-                        inputProps={{ maxLength: 50 }}                      
+                        inputProps={{ maxLength: 50 }}
                     />
                     <InputLabel>Designation</InputLabel>
                     <Select
@@ -863,8 +856,8 @@ function EmployeeList({isDrawerOpen}) {
                         value={currentEmployee.employeeID}
                         onChange={(e) => {
                             const value = e.target.value;
-                            const numericValue = value.replace(/\D/g, '');  
-                            handleChange({ target: { name: e.target.name, value: numericValue } }); 
+                            const numericValue = value.replace(/\D/g, '');
+                            handleChange({ target: { name: e.target.name, value: numericValue } });
                         }}
                         fullWidth
                         error={!!errors.employeeID}
@@ -896,7 +889,7 @@ function EmployeeList({isDrawerOpen}) {
                         ))}
                     </Select>
                     {errors.department && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.department}</Typography>}
-                    <InputLabel id="demo-simple-select-label">Technology</InputLabel>
+                    {/* <InputLabel id="demo-simple-select-label">Technology</InputLabel>
                     <Autocomplete
                         multiple
                         id="technologies-autocomplete"
@@ -928,7 +921,40 @@ function EmployeeList({isDrawerOpen}) {
                                 <ListItemText primary={option} />
                             </li>
                         )}
-                    />
+                    /> */}
+                    <InputLabel id="demo-simple-select-label">Technology</InputLabel>
+<Autocomplete
+    multiple
+    id="technologies-autocomplete"
+    options={(technologies && technologies.length > 0) ? technologies.map((tech) => tech.name) : []}  // Ensure technologies is an array
+    value={currentEmployee.technology || []}  // Ensure value is always an array
+    onChange={(event, newValue) => {
+        handleChange({
+            target: {
+                name: 'technology',
+                value: newValue || [],  // Ensure newValue is always an array
+            },
+        });
+    }}
+    renderInput={(params) => (
+        <TextField
+            {...params}
+            variant="outlined"
+            placeholder="Select technologies"
+            fullWidth
+            error={!!errors.technology}
+        />
+    )}
+    renderOption={(props, option, { selected }) => (
+        <li {...props}>
+            <Checkbox
+                style={{ marginRight: 8 }}
+                checked={selected}
+            />
+            <ListItemText primary={option} />
+        </li>
+    )}
+/>
                     {errors.technology && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.technology}</Typography>}
                     <InputLabel>ReportingTo</InputLabel>
                     <Autocomplete
@@ -959,7 +985,7 @@ function EmployeeList({isDrawerOpen}) {
                     <InputLabel>Joining Date</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                        className='datetime'
+                            className='datetime'
                             value={currentEmployee.joiningDate ? dayjs(currentEmployee.joiningDate) : null}
                             onChange={handleJoiningDateChange}
                             renderInput={(params) => (
@@ -971,7 +997,7 @@ function EmployeeList({isDrawerOpen}) {
                     <InputLabel>Relieving Date</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                         className='datetime'
+                            className='datetime'
                             value={currentEmployee.relievingDate ? dayjs(currentEmployee.relievingDate) : null}
                             onChange={handleRelievingDateChange}
                             renderInput={(params) => (

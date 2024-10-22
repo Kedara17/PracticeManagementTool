@@ -6,7 +6,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 import PaginationComponent from '../Components/PaginationComponent'; // Import your PaginationComponent
 
-function ContactTypeList({isDrawerOpen}) {
+function ContactTypeList({ isDrawerOpen }) {
     const [contactTypes, setcontactTypes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -100,7 +100,10 @@ function ContactTypeList({isDrawerOpen}) {
         // Name field validation
         if (!currentContactType.typeName.trim()) {
             validationErrors.typeName = "TypeName is required";
-        } else if (contactTypes.some(cont => cont.typeName.toLowerCase() === currentContactType.typeName.toLowerCase() && cont.id !== currentContactType.id)) {
+        } else if(!currentContactType.typeName.length < 3) {
+            validationErrors.typeName = "TypeName must be at least 3 characters";
+        }
+        else if (contactTypes.some(cont => cont.typeName.toLowerCase() === currentContactType.typeName.toLowerCase() && cont.id !== currentContactType.id)) {
             validationErrors.typeName = "TypeName must be unique";
         }
 
@@ -143,26 +146,28 @@ function ContactTypeList({isDrawerOpen}) {
         setOpen(false);
 
     };
-   
+
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setCurrentContactType({ ...currentContactType, [name]: value });  
+        setCurrentContactType({ ...currentContactType, [name]: value });
         if (name === "typeName") {
             // Check if the title is empty or only whitespace
             if (!value.trim()) {
+                setErrors((prevErrors) => ({ ...prevErrors, typeName: "" }));
+            }else if(value.length < 3){
                 setErrors((prevErrors) => ({ ...prevErrors, typeName: "" }));
             }
             // Check for uniqueness
             else if (contactTypes.some(cont => cont.client === value && cont.id !== currentContactType.id)) {
                 setErrors((prevErrors) => ({ ...prevErrors, typeName: "" }));
-            }else if (value.length === 50) {
+            } else if (value.length === 50) {
                 setErrors((prevErrors) => ({ ...prevErrors, typeName: "More than 50 characters are not allowed" }));
             }
             // Clear the title error if valid
             else {
                 setErrors((prevErrors) => ({ ...prevErrors, typeName: "" }));
             }
-        }         
+        }
     };
 
     const handleClose = () => {
@@ -344,7 +349,7 @@ function ContactTypeList({isDrawerOpen}) {
                         fullWidth
                         error={!!errors.typeName} // Display error if exists
                         helperText={errors.typeName}
-                        inputProps={{maxLength: 50}}
+                        inputProps={{ maxLength: 50 }}
                     />
                 </DialogContent>
                 <DialogActions>

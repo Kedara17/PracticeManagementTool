@@ -6,7 +6,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import PaginationComponent from '../Components/PaginationComponent'; // Import your PaginationComponent
 import { InputLabel,TablePagination, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
 
-function DesignationList({isDrawerOpen}) {
+function DesignationList({ isDrawerOpen }) {
     const [designations, setDesignations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -19,7 +19,7 @@ function DesignationList({isDrawerOpen}) {
         name: ''
     });
 
-    const [order, setOrder] = useState('asc'); // Order of sorting: 'asc' or 'desc'
+    const [order, setOrder] = useState('desc'); // Order of sorting: 'asc' or 'desc'
     const [orderBy, setOrderBy] = useState('createdDate'); // Column to sort by
     const [searchQuery, setSearchQuery] = useState(''); // State for search query
     const [errors, setErrors] = useState({
@@ -30,7 +30,6 @@ function DesignationList({isDrawerOpen}) {
     useEffect(() => {
         const fetchDesignations = async () => {
             try {
-                // const desigResponse = await axios.get('http://localhost:5501/api/designation');
                 const desigResponse = await axios.get('http://172.17.31.61:5201/api/designation');
                 setDesignations(desigResponse.data);
             } catch (error) {
@@ -43,8 +42,8 @@ function DesignationList({isDrawerOpen}) {
     }, []);
 
     const handleSort = (property) => {
-        const isAsc = orderBy === property && order === 'asc';
-        setOrder(isAsc ? 'desc' : 'asc');
+        const isDesc = orderBy === property && order === 'desc';
+        setOrder(isDesc ? 'asc' : 'desc');
         setOrderBy(property);
     };
 
@@ -53,9 +52,17 @@ function DesignationList({isDrawerOpen}) {
         const valueB = b[orderBy] || '';
 
         if (typeof valueA === 'string' && typeof valueB === 'string') {
-            return order === 'asc' ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
+            return order === 'desc'
+                ? valueB.localeCompare(valueA)
+                : valueA.localeCompare(valueB);
+        } else if (valueA instanceof Date && valueB instanceof Date) {
+            return order === 'desc'
+                ? valueB - valueA
+                : valueA - valueB;
         } else {
-            return order === 'asc' ? (valueA > valueB ? 1 : -1) : (valueB > valueA ? 1 : -1);
+            return order === 'desc'
+                ? (valueA > valueB ? 1 : -1)
+                : (valueB > valueA ? 1 : -1);
         }
     });
 
@@ -78,11 +85,9 @@ function DesignationList({isDrawerOpen}) {
     };
 
     const handleDelete = (id) => {
-        // axios.delete(`http://localhost:5501/api/Designation/${id}`)
-        //axios.delete(`http://172.17.31.61:5201/api/designation/${id}`)
-        axios.patch(`http://172.17.31.61:5201/api/designation/${id}`, { isActive: false })
+        axios.patch(`http://172.17.31.61:5201/api/designation/${id}`)
             .then(response => {
-                setDesignations(designations.filter(tech => tech.id !== id));
+                setDesignations(designations.filter(desig => desig.id !== id));
             })
             .catch(error => {
                 console.error('There was an error deleting the Designation!', error);
@@ -91,13 +96,15 @@ function DesignationList({isDrawerOpen}) {
         setConfirmOpen(false);
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         let validationErrors = {};
 
         // Name field validation
         if (!currentDesignation.name.trim()) {
             validationErrors.name = "Designation is required";
-        } else if (designations.some(des => des.name.toLowerCase() === currentDesignation.name.toLowerCase() && des.id !== currentDesignation.id)) {
+        }else if (currentDesignation.name.length < 3) {
+            validationErrors.name = "Name must be atleast 3 characters";
+        }  else if (designations.some(des => des.name.toLowerCase() === currentDesignation.name.toLowerCase() && des.id !== currentDesignation.id)) {
             validationErrors.name = "Name must be unique";
         }
 
@@ -111,42 +118,28 @@ function DesignationList({isDrawerOpen}) {
         setErrors({});
 
         if (currentDesignation.id) {
-            // Update existing Designation
-            // axios.put(`http://localhost:5501/api/Designation/${currentDesignation.id}`, currentDesignation)
-            axios.put(`http://172.17.31.61:5201/api/designation/${currentDesignation.id}`, currentDesignation)
-                .then(response => {
-                    //setDesignations([...Designations, response.data]);
-                    // setDesignations(response.data);
-                    setDesignations(designations.map(tech => tech.id === currentDesignation.id ? response.data : tech));
-                })
-                .catch(error => {
-                    console.error('There was an error updating the Designation!', error);
-                    setError(error);
-                });
+            await axios.put(`http://172.17.31.61:5201/api/designation/${currentDesignation.id}`, currentDesignation)
+            const Response = await axios.get('http://172.17.31.61:5201/api/designation');
+            setDesignations(Response.data);
 
         } else {
-            // Add new Designation
-            // axios.post('http://localhost:5501/api/Designation', currentDesignation)
-            axios.post('http://172.17.31.61:5201/api/designation', currentDesignation)
-                .then(response => {
-                    setDesignations([...designations, response.data]);
-                })
-                .catch(error => {
-                    console.error('There was an error adding the Designation!', error);
-                    setError(error);
-                });
+            await axios.post('http://172.17.31.61:5201/api/designation', currentDesignation)
+            const Response = await axios.get('http://172.17.31.61:5201/api/designation');
+            setDesignations(Response.data);
         }
         setOpen(false);
     };
-     
+
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setCurrentDesignation({ ...currentDesignation, [name]: value });    
+        setCurrentDesignation({ ...currentDesignation, [name]: value });
         if (name === "name") {
             // Check if the name is empty or only whitespace
             if (!value.trim()) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
-            }
+            }else if (value.length < 3) {
+                setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
+            } 
             // Check for uniqueness
             else if (designations.some(des => des.name.toLowerCase() === value.toLowerCase() && des.id !== currentDesignation.id)) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
@@ -157,7 +150,7 @@ function DesignationList({isDrawerOpen}) {
             else {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
             }
-        }   
+        }
     };
 
     const handleClose = () => {
@@ -229,7 +222,7 @@ function DesignationList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'name'}
-                                    direction={orderBy === 'name' ? order : 'asc'}
+                                    direction={orderBy === 'name' ? order : 'desc'}
                                     onClick={() => handleSort('name')}
                                 >
                                     <b>Name</b>
@@ -238,7 +231,7 @@ function DesignationList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'isActive'}
-                                    direction={orderBy === 'isActive' ? order : 'asc'}
+                                    direction={orderBy === 'isActive' ? order : 'desc'}
                                     onClick={() => handleSort('isActive')}
                                 >
                                     <b>Is Active</b>
@@ -247,7 +240,7 @@ function DesignationList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'createdBy'}
-                                    direction={orderBy === 'createdBy' ? order : 'asc'}
+                                    direction={orderBy === 'createdBy' ? order : 'desc'}
                                     onClick={() => handleSort('createdBy')}
                                 >
                                     <b>Created By</b>
@@ -256,7 +249,7 @@ function DesignationList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'createdDate'}
-                                    direction={orderBy === 'createdDate' ? order : 'asc'}
+                                    direction={orderBy === 'createdDate' ? order : 'desc'}
                                     onClick={() => handleSort('createdDate')}
                                 >
                                     <b>Created Date</b>
@@ -265,7 +258,7 @@ function DesignationList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'updatedBy'}
-                                    direction={orderBy === 'updatedBy' ? order : 'asc'}
+                                    direction={orderBy === 'updatedBy' ? order : 'desc'}
                                     onClick={() => handleSort('updatedBy')}
                                 >
                                     <b>Updated By</b>
@@ -274,7 +267,7 @@ function DesignationList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'updatedDate'}
-                                    direction={orderBy === 'updatedDate' ? order : 'asc'}
+                                    direction={orderBy === 'updatedDate' ? order : 'desc'}
                                     onClick={() => handleSort('updatedDate')}
                                 >
                                     <b>Updated Date</b>
@@ -292,9 +285,9 @@ function DesignationList({isDrawerOpen}) {
                                 <TableCell>{Designation.name}</TableCell>
                                 <TableCell>{Designation.isActive ? 'Active' : 'Inactive'}</TableCell>
                                 <TableCell>{Designation.createdBy}</TableCell>
-                                <TableCell>{new Date(Designation.createdDate).toLocaleString()}</TableCell>
+                                <TableCell>{Designation.createdDate}</TableCell>
                                 <TableCell>{Designation.updatedBy || 'N/A'}</TableCell>
-                                <TableCell>{new Date(Designation.updatedDate).toLocaleString() || 'N/A'}</TableCell>
+                                <TableCell>{Designation.updatedDate || 'N/A'}</TableCell>
                                 <TableCell >
                                     <IconButton onClick={() => handleUpdate(Designation)}>
                                         <EditIcon color="primary" />
@@ -327,9 +320,9 @@ function DesignationList({isDrawerOpen}) {
             <Dialog open={open} onClose={() => setOpen(false)}>
                 <DialogTitle>{currentDesignation.id ? 'Update Designation' : 'Add Designation'}</DialogTitle>
                 <DialogContent>
-                <InputLabel>Name</InputLabel>
+                    <InputLabel>Name</InputLabel>
                     <TextField
-                        margin="dense"                       
+                        margin="dense"
                         name="name"
                         value={currentDesignation.name}
                         onChange={(e) => {
@@ -340,7 +333,7 @@ function DesignationList({isDrawerOpen}) {
                         fullWidth
                         error={!!errors.name} // Display error if exists
                         helperText={errors.name}
-                        inputProps={{maxLength: 50}}
+                        inputProps={{ maxLength: 50 }}
                     />
                 </DialogContent>
                 <DialogActions>
