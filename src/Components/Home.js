@@ -40,6 +40,7 @@ import POCList from '../POCServices/POCList';
 import CustomBreadcrumbs from './CustomBreadCrumbs';
 import CertificationsList from '../CertificationsServices/CertificationsList';
 
+import BestPerformersList from '../BestPerformers/BestPerformersList';
 
 function Home() {
 
@@ -175,6 +176,76 @@ function Home() {
         <ListItemText primary="Technology" />
         <ImportantDevicesIcon />
       </ListItem>          
+      <Menu
+        anchorEl={anchorEl?.department}
+        open={Boolean(anchorEl?.department)}
+        onClick={handleClose}
+        onClose={handleClose}
+        sx={{ mt: 2 }}
+          anchorOrigin={{
+          vertical: 'top',
+          horizontal: 'right',
+        }}
+      >
+        {/* <MenuItem onClick={() => setView('department')}>Department List</MenuItem> */}
+        <MenuItem component={Link} to="department/departmentlist">Department List</MenuItem>
+      </Menu>
+
+      <ListItem button onClick={(event) => handleClick(event, 'designation')}>
+                <ListItemText primary="Designation" />
+                <BadgeIcon />
+              </ListItem>
+              <Menu
+                anchorEl={anchorEl?.designation}
+                open={Boolean(anchorEl?.designation)}
+                onClick={handleClose}
+                onClose={handleClose}
+                sx={{ mt: 2 }}
+                anchorOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+              >
+                <MenuItem component={Link} to="designation/designationlist">Designation List</MenuItem>
+              </Menu>        
+
+              
+
+              <ListItem button onClick={(event) => handleClick(event, 'technology')}>
+                <ListItemText primary="Technology" />
+                <ImportantDevicesIcon />
+              </ListItem>
+              <Menu
+                anchorEl={anchorEl?.technology}
+                open={Boolean(anchorEl?.technology)}
+                onClick={handleClose}
+                onClose={handleClose}
+                sx={{ mt: 2 }}
+                anchorOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+              >
+                <MenuItem component={Link} to="technology/technologylist">Technology List</MenuItem>
+              </Menu>
+
+              <ListItem button onClick={(event) => handleClick(event, 'bestperformers')}>
+                <ListItemText primary="Best Performers" />
+                <GradeIcon />
+              </ListItem>
+              <Menu
+                anchorEl={anchorEl?.bestperformers}
+                open={Boolean(anchorEl?.bestperformers)}
+                onClick={handleClose}
+                onClose={handleClose}
+                sx={{ mt: 2 }}
+                anchorOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+              >
+                <MenuItem component={Link} to="bestperformers/bestperformerslist">Best Performers List</MenuItem>
+              </Menu>
       {renderOtherRoleForms()}
     </>
   );
@@ -373,6 +444,135 @@ function Home() {
         <MenuItem component={Link} to="newleadenquiry/newleadenquiryfollowuplist">New Lead Enquiry Follow Up List</MenuItem>
         <MenuItem component={Link} to="newleadenquiry/newleadenquirydocumentslist">New Lead Enquiry Documents List</MenuItem>
       </Menu>
+              <ListItem button onClick={(event) => handleClick(event, 'webinar')}>
+                <ListItemText primary="Webinars" />
+                <LiveTvIcon />
+              </ListItem>
+              <Menu
+                anchorEl={anchorEl?.webinar}
+                open={Boolean(anchorEl?.webinar)}
+                onClick={handleClose}
+                onClose={handleClose}
+                sx={{ mt: 2 }}
+                anchorOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+              >
+                <MenuItem component={Link} to="webinars/webinarlist">Webinar List</MenuItem>
+              </Menu>
+
+              <ListItem button onClick={(event) => handleClick(event, 'blogs')}>
+                <ListItemText primary="Blogs" />
+                <ArticleIcon />
+              </ListItem>
+              <Menu
+                anchorEl={anchorEl?.blogs}
+                open={Boolean(anchorEl?.blogs)}
+                onClick={handleClose}
+                onClose={handleClose}
+                sx={{ mt: 2 }}
+                anchorOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+              >
+                <MenuItem component={Link} to="blogs/blogslist">Blogs List</MenuItem>
+              </Menu>
+
+              <ListItem button onClick={(event) => handleClick(event, 'poc')}>
+                <ListItemText primary="POC" />
+                <CheckCircleIcon />
+              </ListItem>
+              <Menu
+                anchorEl={anchorEl?.poc}
+                open={Boolean(anchorEl?.poc)}
+                onClick={handleClose}
+                onClose={handleClose}
+                sx={{ mt: 2 }}
+                anchorOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+              >
+                <MenuItem component={Link} to="poc/poclist">POC List</MenuItem>
+              </Menu>
+
+              <ListItem button onClick={(event) => handleClick(event, 'certifications')}>
+                <ListItemText primary="Certifications" />
+                <WorkspacePremiumIcon />
+              </ListItem>
+              <Menu
+                anchorEl={anchorEl?.certifications}
+                open={Boolean(anchorEl?.certifications)}
+                onClick={handleClose}
+                onClose={handleClose}
+                sx={{ mt: 2 }}
+                anchorOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+              >
+                <MenuItem component={Link} to="certifications/certificationslist">Certifications List</MenuItem>
+              </Menu>
+
+              <ListItem button onClick={(event) => handleClick(event, 'successstories')}>
+                <ListItemText primary="Success Stories" />
+                <ThumbUpIcon />
+              </ListItem>
+              <Menu
+                anchorEl={anchorEl?.successstories}
+                open={Boolean(anchorEl?.successstories)}
+                onClick={handleClose}
+                onClose={handleClose}
+                sx={{ mt: 2 }}
+                anchorOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+              >
+                <MenuItem component={Link} to="successstories/successstorieslist">Success Stories List</MenuItem>
+              </Menu>
+
+              <ListItem button onClick={(event) => handleClick(event, 'trainings')}>
+                <ListItemText primary="Trainings" />
+                <EventNoteIcon />
+              </ListItem>
+              <Menu
+                anchorEl={anchorEl?.trainings}
+                open={Boolean(anchorEl?.trainings)}
+                onClick={handleClose}
+                onClose={handleClose}
+                sx={{ mt: 2 }}
+                anchorOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+              >
+                <MenuItem component={Link} to="trainings/trainingslist">Trainings List</MenuItem>
+                <MenuItem component={Link} to="trainings/trainingteamlist">Training Team List</MenuItem>
+              </Menu>
+
+              <ListItem button onClick={(event) => handleClick(event, 'newleadenquiry')}>
+                <ListItemText primary="New Lead Enquiry" />
+                <ContactMailIcon />
+              </ListItem>
+              <Menu
+                anchorEl={anchorEl?.newleadenquriy}
+                open={Boolean(anchorEl?.newleadenquiry)}
+                onClick={handleClose}
+                onClose={handleClose}
+                sx={{ mt: 2 }}
+                anchorOrigin={{
+                  vertical: 'top',
+                  horizontal: 'right',
+                }}
+              >
+                <MenuItem component={Link} to="newleadenquiry/newleadenquirylist">New Lead Enquiry List</MenuItem>
+                <MenuItem component={Link} to="newleadenquiry/newleadenquirytechnologylist">New Lead Enquiry Technology List</MenuItem>
+                <MenuItem component={Link} to="newleadenquiry/newleadenquiryfollowuplist">New Lead Enquiry Follow Up List</MenuItem>
+                <MenuItem component={Link} to="newleadenquiry/newleadenquirydocumentslist">New Lead Enquiry Documents List</MenuItem>
+              </Menu>
     </>
   );
 
@@ -521,6 +721,8 @@ function Home() {
           <Route path='sow/sowstatuslist' element={<SOWStatusList isDrawerOpen={isDrawerOpen} />} />
           <Route path='poc' element={<POCList isDrawerOpen={isDrawerOpen} />} />
           <Route path='certifications' element={<CertificationsList isDrawerOpen={isDrawerOpen} />} />
+          <Route path='poc/poclist' element={<POCList isDrawerOpen={isDrawerOpen} />} />
+          <Route path='bestperformers/bestperformerslist' element={<BestPerformersList isDrawerOpen={isDrawerOpen} />} />
         </Routes>
 
         {/* {view === 'slider' && <SliderComponent  isDrawerOpen={isDrawerOpen} />}
