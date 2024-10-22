@@ -1,17 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Select,TablePagination, MenuItem, Table, InputLabel, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
+import { Select, TablePagination, MenuItem, Table, InputLabel, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
-import PaginationComponent from '../Components/PaginationComponent'; // Import your PaginationComponent
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import '../App.css';
 
-function ProjectEmployeeList({isDrawerOpen}) {
+function ProjectEmployeeList({ isDrawerOpen }) {
     const [ProjectEmployees, setProjectEmployees] = useState([]);
     const [Projects, setProjects] = useState([]);
     const [Employees, setEmployees] = useState([]);
@@ -29,7 +28,7 @@ function ProjectEmployeeList({isDrawerOpen}) {
         endDate: ''
     });
 
-    const [order, setOrder] = useState('asc'); // Order of sorting: 'asc' or 'desc'
+    const [order, setOrder] = useState('desc'); // Order of sorting: 'asc' or 'desc'
     const [orderBy, setOrderBy] = useState('createdDate'); // Column to sort by
     const [searchQuery, setSearchQuery] = useState(''); // State for search query
     const [errors, setErrors] = useState({
@@ -77,8 +76,8 @@ function ProjectEmployeeList({isDrawerOpen}) {
     }, []);
 
     const handleSort = (property) => {
-        const isAsc = orderBy === property && order === 'asc';
-        setOrder(isAsc ? 'desc' : 'asc');
+        const isDesc = orderBy === property && order === 'desc';
+        setOrder(isDesc ? 'asc' : 'desc');
         setOrderBy(property);
     };
 
@@ -87,9 +86,17 @@ function ProjectEmployeeList({isDrawerOpen}) {
         const valueB = b[orderBy] || '';
 
         if (typeof valueA === 'string' && typeof valueB === 'string') {
-            return order === 'asc' ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
+            return order === 'desc'
+                ? valueB.localeCompare(valueA)
+                : valueA.localeCompare(valueB);
+        } else if (valueA instanceof Date && valueB instanceof Date) {
+            return order === 'desc'
+                ? valueB - valueA
+                : valueA - valueB;
         } else {
-            return order === 'asc' ? (valueA > valueB ? 1 : -1) : (valueB > valueA ? 1 : -1);
+            return order === 'desc'
+                ? (valueA > valueB ? 1 : -1)
+                : (valueB > valueA ? 1 : -1);
         }
     });
 
@@ -118,8 +125,6 @@ function ProjectEmployeeList({isDrawerOpen}) {
     };
 
     const handleDelete = (id) => {
-        //axios.delete(`http://localhost:5151/api/ProjectEmployee/${id}`)
-        // axios.delete(`http://172.17.31.61:5151/api/projectEmployee/${id}`)
         axios.patch(`http://172.17.31.61:5151/api/projectEmployee/${id}`)
             .then(response => {
                 setProjectEmployees(ProjectEmployees.filter(tech => tech.id !== id));
@@ -158,8 +163,6 @@ function ProjectEmployeeList({isDrawerOpen}) {
         setErrors({});
 
         if (currentProjectEmployee.id) {
-            // Update existing ProjectEmployee
-            //axios.put(`http://localhost:5151/api/ProjectEmployee/${currentProjectEmployee.id}`, currentProjectEmployee)
             axios.put(`http://172.17.31.61:5151/api/projectEmployee/${currentProjectEmployee.id}`, currentProjectEmployee)
                 .then(response => {
                     setProjectEmployees(ProjectEmployees.map(tech => tech.id === currentProjectEmployee.id ? response.data : tech));
@@ -170,8 +173,6 @@ function ProjectEmployeeList({isDrawerOpen}) {
                 });
 
         } else {
-            // Add new ProjectEmployee
-            //axios.post('http://localhost:5151/api/ProjectEmployee', currentProjectEmployee)
             axios.post('http://172.17.31.61:5151/api/projectEmployee', currentProjectEmployee)
                 .then(response => {
                     setProjectEmployees([...ProjectEmployees, response.data]);
@@ -270,7 +271,7 @@ function ProjectEmployeeList({isDrawerOpen}) {
     }
 
     return (
-        <div style={{ display: 'flex',flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 240 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 240 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
             <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
                 <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>Project Employee Table List</h3>
             </div>
@@ -300,7 +301,7 @@ function ProjectEmployeeList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'project'}
-                                    direction={orderBy === 'project' ? order : 'asc'}
+                                    direction={orderBy === 'project' ? order : 'desc'}
                                     onClick={() => handleSort('project')}
                                 >
                                     <b>Project</b>
@@ -309,7 +310,7 @@ function ProjectEmployeeList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'employee'}
-                                    direction={orderBy === 'employee' ? order : 'asc'}
+                                    direction={orderBy === 'employee' ? order : 'desc'}
                                     onClick={() => handleSort('employee')}
                                 >
                                     <b>Employee</b>
@@ -318,7 +319,7 @@ function ProjectEmployeeList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'startDate'}
-                                    direction={orderBy === 'startDate' ? order : 'asc'}
+                                    direction={orderBy === 'startDate' ? order : 'desc'}
                                     onClick={() => handleSort('startDate')}
                                 >
                                     <b>StartDate</b>
@@ -327,7 +328,7 @@ function ProjectEmployeeList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'endDate'}
-                                    direction={orderBy === 'endDate' ? order : 'asc'}
+                                    direction={orderBy === 'endDate' ? order : 'desc'}
                                     onClick={() => handleSort('endDate')}
                                 >
                                     <b>EndDate</b>
@@ -336,7 +337,7 @@ function ProjectEmployeeList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'isActive'}
-                                    direction={orderBy === 'isActive' ? order : 'asc'}
+                                    direction={orderBy === 'isActive' ? order : 'desc'}
                                     onClick={() => handleSort('isActive')}
                                 >
                                     <b>Is Active</b>
@@ -345,7 +346,7 @@ function ProjectEmployeeList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'createdBy'}
-                                    direction={orderBy === 'createdBy' ? order : 'asc'}
+                                    direction={orderBy === 'createdBy' ? order : 'desc'}
                                     onClick={() => handleSort('createdBy')}
                                 >
                                     <b>Created By</b>
@@ -354,7 +355,7 @@ function ProjectEmployeeList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'createdDate'}
-                                    direction={orderBy === 'createdDate' ? order : 'asc'}
+                                    direction={orderBy === 'createdDate' ? order : 'desc'}
                                     onClick={() => handleSort('createdDate')}
                                 >
                                     <b>Created Date</b>
@@ -363,7 +364,7 @@ function ProjectEmployeeList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'updatedBy'}
-                                    direction={orderBy === 'updatedBy' ? order : 'asc'}
+                                    direction={orderBy === 'updatedBy' ? order : 'desc'}
                                     onClick={() => handleSort('updatedBy')}
                                 >
                                     <b>Updated By</b>
@@ -372,7 +373,7 @@ function ProjectEmployeeList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'updatedDate'}
-                                    direction={orderBy === 'updatedDate' ? order : 'asc'}
+                                    direction={orderBy === 'updatedDate' ? order : 'desc'}
                                     onClick={() => handleSort('updatedDate')}
                                 >
                                     <b>Updated Date</b>
@@ -385,16 +386,15 @@ function ProjectEmployeeList({isDrawerOpen}) {
                         {filteredProjectEmployees.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((ProjectEmployee) => (
                             <TableRow key={ProjectEmployee.id}
                                 sx={{ backgroundColor: ProjectEmployee.isActive ? 'inherit' : '#FFCCCB' }} >
-                                {/* <TableCell>{ProjectEmployee.id}</TableCell> */}
                                 <TableCell>{ProjectEmployee.project}</TableCell>
                                 <TableCell>{ProjectEmployee.employee}</TableCell>
                                 <TableCell>{ProjectEmployee.startDate}</TableCell>
                                 <TableCell>{ProjectEmployee.endDate}</TableCell>
                                 <TableCell>{ProjectEmployee.isActive ? 'Active' : 'Inactive'}</TableCell>
                                 <TableCell>{ProjectEmployee.createdBy}</TableCell>
-                                <TableCell>{new Date(ProjectEmployee.createdDate).toLocaleString()}</TableCell>
+                                <TableCell>{ProjectEmployee.createdDate}</TableCell>
                                 <TableCell>{ProjectEmployee.updatedBy || 'N/A'}</TableCell>
-                                <TableCell>{new Date(ProjectEmployee.updatedDate).toLocaleString() || 'N/A'}</TableCell>
+                                <TableCell>{ProjectEmployee.updatedDate || 'N/A'}</TableCell>
                                 <TableCell >
                                     <IconButton onClick={() => handleUpdate(ProjectEmployee)}>
                                         <EditIcon color="primary" />
@@ -407,13 +407,6 @@ function ProjectEmployeeList({isDrawerOpen}) {
                         ))}
                     </TableBody>
                 </Table>
-                {/* <PaginationComponent
-                    count={filteredProjectEmployees.length}
-                    page={page}
-                    rowsPerPage={rowsPerPage}
-                    handlePageChange={handlePageChange}
-                    handleRowsPerPageChange={handleRowsPerPageChange}
-                /> */}
             </TableContainer>
             <TablePagination
                 rowsPerPageOptions={[10, 25, 100]}
@@ -475,7 +468,7 @@ function ProjectEmployeeList({isDrawerOpen}) {
                     <InputLabel>EndDate</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                        className='time'
+                            className='time'
                             value={currentProjectEmployee.endDate ? dayjs(currentProjectEmployee.endDate) : null}
                             onChange={handleEndDateChange}
                             fullWidth
