@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Routes, Route, Link, useLocation  } from 'react-router-dom';
-import { AppBar,Divider, Toolbar, IconButton, Typography, Drawer, Box, List, ListItem, ListItemText, Avatar, Menu, MenuItem, CssBaseline } from '@mui/material';
+import { AppBar,Divider, Toolbar, IconButton, Typography, Drawer, Box, List, ListItem, ListItemText, Avatar, Menu, MenuItem, CssBaseline, Collapse } from '@mui/material';
 import MenuOutlinedIcon from '@mui/icons-material/MenuOutlined';
 import BadgeIcon from '@mui/icons-material/Badge';
 import CorporateFareIcon from '@mui/icons-material/CorporateFare';
@@ -52,11 +52,37 @@ function Home() {
   const [role, setRole] = useState('User'); 
   const [username, setUsername] = useState('')
 
+  const [openClientMenu, setOpenClientMenu] = useState(false);
+  const [openLeadEnquiryMenu, setOpenLeadEnquiryMenu] = useState(false);
+  const [openProjectMenu, setOpenProjectMenu] = useState(false);
+  const [openSowMenu, setOpenSowMenu] = useState(false);
+  const [openInterviewMenu, setOpenInterviewMenu] = useState(false);
+  const [openTrainingsMenu, setOpenTrainingsMenu] = useState(false);
+
+  const handleClientMenu = () => {
+      setOpenClientMenu((prev) => !prev);
+  };
+  const handleLeadEnquiryMenu = () => {
+    setOpenLeadEnquiryMenu((prev) => !prev);
+  };
+  const handleProjectMenu = () => {
+    setOpenProjectMenu((prev) => !prev);
+  };
+  const handleSowMenu = () => {
+    setOpenSowMenu((prev) => !prev);
+  };
+  const handleInterviewMenu = () => {
+    setOpenInterviewMenu((prev) => !prev);
+  };
+  const handleTrainingsMenu = () => {
+    setOpenTrainingsMenu((prev) => !prev);
+  };
+
   const location = useLocation();
   const currentPath = location.pathname;
 
-    // Function to get breadcrumb paths based on the current location
-    const getBreadcrumbs = () => {
+    
+  const getBreadcrumbs = () => {
       const pathnames = location.pathname.split('/').filter((x) => x);
       return pathnames.map((path, index) => ({
           label: path.charAt(0).toUpperCase() + path.slice(1).replace(/([A-Z])/g, ' $1'), // Capitalize and space camel case
@@ -141,7 +167,7 @@ function Home() {
         component={Link} to="employees"
         onClick={(event) => handleClick(event, 'employee')}
       >
-        <ListItemText primary="Employees" />
+        <ListItemText primary="Employees" className="drawer-text" />
         <SupervisorAccountIcon />
       </ListItem>
     </>
@@ -154,7 +180,7 @@ function Home() {
         component={Link} to="department"
         onClick={(event) => handleClick(event, 'department')}
       >
-        <ListItemText primary="Department" />
+        <ListItemText primary="Department" className="drawer-text" />
         <CorporateFareIcon />
       </ListItem>
 
@@ -183,7 +209,7 @@ function Home() {
     <>
       {renderEmployeeForm()}
 
-      <ListItem 
+      {/* <ListItem 
         button 
         component={Link} to="client"
         onClick={(event) => handleClick(event, 'client')}
@@ -204,75 +230,75 @@ function Home() {
       >
         <MenuItem component={Link} to="client/clientcontactlist">Client Contact</MenuItem>
         <MenuItem component={Link} to="client/clientcontacttypelist">Client Contact Type List</MenuItem>
-      </Menu>
+      </Menu> */}
+        <ListItem button onClick={handleClientMenu}>
+            <ListItemText primary="Client" />
+            <AddBusinessIcon />
+        </ListItem>
+        <Collapse in={openClientMenu} timeout="auto" unmountOnExit sx={{backgroundColor:'#2C3539'}}>
+              <List component="div" disablePadding>
+                  <ListItem button component={Link} to="client" onClick={handleClose}>
+                      <ListItemText primary="Client List" />
+                  </ListItem>
+                  <ListItem button component={Link} to="client/clientcontactlist" onClick={handleClose}>
+                      <ListItemText primary="Client Contact" />
+                  </ListItem>
+                  <ListItem button component={Link} to="client/clientcontacttypelist" onClick={handleClose}>
+                      <ListItemText primary="Client Contact Type List" />
+                  </ListItem>
+              </List>
+        </Collapse>
 
-      <ListItem 
-        button 
-        component={Link} to="project"
-        onClick={(event) => handleClick(event, 'project')}
-      >
-        <ListItemText primary="Project" />
-        <CreateNewFolderIcon />
-      </ListItem>
-      <Menu
-        anchorEl={anchorEl?.project}
-        open={Boolean(anchorEl?.project)}
-        onClick={handleClose}
-        onClose={handleClose}
-        sx={{ mt: 2 }}
-        anchorOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-      >
-        <MenuItem component={Link} to="project/projectemployeelist">Project Employee</MenuItem>
-      </Menu>
+      <ListItem button onClick={handleProjectMenu}>
+            <ListItemText primary="Project" />
+            <CreateNewFolderIcon />
+        </ListItem>
+        <Collapse in={openProjectMenu} timeout="auto" unmountOnExit sx={{backgroundColor:'#2C3539'}}>
+              <List component="div" disablePadding>
+                  <ListItem button component={Link} to="project" onClick={handleClose}>
+                      <ListItemText primary="Project List" />
+                  </ListItem>
+                  <ListItem button component={Link} to="project/projectemployeelist" onClick={handleClose}>
+                      <ListItemText primary="Project Employee List" />
+                  </ListItem>
+              </List>
+        </Collapse>
 
-      <ListItem 
-        button 
-        component={Link} to="sow"
-        onClick={(event) => handleClick(event, 'sow')}
-      >
+      <ListItem button onClick={handleSowMenu}>
         <ListItemText primary="SOW" />
         <AssessmentIcon />
       </ListItem>
-      <Menu
-        anchorEl={anchorEl?.sow}
-        open={Boolean(anchorEl?.sow)}
-        onClick={handleClose}
-        onClose={handleClose}
-        sx={{ mt: 2 }}
-        anchorOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-      >
-        <MenuItem component={Link} to="sow/sowproposedteamlist">SOW Proposed Team List</MenuItem>
-        <MenuItem component={Link} to="sow/sowrequirementlist">SOW Requirement List</MenuItem>
-        <MenuItem component={Link} to="sow/sowstatuslist">SOW Status List</MenuItem>
-      </Menu>
+      <Collapse in={openSowMenu} timeout="auto" unmountOnExit sx={{backgroundColor:'#2C3539'}}>
+              <List component="div" disablePadding>
+                  <ListItem button component={Link} to="sow" onClick={handleClose}>
+                      <ListItemText primary="SOW List" />
+                  </ListItem>
+                  <ListItem button component={Link} to="sow/sowproposedteamlist" onClick={handleClose}>
+                      <ListItemText primary="SOW Proposed Team List" />
+                  </ListItem>
+                  <ListItem button component={Link} to="sow/sowrequirementlist" onClick={handleClose}>
+                      <ListItemText primary="SOW Requirement List" />
+                  </ListItem>
+                  <ListItem button component={Link} to="sow/sowstatuslist" onClick={handleClose}>
+                      <ListItemText primary="SOW Status List" />
+                  </ListItem>
+              </List>
+        </Collapse>
 
-      <ListItem 
-        button 
-        component={Link} to="interview"
-        onClick={(event) => handleClick(event, 'interviews')}
-      >
+      <ListItem button onClick={handleInterviewMenu}>
         <ListItemText primary="Interviews" />
         <HowToRegIcon />
       </ListItem>
-      <Menu
-        anchorEl={anchorEl?.interviews}
-        open={Boolean(anchorEl?.interviews)}
-        onClick={handleClose}
-        onClose={handleClose}
-        sx={{ mt: 2 }}
-          anchorOrigin={{
-            vertical: 'top',
-            horizontal: 'right',
-        }}
-      >
-        <MenuItem component={Link} to="interview/interviewstatuslist">Interview Status List</MenuItem>
-      </Menu>
+      <Collapse in={openInterviewMenu} timeout="auto" unmountOnExit sx={{backgroundColor:'#2C3539'}}>
+              <List component="div" disablePadding>
+                  <ListItem button component={Link} to="interview" onClick={handleClose}>
+                      <ListItemText primary="Interview List" />
+                  </ListItem>
+                  <ListItem button component={Link} to="interview/interviewstatuslist" onClick={handleClose}>
+                      <ListItemText primary="Interview Status List" />
+                  </ListItem>
+              </List>
+        </Collapse>
 
       <ListItem 
         button
@@ -319,27 +345,20 @@ function Home() {
         <ThumbUpIcon />
       </ListItem>
 
-      <ListItem 
-        button 
-        component={Link} to="trainings"
-        onClick={(event) => handleClick(event, 'trainings')}
-      >
-        <ListItemText primary="Trainings" />
+      <ListItem button onClick={handleTrainingsMenu}>
+        <ListItemText primary="Training" />
         <EventNoteIcon />
       </ListItem>
-      <Menu
-        anchorEl={anchorEl?.trainings}
-        open={Boolean(anchorEl?.trainings)}
-        onClick={handleClose}
-        onClose={handleClose}
-        sx={{ mt: 2 }}
-          anchorOrigin={{
-            vertical: 'top',
-            horizontal: 'right',
-        }}
-      >
-        <MenuItem component={Link} to="trainings/trainingteamlist">Training Team List</MenuItem>
-      </Menu>
+      <Collapse in={openTrainingsMenu} timeout="auto" unmountOnExit sx={{backgroundColor:'#2C3539'}}>
+              <List component="div" disablePadding>
+                  <ListItem button component={Link} to="trainings" onClick={handleClose}>
+                      <ListItemText primary="Trainings List" />
+                  </ListItem>
+                  <ListItem button component={Link} to="trainings/trainingteamlist" onClick={handleClose}>
+                      <ListItemText primary="Training Team List" />
+                  </ListItem>
+              </List>
+        </Collapse>
 
       <ListItem 
         button 
@@ -350,29 +369,26 @@ function Home() {
         <GradeIcon />
       </ListItem>
 
-      <ListItem 
-        button 
-        component={Link} to="newleadenquiry"
-        onClick={(event) => handleClick(event, 'newleadenquiry')}
-      >
-        <ListItemText primary="New Lead Enquiry" />
-        <ContactMailIcon />
-      </ListItem>
-      <Menu
-        anchorEl={anchorEl?.newleadenquriy}
-        open={Boolean(anchorEl?.newleadenquiry)}
-        onClick={handleClose}
-        onClose={handleClose}
-        sx={{ mt: 2 }}
-        anchorOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
-      >
-        <MenuItem component={Link} to="newleadenquiry/newleadenquirytechnologylist">New Lead Enquiry Technology List</MenuItem>
-        <MenuItem component={Link} to="newleadenquiry/newleadenquiryfollowuplist">New Lead Enquiry Follow Up List</MenuItem>
-        <MenuItem component={Link} to="newleadenquiry/newleadenquirydocumentslist">New Lead Enquiry Documents List</MenuItem>
-      </Menu>
+        <ListItem button onClick={handleLeadEnquiryMenu}>
+            <ListItemText primary="New Lead Enquiry" />
+            <ContactMailIcon />
+        </ListItem>
+        <Collapse in={openLeadEnquiryMenu} timeout="auto" unmountOnExit sx={{backgroundColor:'#2C3539'}}>
+            <List component="div" disablePadding>
+               <ListItem button component={Link} to="newleadenquiry" onClick={handleClose}>
+                    <ListItemText primary="New Lead Enquiry List" />
+                </ListItem>
+                <ListItem button component={Link} to="newleadenquiry/newleadenquirytechnologylist" onClick={handleClose}>
+                    <ListItemText primary="New Lead Enquiry Technology List" />
+                </ListItem>
+                <ListItem button component={Link} to="newleadenquiry/newleadenquiryfollowuplist" onClick={handleClose}>
+                    <ListItemText primary="New Lead Enquiry Follow Up List" />
+                </ListItem>
+                <ListItem button component={Link} to="newleadenquiry/newleadenquirydocumentslist" onClick={handleClose}>
+                    <ListItemText primary="New Lead Enquiry Documents List" />
+                </ListItem>
+            </List>
+        </Collapse>
     </>
   );
 
@@ -390,25 +406,25 @@ function Home() {
             <IconButton edge="start" color="inherit" aria-label="menu" onClick={toggleDrawer}>
               <MenuOutlinedIcon sx={{ color: 'black', fontSize: '32px' }} />
             </IconButton>
-            <img src='/miraclelogodark.png' alt="Miracle Logo" style={{ width: '160px', marginLeft: '16px' }} />
+            <img src='/miraclelogodark.png' alt="Miracle Logo" style={{ width: '160px', marginLeft: '13px' }} />
             <Divider orientation="vertical" flexItem sx={{ margin: '0 16px' }} />
           </div>
 
           {/* Navigation Images */}
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <a href="https://miraclesoft.com/" target="_blank" rel="noopener noreferrer">
-            <img src="https://images.miraclesoft.com/mss/images/newsletters/2020/May/M.png" alt="Page 1" style={{ width: '30px', height: '30px', marginRight: '8px' }} />
+            <img src="https://images.miraclesoft.com/mss/images/newsletters/2020/May/M.png" alt="Page 1" style={{ width: '30px', height: '30px', marginRight: '9px' }} />
           </a>
           <a href="https://me.miraclesoft.com/login" target="_blank" rel="noopener noreferrer">
-            <img src='https://images.miraclesoft.com/mss/images/newsletters/2020/May/MiracleMe_logo.png' alt="Page 2" style={{ width: '30px', height: '30px', marginRight: '8px' }} />
+            <img src='https://images.miraclesoft.com/mss/images/newsletters/2020/May/MiracleMe_logo.png' alt="Page 2" style={{ width: '30px', height: '30px', marginRight: '9px' }} />
           </a>
           <a href="https://blog.miraclesoft.com/" target="_blank" rel="noopener noreferrer">
-            <img src='https://images.miraclesoft.com/mss/images/newsletters/2020/May/B.png' alt="Page 3" style={{ width: '30px', height: '30px', marginRight: '8px' }} />
+            <img src='https://images.miraclesoft.com/mss/images/newsletters/2020/May/B.png' alt="Page 3" style={{ width: '30px', height: '30px', marginRight: '9px' }} />
           </a>
           <a href="https://help.miraclesoft.com/login" target="_blank" rel="noopener noreferrer">
             <img src='https://images.miraclesoft.com/mss/images/newsletters/2020/May/H.png' alt="Page 4" style={{ width: '30px', height: '30px' }} />
           </a>
-          <Divider orientation="vertical" flexItem sx={{ margin: '0 16px' }} />
+          <Divider orientation="vertical" flexItem sx={{ margin: '0 18px' }} />
         </div>
         <Box flexGrow={1} />
 
@@ -428,8 +444,8 @@ function Home() {
             open={Boolean(profileMenuAnchorEl)}
             onClose={() => setProfileMenuAnchorEl(null)}
           >
-            <MenuItem onClick={handleProfileMenuClose}>Profile</MenuItem>
-            <MenuItem onClick={handleLogout}>Logout</MenuItem>
+            <MenuItem onClick={handleProfileMenuClose} sx={{fontFamily:'Lato'}}>Profile</MenuItem>
+            <MenuItem onClick={handleLogout} sx={{fontFamily:'Lato'}}>Logout</MenuItem>
           </Menu>
         </Toolbar>
       </AppBar>
@@ -456,14 +472,14 @@ function Home() {
           anchor="left"
           open={isDrawerOpen}
           sx={{
-              width: 240,
+              width: 250,
               flexShrink: 0,
               '& .MuiDrawer-paper': {
-                  width: 240,
+                  width: 250,
                   boxSizing: 'border-box',
                   backgroundColor: '#232527',
-                  fontFamily: 'Montserrat, sans-serif',
                   color: 'white',
+                  fontFamily: 'Montserrat, sans-serif',
                   '&::-webkit-scrollbar': {
                       width: '0px', // Hide scrollbar
                   },
@@ -477,8 +493,8 @@ function Home() {
             }}
           >
           <Toolbar />
-          <Box  className="drawer-invisible-scrollbar" sx={{ overflow: 'auto', fontWeight: '400' }}>
-            <List>
+          <Box  className="drawer-invisible-scrollbar" sx={{ overflow: 'auto' }}>
+            <List className="drawer-text">
               {role === 'Admin' ? renderAdminForms() : renderOtherRoleForms()}
             </List>
           </Box>
