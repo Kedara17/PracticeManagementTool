@@ -203,7 +203,7 @@ function Home() {
         }}
       >
         <MenuItem component={Link} to="client/clientcontactlist">Client Contact</MenuItem>
-        <MenuItem component={Link} to="client/clientcontacttypelist">Client Contact Type List</MenuItem>
+        <MenuItem component={Link} to="client/clientcontacttypelist">Client Contact Type </MenuItem>
       </Menu>
 
       <ListItem 
@@ -247,9 +247,9 @@ function Home() {
           horizontal: 'right',
         }}
       >
-        <MenuItem component={Link} to="sow/sowproposedteamlist">SOW Proposed Team List</MenuItem>
-        <MenuItem component={Link} to="sow/sowrequirementlist">SOW Requirement List</MenuItem>
-        <MenuItem component={Link} to="sow/sowstatuslist">SOW Status List</MenuItem>
+        <MenuItem component={Link} to="sow/sowproposedteamlist">SOW Proposed Team </MenuItem>
+        <MenuItem component={Link} to="sow/sowrequirementlist">SOW Requirement </MenuItem>
+        <MenuItem component={Link} to="sow/sowstatuslist">SOW Status </MenuItem>
       </Menu>
 
       <ListItem 
@@ -271,7 +271,7 @@ function Home() {
             horizontal: 'right',
         }}
       >
-        <MenuItem component={Link} to="interview/interviewstatuslist">Interview Status List</MenuItem>
+        <MenuItem component={Link} to="interview/interviewstatuslist">Interview Status </MenuItem>
       </Menu>
 
       <ListItem 
@@ -338,7 +338,7 @@ function Home() {
             horizontal: 'right',
         }}
       >
-        <MenuItem component={Link} to="trainings/trainingteamlist">Training Team List</MenuItem>
+        <MenuItem component={Link} to="trainings/trainingteamlist">Training Team </MenuItem>
       </Menu>
 
       <ListItem 
@@ -369,9 +369,9 @@ function Home() {
           horizontal: 'right',
         }}
       >
-        <MenuItem component={Link} to="newleadenquiry/newleadenquirytechnologylist">New Lead Enquiry Technology List</MenuItem>
-        <MenuItem component={Link} to="newleadenquiry/newleadenquiryfollowuplist">New Lead Enquiry Follow Up List</MenuItem>
-        <MenuItem component={Link} to="newleadenquiry/newleadenquirydocumentslist">New Lead Enquiry Documents List</MenuItem>
+        <MenuItem component={Link} to="newleadenquiry/newleadenquirytechnologylist">New Lead Enquiry Technology </MenuItem>
+        <MenuItem component={Link} to="newleadenquiry/newleadenquiryfollowuplist">New Lead Enquiry Follow Up </MenuItem>
+        <MenuItem component={Link} to="newleadenquiry/newleadenquirydocumentslist">New Lead Enquiry Documents </MenuItem>
       </Menu>
     </>
   );

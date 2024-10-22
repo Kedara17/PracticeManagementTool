@@ -125,12 +125,6 @@ function TechnologyList({isDrawerOpen}) {
             validationErrors.name = "Name must be unique";
         }
 
-        // Department field validation 
-        if (!currentTechnology.department) {
-            validationErrors.department = "Department is required";
-        }
-
-        // If there are validation errors, update the state and prevent save
         if (Object.keys(validationErrors).length > 0) {
             setErrors(validationErrors);
             return;
@@ -171,13 +165,7 @@ function TechnologyList({isDrawerOpen}) {
             else {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
             }
-        }
-
-        if (name === "department") {
-            if (value) {
-                setErrors((prevErrors) => ({ ...prevErrors, department: "" }));
-            }
-        }
+        }        
     };
 
     const handleClose = () => {
@@ -219,7 +207,7 @@ function TechnologyList({isDrawerOpen}) {
     return (
         <div style={{ display: 'flex',flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 240 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
             <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-                <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>Technology Table List</h3>
+                <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>Technology</h3>
             </div>
             <div style={{ display: 'flex', marginBottom: '20px' }}>
                 <TextField

@@ -242,9 +242,9 @@ function EmployeeList({ isDrawerOpen }) {
         } else if (currentEmployee.name.length < 3) {
             validationErrors.name = "Name must be at least 3 characters";
         }        
-        if (!currentEmployee.designation) {
-            validationErrors.designation = "Designation is required";
-        }
+        // if (!currentEmployee.designation) {
+        //     validationErrors.designation = "Designation is required";
+        // }
         //Check employeeID validation       
         if (!currentEmployee.employeeID) {
             validationErrors.employeeID = "EmployeeID is required";
@@ -262,35 +262,35 @@ function EmployeeList({ isDrawerOpen }) {
         if (!currentEmployee.emailId) {
             validationErrors.emailId = "EmailId is required";
         }
-        if (!currentEmployee.department) {
-            validationErrors.department = "Department is required";
-        }
-        if (!currentEmployee.reportingTo) {
-            validationErrors.reportingTo = "ReportingTo is required";
-        }
+        // if (!currentEmployee.department) {
+        //     validationErrors.department = "Department is required";
+        // }
+        // if (!currentEmployee.reportingTo) {
+        //     validationErrors.reportingTo = "ReportingTo is required";
+        // }
         if (!currentEmployee.joiningDate) {
             validationErrors.joiningDate = "JoiningDate is required";
         }
         if (!currentEmployee.relievingDate) {
             validationErrors.relievingDate = "RelievingDate is required";
         }
-        if (!currentEmployee.projection) {
-            validationErrors.projection = "Projection is required";
-        } else if (currentEmployee.projection.length < 3) {
-            validationErrors.projection = "Projection must be atleast 3 characters";
-        }
+        // if (!currentEmployee.projection) {
+        //     validationErrors.projection = "Projection is required";
+        // } else if (currentEmployee.projection.length < 3) {
+        //     validationErrors.projection = "Projection must be atleast 3 characters";
+        // }
         if (!currentEmployee.password) {
             validationErrors.password = "Password is required";
-        }
+        } 
         if (!currentEmployee.profile || errors.profile) {
             validationErrors.profile = "Please select a valid PDF or DOC file";
         }
         if (!currentEmployee.phoneNo) {
             validationErrors.phoneNo = "PhoneNo is required";
         }
-        if (!currentEmployee.role) {
-            validationErrors.role = "Role is required";
-        }
+        // if (!currentEmployee.role) {
+        //     validationErrors.role = "Role is required";
+        // }
         if (!currentEmployee.technology || currentEmployee.technology.length === 0) {
             validationErrors.technology = "Technology is required";
         }
@@ -370,11 +370,11 @@ function EmployeeList({ isDrawerOpen }) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
             }
         }
-        if (name === "designation") {
-            if (value) {
-                setErrors((prevErrors) => ({ ...prevErrors, designation: "" }));
-            }
-        }
+        // if (name === "designation") {
+        //     if (value) {
+        //         setErrors((prevErrors) => ({ ...prevErrors, designation: "" }));
+        //     }
+        // }
         if (name === "employeeID") {
             if (value) {
                 setErrors((prevErrors) => ({ ...prevErrors, employeeID: "" }));
@@ -393,16 +393,16 @@ function EmployeeList({ isDrawerOpen }) {
                 }));
             }
         }
-        if (name === "department") {
-            if (value) {
-                setErrors((prevErrors) => ({ ...prevErrors, department: "" }));
-            }
-        }
-        if (name === "reportingTo") {
-            if (value) {
-                setErrors((prevErrors) => ({ ...prevErrors, reportingTo: "" }));
-            }
-        }
+        // if (name === "department") {
+        //     if (value) {
+        //         setErrors((prevErrors) => ({ ...prevErrors, department: "" }));
+        //     }
+        // }
+        // if (name === "reportingTo") {
+        //     if (value) {
+        //         setErrors((prevErrors) => ({ ...prevErrors, reportingTo: "" }));
+        //     }
+        // }
         if (name === "joiningDate") {
             if (value) {
                 setErrors((prevErrors) => ({ ...prevErrors, joiningDate: "" }));
@@ -413,13 +413,13 @@ function EmployeeList({ isDrawerOpen }) {
                 setErrors((prevErrors) => ({ ...prevErrors, relievingDate: "" }));
             }
         }
-        if (name === "projection") {
-            if (value) {
-                setErrors((prevErrors) => ({ ...prevErrors, projection: "" }));
-            } else if (value.length < 3) {
-                setErrors((prevErrors) => ({ ...prevErrors, projection: "" }))
-            }
-        }
+        // if (name === "projection") {
+        //     if (value) {
+        //         setErrors((prevErrors) => ({ ...prevErrors, projection: "" }));
+        //     } else if (value.length < 3) {
+        //         setErrors((prevErrors) => ({ ...prevErrors, projection: "" }))
+        //     }
+        // }
         if (name === 'password') {
             if (!value) {
                 setErrors({ ...errors, password: 'Password is required' });
@@ -476,33 +476,18 @@ function EmployeeList({ isDrawerOpen }) {
                 }
             }
         }
-        if (name === "role") {
-            if (value) {
-                setErrors((prevErrors) => ({ ...prevErrors, role: "" }));
-            }
-        }
+        // if (name === "role") {
+        //     if (value) {
+        //         setErrors((prevErrors) => ({ ...prevErrors, role: "" }));
+        //     }
+        // }
         if (name === "technology") {
             if (value) {
                 setErrors((prevErrors) => ({ ...prevErrors, technology: "" }));
             }
         }
     };
-    const validateForm = () => {
-        let formIsValid = true;
-        let newErrors = {};
-
-        // Password validation
-        if (!currentEmployee.password) {
-            newErrors.password = 'Password is required';
-            formIsValid = false;
-        } else if (!passwordRegex.test(currentEmployee.password)) {
-            newErrors.password = 'Password must contain at least 1 uppercase, 1 lowercase, 1 special character and be at least 8 characters long';
-            formIsValid = false;
-        }
-
-        setErrors(newErrors);
-        return formIsValid;
-    };
+    
     const handleClose = () => {
         setCurrentEmployee({ name: '', designation: '', employeeID: '', emailId: '', department: '', reportingTo: '', joiningDate: '', relievingDate: '', projection: '', password: '', profile: '', phoneNo: '', role: '', technology: [] }); // Reset the department fields
         setErrors({ name: '', designation: '', employeeID: '', emailId: '', department: '', reportingTo: '', joiningDate: '', relievingDate: '', projection: '', password: '', profile: '', phoneNo: '', role: '', technology: '' }); // Reset the error state
@@ -561,7 +546,7 @@ function EmployeeList({ isDrawerOpen }) {
     return (
         <div style={{ display: 'flex',flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 240 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
             <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-                <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>Employee Table List</h3>
+                <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>Employees</h3>
             </div>
             <div style={{ display: 'flex', marginBottom: '20px' }}>
                 <TextField
@@ -606,9 +591,9 @@ function EmployeeList({ isDrawerOpen }) {
                             </TableCell>
                             <TableCell>
                                 <TableSortLabel
-                                    active={orderBy === 'employeeId'}
-                                    direction={orderBy === 'employeeId' ? order : 'asc'}
-                                    onClick={() => handleSort('employeeId')}
+                                    active={orderBy === 'employeeID'}
+                                    direction={orderBy === 'employeeID' ? order : 'desc'}
+                                    onClick={() => handleSort('employeeID')}
                                 >
                                     EmployeeID
                                 </TableSortLabel>

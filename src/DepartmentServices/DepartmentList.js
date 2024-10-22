@@ -195,7 +195,7 @@ function DepartmentList({ isDrawerOpen }) {
             transition: 'margin-left 0.3s', flexGrow: 1
         }}>
             <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>Department Table List</h3>
+                <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>Department</h3>
                 <div style={{ display: 'flex', marginBottom: '20px', width: '100%' }}>
                     <TextField
                         label="Search"
