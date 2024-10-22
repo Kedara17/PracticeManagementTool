@@ -310,7 +310,7 @@ const CertificationsList = () => {
     return (
         <div>
             <div style={{ display: 'flex' }}>
-                <h3>Certification Table List</h3>
+                <h3>Certification</h3>
             </div>
             <div style={{ display: 'flex', marginBottom: '20px' }}>
                 <TextField

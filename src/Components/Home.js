@@ -229,7 +229,7 @@ function Home() {
         }}
       >
         <MenuItem component={Link} to="client/clientcontactlist">Client Contact</MenuItem>
-        <MenuItem component={Link} to="client/clientcontacttypelist">Client Contact Type List</MenuItem>
+        <MenuItem component={Link} to="client/clientcontacttypelist">Client Contact Type</MenuItem>
       </Menu> */}
         <ListItem button onClick={handleClientMenu}>
             <ListItemText primary="Client" />

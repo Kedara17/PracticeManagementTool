@@ -266,7 +266,7 @@ function SOWRequirementList({ isDrawerOpen }) {
     return (
         <div style={{ display: 'flex', flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 240 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
             <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-                <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>SOW Requirement Table List</h3>
+                <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>SOW Requirement</h3>
             </div>
             <div style={{ display: 'flex', marginBottom: '20px', width: '100%' }}>
                 <TextField
