@@ -238,13 +238,13 @@ function Home() {
         <Collapse in={openClientMenu} timeout="auto" unmountOnExit sx={{backgroundColor:'#2C3539'}}>
               <List component="div" disablePadding>
                   <ListItem button component={Link} to="client" onClick={handleClose}>
-                      <ListItemText primary="Client List" />
+                      <ListItemText primary="Client" />
                   </ListItem>
                   <ListItem button component={Link} to="client/clientcontactlist" onClick={handleClose}>
                       <ListItemText primary="Client Contact" />
                   </ListItem>
                   <ListItem button component={Link} to="client/clientcontacttypelist" onClick={handleClose}>
-                      <ListItemText primary="Client Contact Type List" />
+                      <ListItemText primary="Client Contact Type" />
                   </ListItem>
               </List>
         </Collapse>
@@ -256,10 +256,10 @@ function Home() {
         <Collapse in={openProjectMenu} timeout="auto" unmountOnExit sx={{backgroundColor:'#2C3539'}}>
               <List component="div" disablePadding>
                   <ListItem button component={Link} to="project" onClick={handleClose}>
-                      <ListItemText primary="Project List" />
+                      <ListItemText primary="Project" />
                   </ListItem>
                   <ListItem button component={Link} to="project/projectemployeelist" onClick={handleClose}>
-                      <ListItemText primary="Project Employee List" />
+                      <ListItemText primary="Project Employee" />
                   </ListItem>
               </List>
         </Collapse>
@@ -271,16 +271,16 @@ function Home() {
       <Collapse in={openSowMenu} timeout="auto" unmountOnExit sx={{backgroundColor:'#2C3539'}}>
               <List component="div" disablePadding>
                   <ListItem button component={Link} to="sow" onClick={handleClose}>
-                      <ListItemText primary="SOW List" />
+                      <ListItemText primary="SOW" />
                   </ListItem>
                   <ListItem button component={Link} to="sow/sowproposedteamlist" onClick={handleClose}>
-                      <ListItemText primary="SOW Proposed Team List" />
+                      <ListItemText primary="SOW Proposed Team" />
                   </ListItem>
                   <ListItem button component={Link} to="sow/sowrequirementlist" onClick={handleClose}>
-                      <ListItemText primary="SOW Requirement List" />
+                      <ListItemText primary="SOW Requirement" />
                   </ListItem>
                   <ListItem button component={Link} to="sow/sowstatuslist" onClick={handleClose}>
-                      <ListItemText primary="SOW Status List" />
+                      <ListItemText primary="SOW Status" />
                   </ListItem>
               </List>
         </Collapse>
@@ -292,10 +292,10 @@ function Home() {
       <Collapse in={openInterviewMenu} timeout="auto" unmountOnExit sx={{backgroundColor:'#2C3539'}}>
               <List component="div" disablePadding>
                   <ListItem button component={Link} to="interview" onClick={handleClose}>
-                      <ListItemText primary="Interview List" />
+                      <ListItemText primary="Interview" />
                   </ListItem>
                   <ListItem button component={Link} to="interview/interviewstatuslist" onClick={handleClose}>
-                      <ListItemText primary="Interview Status List" />
+                      <ListItemText primary="Interview Status" />
                   </ListItem>
               </List>
         </Collapse>
@@ -352,10 +352,10 @@ function Home() {
       <Collapse in={openTrainingsMenu} timeout="auto" unmountOnExit sx={{backgroundColor:'#2C3539'}}>
               <List component="div" disablePadding>
                   <ListItem button component={Link} to="trainings" onClick={handleClose}>
-                      <ListItemText primary="Trainings List" />
+                      <ListItemText primary="Trainings" />
                   </ListItem>
                   <ListItem button component={Link} to="trainings/trainingteamlist" onClick={handleClose}>
-                      <ListItemText primary="Training Team List" />
+                      <ListItemText primary="Training Team" />
                   </ListItem>
               </List>
         </Collapse>
@@ -376,16 +376,16 @@ function Home() {
         <Collapse in={openLeadEnquiryMenu} timeout="auto" unmountOnExit sx={{backgroundColor:'#2C3539'}}>
             <List component="div" disablePadding>
                <ListItem button component={Link} to="newleadenquiry" onClick={handleClose}>
-                    <ListItemText primary="New Lead Enquiry List" />
+                    <ListItemText primary="New Lead Enquiry" />
                 </ListItem>
                 <ListItem button component={Link} to="newleadenquiry/newleadenquirytechnologylist" onClick={handleClose}>
-                    <ListItemText primary="New Lead Enquiry Technology List" />
+                    <ListItemText primary="New Lead Enquiry Technology" />
                 </ListItem>
                 <ListItem button component={Link} to="newleadenquiry/newleadenquiryfollowuplist" onClick={handleClose}>
-                    <ListItemText primary="New Lead Enquiry Follow Up List" />
+                    <ListItemText primary="New Lead Enquiry Follow Up" />
                 </ListItem>
                 <ListItem button component={Link} to="newleadenquiry/newleadenquirydocumentslist" onClick={handleClose}>
-                    <ListItemText primary="New Lead Enquiry Documents List" />
+                    <ListItemText primary="New Lead Enquiry Documents" />
                 </ListItem>
             </List>
         </Collapse>
