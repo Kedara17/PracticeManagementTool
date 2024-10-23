@@ -3,7 +3,8 @@ import axios from 'axios';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
-import { InputLabel, TablePagination, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
+import UndoIcon from '@mui/icons-material/Undo';
+import { Switch, InputLabel, TablePagination, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
 
 function DesignationList({ isDrawerOpen }) {
     const [designations, setDesignations] = useState([]);
@@ -11,6 +12,8 @@ function DesignationList({ isDrawerOpen }) {
     const [error, setError] = useState(null);
     const [open, setOpen] = useState(false);
     const [confirmOpen, setConfirmOpen] = useState(false);
+    const [confirmAction, setConfirmAction] = useState(null); // Store the action to be confirmed (delete/undo)
+    const [targetDesignation, setTargetDesignation] = useState(null);
     const [deleteTechId, setDeleteTechId] = useState(null);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -29,7 +32,7 @@ function DesignationList({ isDrawerOpen }) {
     useEffect(() => {
         const fetchDesignations = async () => {
             try {
-                const desigResponse = await axios.get('http://172.17.31.61:5201/api/designation');
+                const desigResponse = await axios.get('http://localhost:5501/api/Designation');
                 setDesignations(desigResponse.data);
             } catch (error) {
                 console.error('There was an error fetching the designation!', error);
@@ -44,6 +47,41 @@ function DesignationList({ isDrawerOpen }) {
         const isDesc = orderBy === property && order === 'desc';
         setOrder(isDesc ? 'asc' : 'desc');
         setOrderBy(property);
+    };
+
+    const handleToggleActive = async (id, currentState) => {
+        try {
+            // Find the full designation object based on the id
+            const designationToUpdate = designations.find(des => des.id === id);
+            if (!designationToUpdate) {
+                console.error('Designation not found');
+                return;
+            }
+    
+            // Create an updated object with the toggled isActive state
+            const updatedDesignation = {
+                ...designationToUpdate,
+                isActive: !currentState
+            };
+    
+            // Send the full designation object in the PUT request
+            await axios.put(`http://localhost:5501/api/Designation/${id}`, updatedDesignation);
+    
+            // Update the state with the new designation data
+            setDesignations(designations.map(des => des.id === id ? { ...des, isActive: !currentState } : des));
+        } catch (error) {
+            console.error('Error updating designation active state:', error);
+        }
+    };
+
+    const handleUndo = async (id) => {
+        try {
+            await handleToggleActive(id, false); // Activate the designation
+        } catch (error) {
+            console.error('Error activating the Designation!', error);
+            setError(error);
+        }
+        setConfirmOpen(false);
     };
 
     const sortedDesignation = [...designations].sort((a, b) => {
@@ -84,7 +122,7 @@ function DesignationList({ isDrawerOpen }) {
     };
 
     const handleDelete = (id) => {
-        axios.patch(`http://172.17.31.61:5201/api/designation/${id}`)
+        axios.patch(`http://localhost:5501/api/Designation/${id}`)
             .then(response => {
                 setDesignations(designations.filter(desig => desig.id !== id));
             })
@@ -117,13 +155,13 @@ function DesignationList({ isDrawerOpen }) {
         setErrors({});
 
         if (currentDesignation.id) {
-            await axios.put(`http://172.17.31.61:5201/api/designation/${currentDesignation.id}`, currentDesignation)
-            const Response = await axios.get('http://172.17.31.61:5201/api/designation');
+            await axios.put(`http://localhost:5501/api/Designation/${currentDesignation.id}`, currentDesignation)
+            const Response = await axios.get('http://localhost:5501/api/Designation');
             setDesignations(Response.data);
 
         } else {
-            await axios.post('http://172.17.31.61:5201/api/designation', currentDesignation)
-            const Response = await axios.get('http://172.17.31.61:5201/api/designation');
+            await axios.post('http://localhost:5501/api/Designation', currentDesignation)
+            const Response = await axios.get('http://localhost:5501/api/Designation');
             setDesignations(Response.data);
         }
         setOpen(false);
@@ -153,7 +191,7 @@ function DesignationList({ isDrawerOpen }) {
     };
 
     const handleClose = () => {
-        setCurrentDesignation({ name: '' }); // Reset the department fields
+        setCurrentDesignation({ name: '' }); // Reset the designation fields
         setErrors({ name: '' }); // Reset the error state
         setOpen(false); // Close the dialog
     };
@@ -169,7 +207,14 @@ function DesignationList({ isDrawerOpen }) {
     };
 
     const confirmDelete = (id) => {
-        setDeleteTechId(id);
+        setConfirmAction('delete');
+        setTargetDesignation(id);
+        setConfirmOpen(true);
+    };
+
+    const confirmUndo = (id) => {
+        setConfirmAction('undo');
+        setTargetDesignation(id);
         setConfirmOpen(true);
     };
 
@@ -178,7 +223,11 @@ function DesignationList({ isDrawerOpen }) {
     };
 
     const handleConfirmYes = () => {
-        handleDelete(deleteTechId);
+        if (confirmAction === 'delete') {
+            handleDelete(targetDesignation);
+        } else if (confirmAction === 'undo') {
+            handleUndo(targetDesignation);
+        }
     };
 
     if (loading) {
@@ -280,18 +329,33 @@ function DesignationList({ isDrawerOpen }) {
                                 sx={{ backgroundColor: Designation.isActive ? 'inherit' : '#FFCCCB' }} // Set background color conditionally
                             >
                                 <TableCell>{Designation.name}</TableCell>
-                                <TableCell>{Designation.isActive ? 'Active' : 'Inactive'}</TableCell>
+                                <TableCell>
+                                    <Switch
+                                        checked={Designation.isActive}
+                                        disabled={!Designation.isActive} // Disable toggle for inactive records
+                                        onChange={() => handleToggleActive(Designation.id, Designation.isActive)}
+                                        color="primary"
+                                    />
+                                </TableCell>
                                 <TableCell>{Designation.createdBy}</TableCell>
                                 <TableCell>{Designation.createdDate}</TableCell>
                                 <TableCell>{Designation.updatedBy || 'N/A'}</TableCell>
                                 <TableCell>{Designation.updatedDate || 'N/A'}</TableCell>
-                                <TableCell >
-                                    <IconButton onClick={() => handleUpdate(Designation)}>
-                                        <EditIcon color="primary" />
-                                    </IconButton>
-                                    <IconButton onClick={() => confirmDelete(Designation.id)}>
-                                        <DeleteIcon color="error" />
-                                    </IconButton>
+                                <TableCell>
+                                    {Designation.isActive ? (
+                                        <>
+                                            <IconButton onClick={() => handleUpdate(Designation)}>
+                                                <EditIcon color="primary" />
+                                            </IconButton>
+                                            <IconButton onClick={() => confirmDelete(Designation.id)}>
+                                                <DeleteIcon color="error" />
+                                            </IconButton>
+                                        </>
+                                    ) : (
+                                        <IconButton onClick={() => confirmUndo(Designation.id)}>
+                                            <UndoIcon color="secondary" />
+                                        </IconButton>
+                                    )}
                                 </TableCell>
                             </TableRow>
                         ))}
@@ -333,15 +397,18 @@ function DesignationList({ isDrawerOpen }) {
                     </Button>
                 </DialogActions>
             </Dialog>
-
-            <Dialog open={confirmOpen} onClose={handleConfirmClose}>
-                <DialogTitle>Confirm Delete</DialogTitle>
+            <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
+                <DialogTitle>{confirmAction === 'delete' ? 'Confirm Delete' : 'Confirm Activation'}</DialogTitle>
                 <DialogContent>
-                    <Typography>Are you sure you want to delete this Designation?</Typography>
+                    <Typography>
+                        {confirmAction === 'delete'
+                            ? 'Are you sure you want to delete this Designation?'
+                            : 'Are you sure you want to activate this Designation?'}
+                    </Typography>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleConfirmClose}>Cancel</Button>
-                    <Button onClick={handleConfirmYes} color="error">Ok</Button>
+                    <Button onClick={() => setConfirmOpen(false)}>No</Button>
+                    <Button onClick={handleConfirmYes} color="primary">Yes</Button>
                 </DialogActions>
             </Dialog>
         </div>
