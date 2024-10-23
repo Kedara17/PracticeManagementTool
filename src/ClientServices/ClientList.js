@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Select, TablePagination, MenuItem, Table, InputLabel, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
+import {Switch, Select, TablePagination, MenuItem, Table, InputLabel, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
+import ActivateIcon from '@mui/icons-material/Undo';
 
 function ClientList({ isDrawerOpen }) {
     const [Clients, setClients] = useState([]);
@@ -11,8 +12,10 @@ function ClientList({ isDrawerOpen }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [open, setOpen] = useState(false);
-    const [confirmOpen, setConfirmOpen] = useState(false);
-    const [deleteTechId, setDeleteTechId] = useState(null);
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [confirmAction, setConfirmAction] = useState(null); // 'delete' or 'activate'
+    const [accessDeniedDialogOpen, setAccessDeniedDialogOpen] = useState(false); // New dialog for non-admins
+    const [selectedClientId, setSelectedClientId] = useState(null);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [currentClient, setCurrentClient] = useState({
@@ -25,6 +28,7 @@ function ClientList({ isDrawerOpen }) {
         address: ''
     });
 
+    const userRole = localStorage.getItem('userRole'); // Fetch role from localStorage
     const [order, setOrder] = useState('desc'); // Order of sorting: 'asc' or 'desc'
     const [orderBy, setOrderBy] = useState('createdDate'); // Column to sort by
     const [searchQuery, setSearchQuery] = useState(''); // State for search query
@@ -70,6 +74,24 @@ function ClientList({ isDrawerOpen }) {
         const isDesc = orderBy === property && order === 'desc';
         setOrder(isDesc ? 'asc' : 'desc');
         setOrderBy(property);
+    };
+
+    // Toggle the active status of a client after confirmation (Only admin has permission)
+    const handleToggleActive = (id, currentStatus) => {
+        if (userRole === 'Admin') {
+            const action = currentStatus ? 'deactivate' : 'activate';
+            axios.patch(`http://172.17.31.61:5142/api/client/${id}/${action}`)
+                .then(() => {
+                    setClients(Clients.map(client => client.id === id ? { ...client, isActive: !currentStatus } : client));
+                    setDialogOpen(false);
+                })
+                .catch(error => {
+                    console.error(`Error ${action} client:`, error);
+                    setError(error);
+                });
+        } else {
+            alert("Only admins can activate records.");
+        }
     };
 
     const sortedClients = [...Clients].sort((a, b) => {
@@ -127,18 +149,43 @@ function ClientList({ isDrawerOpen }) {
 
     };
 
-    const handleDelete = (id) => {
-        //axios.delete(`http://localhost:5142/api/Client/${id}`)
-        // axios.delete(`http://172.17.31.61:5142/api/client/${id}`)
-        axios.patch(`http://172.17.31.61:5142/api/client/${id}`)
-            .then(response => {
-                setClients(Clients.filter(tech => tech.id !== id));
-            })
-            .catch(error => {
-                console.error('There was an error deleting the Client!', error);
-                setError(error);
-            });
-        setConfirmOpen(false);
+    // Handle the deactivation of a client (soft delete)
+    const handleDelete = () => {
+        if (selectedClientId) {
+            axios.patch(`http://172.17.31.61:5142/api/client/${selectedClientId}`)
+                .then(() => {
+                    setClients(Clients.map(client => client.id === selectedClientId ? { ...client, isActive: false } : client));
+                    setDialogOpen(false);
+                })
+                .catch(error => {
+                    console.error('Error deactivating client:', error);
+                    setError(error);
+                });
+        }
+    };
+
+    // Open dialog for delete or activate confirmation for admin, or access denied dialog for non-admin
+    const openConfirmationDialog = (action, clientId) => {
+        setConfirmAction(action);
+        setSelectedClientId(clientId);
+        
+        if (action === 'activate' && userRole !== 'Admin') {
+            setAccessDeniedDialogOpen(true); // Open access denied dialog for non-admins
+        } else {
+            setDialogOpen(true); // Open confirmation dialog for admins
+        }
+    };
+
+      // Handle Confirm in Dialog
+      const handleConfirmDialog = () => {
+        if (confirmAction === 'delete') {
+            handleDelete();
+        } else if (confirmAction === 'activate') {
+            if (userRole === 'Admin') {
+                handleToggleActive(selectedClientId, false); // Admin can activate
+            }
+        }
+        setDialogOpen(false);
     };
 
     const handleSave = async () => {
@@ -156,6 +203,7 @@ function ClientList({ isDrawerOpen }) {
         }
         if (!currentClient.lineofBusiness) {
             validationErrors.lineofBusiness = "LineofBusiness is required";
+        } else if (currentClient.lineofBusiness.length < 3) {
         } else if (currentClient.lineofBusiness.length < 3) {
             validationErrors.lineofBusiness = "LineofBusiness must be atleast 3 characters";
         }
@@ -199,33 +247,15 @@ function ClientList({ isDrawerOpen }) {
         };
 
         if (currentClient.id) {
-            //axios.put(`http://localhost:5142/api/Client/${currentClient.id}`, currentClient)
             axios.put(`http://172.17.31.61:5142/api/client/${currentClient.id}`, clientToSave)
             const res = await axios.get('http://172.17.31.61:5142/api/client');
             setClients(res.data);    
-            // .then(response => {
-                //     setClients(Clients.map(tech => tech.id === currentClient.id ? response.data : tech));
-                // })
-                // .catch(error => {
-                //     console.error('There was an error updating the Client!', error);
-                //     setError(error);
-                // });
-
         } else {
-            //axios.post('http://localhost:5142/api/Client', currentClient)
             axios.post('http://172.17.31.61:5142/api/client', clientToSave)
             const res = await axios.get('http://172.17.31.61:5142/api/client');
             setClients(res.data);     
-            // .then(response => {
-                //     setClients([...Clients, response.data]);
-                // })
-                // .catch(error => {
-                //     console.error('There was an error adding the Client!', error);
-                //     setError(error);
-                // });
         }
         setOpen(false);
-
     };
 
     const handleChange = (e) => {
@@ -322,19 +352,6 @@ function ClientList({ isDrawerOpen }) {
     const handleRowsPerPageChange = (event) => {
         setRowsPerPage(parseInt(event.target.value, 10));
         setPage(0);
-    };
-
-    const confirmDelete = (id) => {
-        setDeleteTechId(id);
-        setConfirmOpen(true);
-    };
-
-    const handleConfirmClose = () => {
-        setConfirmOpen(false);
-    };
-
-    const handleConfirmYes = () => {
-        handleDelete(deleteTechId);
     };
 
     if (loading) {
@@ -494,19 +511,36 @@ function ClientList({ isDrawerOpen }) {
                                 <TableCell>{Client.city}</TableCell>
                                 <TableCell>{Client.state}</TableCell>
                                 <TableCell>{Client.address}</TableCell>
-                                <TableCell>{Client.isActive ? 'Active' : 'Inactive'}</TableCell>
+                                <TableCell>
+                                    <Switch
+                                        checked={Client.isActive}
+                                        onChange={() => {
+                                            openConfirmationDialog('activate', Client.id); // Opens dialog based on role
+                                        }}
+                                        color="primary"
+                                        disabled={userRole !== 'Admin'}
+                                    />
+                                </TableCell>
                                 <TableCell>{Client.createdBy}</TableCell>
                                 <TableCell>{Client.createdDate}</TableCell>
                                 <TableCell>{Client.updatedBy || 'N/A'}</TableCell>
                                 <TableCell>{Client.updatedDate || 'N/A'}</TableCell>
-                                <TableCell >
-                                    <IconButton onClick={() => handleUpdate(Client)}>
-                                        <EditIcon color="primary" />
+                                <TableCell>
+                                    {Client.isActive ? (
+                                        <>
+                                         <IconButton onClick={() => handleUpdate(Client)}>
+                                             <EditIcon color="primary" />
+                                         </IconButton>
+                                         <IconButton onClick={() => openConfirmationDialog('delete', Client.id)}>
+                                            <DeleteIcon color="error" />
+                                         </IconButton>
+                                         </>
+                                    ) : (
+                                    <IconButton onClick={() => openConfirmationDialog('activate', Client.id)}>
+                                        <ActivateIcon color="primary" />
                                     </IconButton>
-                                    <IconButton onClick={() => confirmDelete(Client.id)}>
-                                        <DeleteIcon color="error" />
-                                    </IconButton>
-                                </TableCell>
+                                )}
+                            </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
@@ -637,14 +671,37 @@ function ClientList({ isDrawerOpen }) {
                 </DialogActions>
             </Dialog>
 
-            <Dialog open={confirmOpen} onClose={handleConfirmClose}>
-                <DialogTitle>Confirm Delete</DialogTitle>
+            {/* Confirmation Dialog for Admins */}
+            <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
+                <DialogTitle>Confirm Action</DialogTitle>
                 <DialogContent>
-                    <Typography>Are you sure you want to delete this Client?</Typography>
+                    <Typography>
+                        {confirmAction === 'delete'
+                            ? "Are you sure you want to deactivate this client?"
+                            : "Are you sure you want to activate this client?"}
+                    </Typography>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleConfirmClose}>Cancel</Button>
-                    <Button onClick={handleConfirmYes} color="error">Ok</Button>
+                    <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
+                    <Button
+                        onClick={handleConfirmDialog}
+                        color="primary"
+                    >
+                        Confirm
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Access Denied Dialog for Non-Admins */}
+            <Dialog open={accessDeniedDialogOpen} onClose={() => setAccessDeniedDialogOpen(false)}>
+                <DialogTitle>Access Denied</DialogTitle>
+                <DialogContent>
+                    <Typography>You do not have access to activate this record.</Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setAccessDeniedDialogOpen(false)} color="primary">
+                        OK
+                    </Button>
                 </DialogActions>
             </Dialog>
         </div>

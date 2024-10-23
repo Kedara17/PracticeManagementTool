@@ -215,15 +215,6 @@ function BlogsList({ isDrawerOpen }) {
         // Clear any previous errors if validation passes
         setErrors({});
 
-        const selectedAuthor = Employees.find(e => e.name === currentBlogs.author);
-        const authorId = selectedAuthor ? selectedAuthor.id : null; 
-           
-        const blogToSave = {
-            ...currentBlogs,
-            author: authorId,
-        };
-
-
         const { blogDate } = currentBlogs;
 
         // Check if the webinarDate field is empty
@@ -234,29 +225,21 @@ function BlogsList({ isDrawerOpen }) {
             console.log("Webinar Date:", blogDate);
         }
 
+        const selectedAuthor = Employees.find(a => a.name === currentBlogs.author);
+        const AuthorId = selectedAuthor ? selectedAuthor.id : null;
+
+        const BlogsToSave = {
+            ...currentBlogs,
+            author: AuthorId,
+        }
         if (currentBlogs.id) {
-            axios.put(`http://172.17.31.61:5174/api/blogs/${currentBlogs.id}`, blogToSave)
+            axios.put(`http://172.17.31.61:5174/api/blogs/${currentBlogs.id}`, BlogsToSave)
+            const res = await axios.get('http://172.17.31.61:5174/api/blogs');
+            setBlogs(res.data);            
+        } else {
+            axios.post('http://localhost:5147/api/Blogs', BlogsToSave)
             const res = await axios.get('http://172.17.31.61:5174/api/blogs');
             setBlogs(res.data);
-            // .then(response => {
-                //     setBlogs(blogs.map(tech => tech.id === currentBlogs.id ? response.data : tech));
-                // })
-                // .catch(error => {
-                //     console.error('There was an error updating the Blogs!', error);
-                //     setError(error);
-                // });
-
-        } else {
-            axios.post('http://localhost:5147/api/Blogs', blogToSave)
-            const res = await axios.get('http://172.17.31.61:5174/api/blogs');
-            setBlogs(res.data);   
-            // .then(response => {
-                //     setBlogs([...blogs, response.data]);
-                // })
-                // .catch(error => {
-                //     console.error('There was an error adding the Blogs!', error);
-                //     setError(error);
-                // });
         }
         setOpen(false);
     };
@@ -383,11 +366,11 @@ function BlogsList({ isDrawerOpen }) {
     };
 
     if (loading) {
-        return <p style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop:'200px' }}>Loading...</p>;
+        return <p>Loading...</p>;
     }
 
     if (error) {
-        return <p style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop:'200px' }}>There was an error loading the data: {error.message}</p>;
+        return <p>There was an error loading the data: {error.message}</p>;
     }
 
     return (

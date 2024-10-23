@@ -156,35 +156,20 @@ function SOWProposedTeamList({ isDrawerOpen }) {
         const selectedEmployee = Employees.find(e => e.name === currentSOWProposedTeam.employee);
         const employeeId = selectedEmployee ? selectedEmployee.id : null;
 
-const sowProposedTeamToSave = {
-    ...currentSOWProposedTeam,
-    sowRequirement : sowRequirementId,
-    employee : employeeId,
-}
+        const sowProposedTeamToSave = {
+            ...currentSOWProposedTeam,
+            sowRequirement : sowRequirementId,
+            employee : employeeId,
+        }
 
         if (currentSOWProposedTeam.id) {
             axios.put(`http://172.17.31.61:5041/api/sowProposedTeam/${currentSOWProposedTeam.id}`, sowProposedTeamToSave)
-            const res = await axios.get('http://172.17.31.61:5041/api/sowProposedTeam');
-            setCurrentSOWProposedTeam(res.data); 
-            // .then(response => {
-                //     setSOWProposedTeams(SOWProposedTeams.map(tech => tech.id === currentSOWProposedTeam.id ? response.data : tech));
-                // })
-                // .catch(error => {
-                //     console.error('There was an error updating the SOWProposedTeam!', error);
-                //     setError(error);
-                // });
-
+                const res = await axios.get('http://172.17.31.61:5041/api/sowProposedTeam');
+                setSOWProposedTeams(res.data);
         } else {
             axios.post('http://172.17.31.61:5041/api/sowProposedTeam', sowProposedTeamToSave)
-            const res = await axios.get('http://172.17.31.61:5041/api/sowProposedTeam');
-            setCurrentSOWProposedTeam(res.data); 
-                // .then(response => {
-                //     setSOWProposedTeams([...SOWProposedTeams, response.data]);
-                // })
-                // .catch(error => {
-                //     console.error('There was an error adding the SOWProposedTeam!', error);
-                //     setError(error);
-                // });
+                const res = await axios.get('http://172.17.31.61:5041/api/sowProposedTeam');
+                setSOWProposedTeams(res.data);
         }
         setOpen(false);
 
