@@ -28,9 +28,9 @@ function WebinarList({ isDrawerOpen }) {
         numberOfAudience: ''
     });
 
-    const [order, setOrder] = useState('desc'); // Order of sorting: 'asc' or 'desc'
-    const [orderBy, setOrderBy] = useState('createdDate'); // Column to sort by
-    const [searchQuery, setSearchQuery] = useState(''); // State for search query
+    const [order, setOrder] = useState('desc'); 
+    const [orderBy, setOrderBy] = useState('createdDate'); 
+    const [searchQuery, setSearchQuery] = useState(''); 
     const options = ['Completed', 'Planned'];
     const [errors, setErrors] = useState({
         title: '',
@@ -52,7 +52,7 @@ function WebinarList({ isDrawerOpen }) {
             }
             setLoading(false);
         };
-
+        
         const fetchSpeakers = async () => {
             try {
                 const speResponse = await axios.get('http://172.17.31.61:5033/api/employee');
@@ -132,10 +132,9 @@ function WebinarList({ isDrawerOpen }) {
         setConfirmOpen(false);
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         let validationErrors = {};
 
-        // Title field validation
         if (!currentWebinar.title.trim()) {
             validationErrors.title = "Title is required";
         } else if(currentWebinar.title.length < 3) {
@@ -144,7 +143,6 @@ function WebinarList({ isDrawerOpen }) {
             validationErrors.title = "Title must be unique";
         }
 
-        // Speaker field validation
         if (!currentWebinar.speaker) {
             validationErrors.speaker = "Speaker is required";
         }
@@ -158,35 +156,29 @@ function WebinarList({ isDrawerOpen }) {
             validationErrors.numberOfAudience = "NumberOfAudience is required";
         }
 
-        // If there are validation errors, update the state and prevent save
         if (Object.keys(validationErrors).length > 0) {
             setErrors(validationErrors);
             return;
         }
 
-        // Clear any previous errors if validation passes
         setErrors({});
 
-        if (currentWebinar.id) {
-            axios.put(`http://172.17.31.61:5017/api/webinars/${currentWebinar.id}`, currentWebinar)
-                .then(response => {
-                    console.log(response)
-                    setWebinars(Webinars.map(tech => tech.id === currentWebinar.id ? response.data : tech));
-                })
-                .catch(error => {
-                    console.error('There was an error updating the Webinar!', error);
-                    setError(error);
-                });
+        const selectedSpeaker = Employees.find(t => t.name === currentWebinar.speaker);
+        const speakerId = selectedSpeaker ? selectedSpeaker.id : null; 
+    
+        const webinarToSave = {
+            ...currentWebinar,
+            speaker: speakerId
+        };
 
-        } else {
-            axios.post('http://172.17.31.61:5017/api/webinars', currentWebinar)
-                .then(response => {
-                    setWebinars([...Webinars, response.data]);
-                })
-                .catch(error => {
-                    console.error('There was an error adding the Webinar!', error);
-                    setError(error);
-                });
+        if (currentWebinar.id) {
+            const webRespones= await axios.put(`http://172.17.31.61:5017/api/webinars/${currentWebinar.id}`, webinarToSave)
+            const res= await axios.get('http://172.17.31.61:5017/api/webinars');
+            setWebinars(res.data);    
+      } else {
+            const webResponse = await axios.post('http://172.17.31.61:5017/api/webinars', webinarToSave)
+            const res= await axios.get('http://172.17.31.61:5017/api/webinars');
+            setWebinars(res.data);                
         }
         setOpen(false);
 
@@ -197,41 +189,34 @@ function WebinarList({ isDrawerOpen }) {
         setCurrentWebinar({ ...currentWebinar, [name]: value });
 
         if (name === "title") {
-            // Check if the title is empty or only whitespace
             if (!value.trim()) {
                 setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
             } else if (value.length < 3) {
                 setErrors((prevErrors) => ({ ...prevErrors, title: "" }))
             }
-            // Check for uniqueness
             else if (Webinars.some(web => web.title.toLowerCase() === value.toLowerCase() && web.id !== currentWebinar.id)) {
                 setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
             } else if (value.length === 200) {
                 setErrors((prevErrors) => ({ ...prevErrors, title: "More than 200 characters are not allowed" }));
             }
-            // Clear the title error if valid
             else {
                 setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
             }
         }
         if (name === "speaker") {
-            // Clear the speaker error if the user selects a value
             if (value) {
                 setErrors((prevErrors) => ({ ...prevErrors, speaker: "" }));
             }
         }
         if (name === "status") {
-            // Clear the status error if the user selects a value
             if (value.length === 50) {
                 setErrors((prevErrors) => ({ ...prevErrors, status: "More than 50 characters are not allowed" }));
             }
-            // Clear the title error if valid
             else {
                 setErrors((prevErrors) => ({ ...prevErrors, status: "" }));
             }
         }
         if (name === "numberOfAudience") {
-            // Clear the numberOfAudience error if the user selects a value
             if (value) {
                 setErrors((prevErrors) => ({ ...prevErrors, numberOfAudience: "" }));
             }
@@ -239,9 +224,9 @@ function WebinarList({ isDrawerOpen }) {
     };
 
     const handleClose = () => {
-        setCurrentWebinar({ title: '', speaker: '', status: '', webinarDate: '', numberOfAudience: '' }); // Reset the department fields
-        setErrors({ title: '', speaker: '', status: '', webinarDate: '', numberOfAudience: '' }); // Reset the error state
-        setOpen(false); // Close the dialog
+        setCurrentWebinar({ title: '', speaker: '', status: '', webinarDate: '', numberOfAudience: '' }); 
+        setErrors({ title: '', speaker: '', status: '', webinarDate: '', numberOfAudience: '' }); 
+        setOpen(false); 
     };
 
     const handlePageChange = (event, newPage) => {
@@ -454,13 +439,13 @@ function WebinarList({ isDrawerOpen }) {
                         value={currentWebinar.title}
                         onChange={(e) => {
                             const value = e.target.value;
-                            if (/^[A-Za-z\s]*$/.test(value))
+                            if (/^[A-Za-z\s!.@#$%^&*()_+=-]*$/.test(value))
                                 handleChange(e);
                         }}
                         fullWidth
                         error={!!errors.title}
                         helperText={errors.title}
-                        inputProps={{ maxlength: 200 }}
+                        inputProps={{ maxLength: 200 }}
                     />
                     <InputLabel>Speaker</InputLabel>
                     <Select
