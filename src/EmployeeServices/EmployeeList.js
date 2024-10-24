@@ -17,7 +17,7 @@ function EmployeeList({ isDrawerOpen }) {
     const [technologies, setTechnologies] = useState([]);
     const [reportingTo, setReporting] = useState([]);
     const [roles, setRoles] = useState([]);
-    const [selectedFile, setSelectedFile] = useState(null); // New state for file
+    const [selectedFile, setSelectedFile] = useState(null); 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [open, setOpen] = useState(false);
@@ -44,9 +44,9 @@ function EmployeeList({ isDrawerOpen }) {
 
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\W).{8,}$/;
 
-    const [order, setOrder] = useState('desc'); // Order of sorting: 'asc' or 'desc'
-    const [orderBy, setOrderBy] = useState('createdDate'); // Column to sort by
-    const [searchQuery, setSearchQuery] = useState(''); // State for search query  
+    const [order, setOrder] = useState('desc'); 
+    const [orderBy, setOrderBy] = useState('createdDate'); 
+    const [searchQuery, setSearchQuery] = useState(''); 
     const [errors, setErrors] = useState({
         name: '',
         designation: '',
@@ -146,10 +146,8 @@ function EmployeeList({ isDrawerOpen }) {
         setOrderBy(property);
     };
 
-    // Ensure Employees is not undefined or null
     const safeEmployees = Employees || [];
 
-    // Sorting logic
     const sortedEmployees = [...safeEmployees].sort((a, b) => {
         const valueA = a[orderBy] || '';
         const valueB = b[orderBy] || '';
@@ -171,7 +169,7 @@ function EmployeeList({ isDrawerOpen }) {
 
     // Filtering logic
     const filteredEmployees = sortedEmployees.filter((employee) =>
-        employee && ( // Ensure employee is defined
+        employee && (
             (employee.name && typeof employee.name === 'string' &&
                 employee.name.toLowerCase().includes(searchQuery.toLowerCase())) ||
 
@@ -242,10 +240,9 @@ function EmployeeList({ isDrawerOpen }) {
         } else if (currentEmployee.name.length < 3) {
             validationErrors.name = "Name must be at least 3 characters";
         }        
-        // if (!currentEmployee.designation) {
-        //     validationErrors.designation = "Designation is required";
-        // }
-        //Check employeeID validation       
+        if (!currentEmployee.designation) {
+            validationErrors.designation = "Designation is required";
+        }       
         if (!currentEmployee.employeeID) {
             validationErrors.employeeID = "EmployeeID is required";
         } else if (currentEmployee.employeeID.length < 4) { // Change here
@@ -255,58 +252,35 @@ function EmployeeList({ isDrawerOpen }) {
         } else if (Employees.some(emp => emp.employeeID.toLowerCase() === currentEmployee.employeeID.toLowerCase() && emp.id !== currentEmployee.id)) {
             validationErrors.employeeID = "EmployeeID must be unique";
         }
-        // Check if emailId is empty
         if (!currentEmployee.emailId) {
             validationErrors.emailId = "Email is required";
         }
-        if (!currentEmployee.emailId) {
-            validationErrors.emailId = "EmailId is required";
+        
+        if (!currentEmployee.department) {
+            validationErrors.department = "Department is required";
         }
-        // if (!currentEmployee.department) {
-        //     validationErrors.department = "Department is required";
-        // }
-        // if (!currentEmployee.reportingTo) {
-        //     validationErrors.reportingTo = "ReportingTo is required";
-        // }
         if (!currentEmployee.joiningDate) {
             validationErrors.joiningDate = "JoiningDate is required";
-        }
-        if (!currentEmployee.relievingDate) {
-            validationErrors.relievingDate = "RelievingDate is required";
-        }
-        // if (!currentEmployee.projection) {
-        //     validationErrors.projection = "Projection is required";
-        // } else if (currentEmployee.projection.length < 3) {
-        //     validationErrors.projection = "Projection must be atleast 3 characters";
-        // }
+        }       
         if (!currentEmployee.password) {
             validationErrors.password = "Password is required";
         } 
-        if (!currentEmployee.profile || errors.profile) {
-            validationErrors.profile = "Please select a valid PDF or DOC file";
-        }
         if (!currentEmployee.phoneNo) {
             validationErrors.phoneNo = "PhoneNo is required";
         }
-        // if (!currentEmployee.role) {
-        //     validationErrors.role = "Role is required";
-        // }
-        if (!currentEmployee.technology || currentEmployee.technology.length === 0) {
-            validationErrors.technology = "Technology is required";
+        if (!currentEmployee.role) {
+            validationErrors.role = "Role is required";
         }
 
-        // If there are validation errors, update the state and prevent save
         if (Object.keys(validationErrors).length > 0) {
             setErrors(validationErrors);
             return;
         }
-
-        // Clear any previous errors if validation passes
+       
         setErrors({});
 
         try {
-            let profilePath = currentEmployee.profile; // Existing profile path (for updates)
-            // If a new file is selected, upload it
+            let profilePath = currentEmployee.profile;
             if (selectedFile) {
                 const formData = new FormData();
                 formData.append('profile', selectedFile);
@@ -317,9 +291,8 @@ function EmployeeList({ isDrawerOpen }) {
                         'Content-Type': 'multipart/form-data',
                     },
                 });
-
                 console.log("upload File", uploadResponse)
-                profilePath = uploadResponse.data; // Adjust based on your backend response
+                profilePath = uploadResponse.data; 
             }
 
             const employeeToSave = {
@@ -327,22 +300,19 @@ function EmployeeList({ isDrawerOpen }) {
                 technology: currentEmployee.technology.map(tech => {
                     const selectedTech = technologies.find(t => t.name === tech);
                     return selectedTech ? selectedTech.id : null;
-                }).filter(id => id !== null) // Convert technology names to IDs
+                }).filter(id => id !== null) 
             };
 
             employeeToSave.profile = profilePath.path;
             if (currentEmployee.id) {
-                // Update existing Employee
                 const response = await axios.put(`http://172.17.31.61:5033/api/employee/${currentEmployee.id}`, employeeToSave);
                 setEmployees(Employees.map(emp => emp.id === currentEmployee.id ? response.data : emp));
             } else {
-                // Add new Employee
                 const response = axios.post('http://172.17.31.61:5033/api/employee', employeeToSave);
                 setEmployees([...Employees, response.data]);
                 console.log("emp res", response)
             }
 
-            // Reset file input
             setSelectedFile(null);
             setOpen(false);
         } catch (error) {
@@ -356,7 +326,6 @@ function EmployeeList({ isDrawerOpen }) {
         setCurrentEmployee({ ...currentEmployee, [name]: value });
 
         if (name === "name") {
-            // Check if the title is empty or only whitespace
             if (!value.trim()) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
             } else if (value.lenth < 3) {
@@ -365,16 +334,15 @@ function EmployeeList({ isDrawerOpen }) {
             else if (value.length === 50) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "More than 50 characters are not allowed" }));
             }
-            // Clear the title error if valid
             else {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
             }
         }
-        // if (name === "designation") {
-        //     if (value) {
-        //         setErrors((prevErrors) => ({ ...prevErrors, designation: "" }));
-        //     }
-        // }
+        if (name === "designation") {
+            if (value) {
+                setErrors((prevErrors) => ({ ...prevErrors, designation: "" }));
+            }
+        }
         if (name === "employeeID") {
             if (value) {
                 setErrors((prevErrors) => ({ ...prevErrors, employeeID: "" }));
@@ -389,37 +357,20 @@ function EmployeeList({ isDrawerOpen }) {
             } else {
                 setErrors((prevErrors) => ({
                     ...prevErrors,
-                    emailId: "" // Clear error if the email is valid
+                    emailId: ""
                 }));
             }
         }
-        // if (name === "department") {
-        //     if (value) {
-        //         setErrors((prevErrors) => ({ ...prevErrors, department: "" }));
-        //     }
-        // }
-        // if (name === "reportingTo") {
-        //     if (value) {
-        //         setErrors((prevErrors) => ({ ...prevErrors, reportingTo: "" }));
-        //     }
-        // }
+        if (name === "department") {
+            if (value) {
+                setErrors((prevErrors) => ({ ...prevErrors, department: "" }));
+            }
+        }
         if (name === "joiningDate") {
             if (value) {
                 setErrors((prevErrors) => ({ ...prevErrors, joiningDate: "" }));
             }
         }
-        if (name === "relievingDate") {
-            if (value) {
-                setErrors((prevErrors) => ({ ...prevErrors, relievingDate: "" }));
-            }
-        }
-        // if (name === "projection") {
-        //     if (value) {
-        //         setErrors((prevErrors) => ({ ...prevErrors, projection: "" }));
-        //     } else if (value.length < 3) {
-        //         setErrors((prevErrors) => ({ ...prevErrors, projection: "" }))
-        //     }
-        // }
         if (name === 'password') {
             if (!value) {
                 setErrors({ ...errors, password: 'Password is required' });
@@ -430,9 +381,8 @@ function EmployeeList({ isDrawerOpen }) {
             }
         }
         if (name === "phoneNo") {
-            const numericValue = value.replace(/\D/g, ''); // Remove non-numeric characters
+            const numericValue = value.replace(/\D/g, ''); 
 
-            // Update the phoneNo field only if it's less than or equal to 10 digits
             if (numericValue.length <= 10) {
                 setCurrentEmployee((prevEmployee) => ({
                     ...prevEmployee,
@@ -445,42 +395,12 @@ function EmployeeList({ isDrawerOpen }) {
                     }));
                 }
             }
-        }
-        if (name === "profile") {
-            const file = e.target.files[0];
-
-            if (file) {
-                const fileType = file.type;
-
-                // Check if the file type is either PDF or DOC/DOCX
-                if (fileType === "application/pdf" ||
-                    fileType === "application/docx" ||
-                    fileType === "application/vnd.openxmlformats-officedocument.wordprocessingml.document") {
-
-                    setCurrentEmployee((prevEmployee) => ({
-                        ...prevEmployee,
-                        profile: file
-                    }));
-
-                    // Remove error when valid file is selected
-                    setErrors((prevErrors) => ({
-                        ...prevErrors,
-                        profile: "" // Clear error for profile
-                    }));
-                } else {
-                    // Set error if an invalid file type is selected
-                    setErrors((prevErrors) => ({
-                        ...prevErrors,
-                        profile: "Only PDF or DOC files are allowed"
-                    }));
-                }
+        }       
+        if (name === "role") {
+            if (value) {
+                setErrors((prevErrors) => ({ ...prevErrors, role: "" }));
             }
         }
-        // if (name === "role") {
-        //     if (value) {
-        //         setErrors((prevErrors) => ({ ...prevErrors, role: "" }));
-        //     }
-        // }
         if (name === "technology") {
             if (value) {
                 setErrors((prevErrors) => ({ ...prevErrors, technology: "" }));
@@ -491,7 +411,7 @@ function EmployeeList({ isDrawerOpen }) {
     const handleClose = () => {
         setCurrentEmployee({ name: '', designation: '', employeeID: '', emailId: '', department: '', reportingTo: '', joiningDate: '', relievingDate: '', projection: '', password: '', profile: '', phoneNo: '', role: '', technology: [] }); // Reset the department fields
         setErrors({ name: '', designation: '', employeeID: '', emailId: '', department: '', reportingTo: '', joiningDate: '', relievingDate: '', projection: '', password: '', profile: '', phoneNo: '', role: '', technology: '' }); // Reset the error state
-        setOpen(false); // Close the dialog
+        setOpen(false); 
     };
 
     const handlePageChange = (event, newPage) => {
@@ -814,7 +734,7 @@ function EmployeeList({ isDrawerOpen }) {
                     {errors.designation && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.designation}</Typography>}
                     <InputLabel>EmployeeID</InputLabel>
                     <TextField
-                        type="text" // Keep as 'text' for better control
+                        type="text" 
                         margin="dense"
                         name="employeeID"
                         value={currentEmployee.employeeID}
@@ -857,13 +777,13 @@ function EmployeeList({ isDrawerOpen }) {
                     <Autocomplete
                         multiple
                         id="technologies-autocomplete"
-                        options={(technologies && technologies.length > 0) ? technologies.map((tech) => tech.name) : []}  // Ensure technologies is an array
-                        value={currentEmployee.technology || []}  // Ensure value is always an array
+                        options={(technologies && technologies.length > 0) ? technologies.map((tech) => tech.name) : []} 
+                        value={currentEmployee.technology || []}  
                         onChange={(event, newValue) => {
                             handleChange({
                                 target: {
                                     name: 'technology',
-                                    value: newValue || [],  // Ensure newValue is always an array
+                                    value: newValue || [],  
                                 },
                             });
                         }}
@@ -910,7 +830,7 @@ function EmployeeList({ isDrawerOpen }) {
                                 fullWidth
                             />
                         )}
-                        isOptionEqualToValue={(option, value) => option.name === value.name} // Ensure correct option is selected
+                        isOptionEqualToValue={(option, value) => option.name === value.name} 
                     />
                     {errors.reportingTo && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.reportingTo}</Typography>}
                     <InputLabel>Joining Date</InputLabel>
@@ -959,21 +879,20 @@ function EmployeeList({ isDrawerOpen }) {
                         value={currentEmployee.password}
                         onChange={handleChange}
                         fullWidth
-                        error={!!errors.password}  // Show error if exists
-                        helperText={errors.password}  // Display error message
+                        error={!!errors.password}  
+                        helperText={errors.password}  
                     />
                     <InputLabel>PhoneNumber</InputLabel>
                     <TextField
                         margin="dense"
                         name="phoneNo"
                         value={currentEmployee.phoneNo}
-                        onChange={handleChange} // Use the modified handleChange
+                        onChange={handleChange}
                         fullWidth
                         error={!!errors.phoneNo}
                         helperText={errors.phoneNo}
-                        inputProps={{ maxLength: 10 }} // Limit the max length to 10 digits
+                        inputProps={{ maxLength: 10 }} 
                     />
-
                     <InputLabel>Role</InputLabel>
                     <Select
                         margin="dense"
@@ -995,7 +914,6 @@ function EmployeeList({ isDrawerOpen }) {
                         type="file"
                         margin="dense"
                         name="profile"
-                        // value={currentEmployee.profile}
                         onChange={handleChange}
                         fullWidth
                         required={!currentEmployee.id}
