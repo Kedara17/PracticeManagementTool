@@ -4,7 +4,6 @@ import { Select,TablePagination, MenuItem, Table, InputLabel, TableBody, TableCe
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
-import PaginationComponent from '../Components/PaginationComponent'; // Import your PaginationComponent
 
 function TechnologyList({isDrawerOpen}) {
     const [technologies, setTechnologies] = useState([]);
@@ -119,7 +118,7 @@ function TechnologyList({isDrawerOpen}) {
         // Name field validation
         if (!currentTechnology.name.trim()) {
             validationErrors.name = "Name is required";
-        } else if(!currentTechnology.length < 3){
+        } else if(currentTechnology.length < 3){
             validationErrors.name = "Name must be at least 3 characters";
         }
         else if (technologies.some(tech => tech.name.toLowerCase() === currentTechnology.name.toLowerCase() && tech.id !== currentTechnology.id)) {
@@ -336,14 +335,6 @@ function TechnologyList({isDrawerOpen}) {
                         ))}
                     </TableBody>
                 </Table>
-                {/* Pagination Component */}
-                {/* <PaginationComponent
-                    count={filteredTechnologies.length}
-                    page={page}
-                    rowsPerPage={rowsPerPage}
-                    handlePageChange={handlePageChange}
-                    handleRowsPerPageChange={handleRowsPerPageChange}
-                /> */}
             </TableContainer>
             <TablePagination
                 rowsPerPageOptions={[10, 25, 100]}
@@ -354,8 +345,6 @@ function TechnologyList({isDrawerOpen}) {
                 onPageChange={handlePageChange}
                 onRowsPerPageChange={handleRowsPerPageChange}
             />
-
-            {/* Dialogs for adding/editing and confirming delete */}
             <Dialog open={open} onClose={() => setOpen(false)}>
                 <DialogTitle>{currentTechnology.id ? 'Update Technology' : 'Add Technology'}</DialogTitle>
                 <DialogContent>

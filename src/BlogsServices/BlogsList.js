@@ -1,18 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Select, MenuItem,TablePagination, Table, InputLabel, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment, Switch } from '@mui/material';
+import { Select, MenuItem, TablePagination, Table, InputLabel, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment, Switch } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import UndoIcon from '@mui/icons-material/Undo';
 import SearchIcon from '@mui/icons-material/Search';
-import PaginationComponent from '../Components/PaginationComponent'; // Import your PaginationComponent
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import '../App.css';
 
-function BlogsList({isDrawerOpen}) {
+function BlogsList({ isDrawerOpen }) {
     const [blogs, setBlogs] = useState([]);
     const [Employees, setEmployees] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -36,7 +35,7 @@ function BlogsList({isDrawerOpen}) {
         isActive: false // New field to track isActive status
     });
 
-    const [order, setOrder] = useState('asc'); // Order of sorting: 'asc' or 'desc'
+    const [order, setOrder] = useState('desc'); // Order of sorting: 'asc' or 'desc'
     const [orderBy, setOrderBy] = useState('createdDate'); // Column to sort by
     const [searchQuery, setSearchQuery] = useState(''); // State for search query
     const options = ['Completed', 'InProgress', 'InReview', 'Published'];
@@ -53,7 +52,6 @@ function BlogsList({isDrawerOpen}) {
     useEffect(() => {
         const fetchBlogs = async () => {
             try {
-                //  const blogResponse = await axios.get('http://localhost:5547/api/blogs');
                 const blogResponse = await axios.get('http://172.17.31.61:5174/api/blogs');
                 setBlogs(blogResponse.data);
             } catch (error) {
@@ -65,7 +63,6 @@ function BlogsList({isDrawerOpen}) {
 
         const fetchAuthor = async () => {
             try {
-                // const authorResponse = await axios.get('http://localhost:5033/api/employee');
                 const authorResponse = await axios.get('http://172.17.31.61:5033/api/employee');
                 setEmployees(authorResponse.data);
             } catch (error) {
@@ -79,19 +76,19 @@ function BlogsList({isDrawerOpen}) {
     }, []);
 
     const handleSort = (property) => {
-        const isAsc = orderBy === property && order === 'asc';
-        setOrder(isAsc ? 'desc' : 'asc');
+        const isDesc = orderBy === property && order === 'desc';
+        setOrder(isDesc ? 'asc' : 'desc');
         setOrderBy(property);
     };
 
     const handleUndoClick = (blog) => {
         const userRole = localStorage.getItem('userRole'); // Get the role from localStorage
-    
+
         if (userRole !== 'Admin') {
             setUnauthorizedOpen(true); // Show unauthorized dialog for non-admins
             return;
         }
-    
+
         setSelectedBlog(blog); // For admins, store the blog
         setUndoConfirmOpen(true); // Open the confirmation dialog for admins
     };
@@ -102,18 +99,17 @@ function BlogsList({isDrawerOpen}) {
             setUndoConfirmOpen(false); // Close the undo dialog
             return;
         }
-    
+
         if (selectedBlog) {
             await handleToggleActive(selectedBlog); // Toggle the active state if admin
         }
         setUndoConfirmOpen(false); // Close the dialog
         setSelectedBlog(null); // Clear the selected blog
     };
-    
+
     const handleToggleActive = async (blog) => {
         try {
             const updatedBlog = { ...blog, isActive: !blog.isActive };
-            // await axios.put(`http://localhost:5547/api/blogs/${blog.id}`, updatedBlog);
             await axios.put(`http://172.17.31.61:5174/api/blogs/${blog.id}`, updatedBlog);
             setBlogs(blogs.map((b) => (b.id === blog.id ? updatedBlog : b)));
         } catch (error) {
@@ -126,9 +122,17 @@ function BlogsList({isDrawerOpen}) {
         const valueB = b[orderBy] || '';
 
         if (typeof valueA === 'string' && typeof valueB === 'string') {
-            return order === 'asc' ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
+            return order === 'desc'
+                ? valueB.localeCompare(valueA)
+                : valueA.localeCompare(valueB);
+        } else if (valueA instanceof Date && valueB instanceof Date) {
+            return order === 'desc'
+                ? valueB - valueA
+                : valueA - valueB;
         } else {
-            return order === 'asc' ? (valueA > valueB ? 1 : -1) : (valueB > valueA ? 1 : -1);
+            return order === 'desc'
+                ? (valueA > valueB ? 1 : -1)
+                : (valueB > valueA ? 1 : -1);
         }
     });
 
@@ -164,8 +168,7 @@ function BlogsList({isDrawerOpen}) {
     const handleDelete = (id) => {
         axios.patch(`http://172.17.31.61:5174/api/blogs/${id}`)
             .then(response => {
-                // Find the deleted record and mark it as inactive in the local state
-                setBlogs(blogs.map((blog) => 
+                setBlogs(blogs.map((blog) =>
                     blog.id === id ? { ...blog, isActive: false } : blog
                 ));
             })
@@ -175,7 +178,7 @@ function BlogsList({isDrawerOpen}) {
             });
         setConfirmOpen(false); // Close the confirmation dialog
     };
-    
+
 
     const handleSave = () => {
         let validationErrors = {};
@@ -183,7 +186,8 @@ function BlogsList({isDrawerOpen}) {
         // Title field validation
         if (!currentBlogs.title.trim()) {
             validationErrors.title = "Title is required";
-        }else if(!currentBlogs.title.length < 3) {
+
+        }else if(currentBlogs.title.length < 3) {
             validationErrors.title = "Title must be atleast 3 characters";
         }
         if (!currentBlogs.author) {
@@ -222,11 +226,8 @@ function BlogsList({isDrawerOpen}) {
         }
 
         if (currentBlogs.id) {
-            // axios.put(`http://localhost:5147/api/Blogs/${currentBlogs.id}`, currentBlogs)
             axios.put(`http://172.17.31.61:5174/api/blogs/${currentBlogs.id}`, currentBlogs)
                 .then(response => {
-                    //setBlogs([...blogs, response.data]);
-                    // setBlogs(response.data);
                     setBlogs(blogs.map(tech => tech.id === currentBlogs.id ? response.data : tech));
                 })
                 .catch(error => {
@@ -235,8 +236,6 @@ function BlogsList({isDrawerOpen}) {
                 });
 
         } else {
-            // Add new Blogs
-            // axios.post('http://localhost:5147/api/Blogs', currentBlogs)
             axios.post('http://172.17.31.61:5174/api/blogs', currentBlogs)
                 .then(response => {
                     setBlogs([...blogs, response.data]);
@@ -249,7 +248,7 @@ function BlogsList({isDrawerOpen}) {
         setOpen(false);
     };
 
-       const handleChange = (e) => {
+    const handleChange = (e) => {
         const { name, value } = e.target;
         setCurrentBlogs({ ...currentBlogs, [name]: value });
 
@@ -257,13 +256,13 @@ function BlogsList({isDrawerOpen}) {
             // Check if the title is empty or only whitespace
             if (!value.trim()) {
                 setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
-            }else if(value.length < 3) {
-                setErrors((prevErrors) => ({ ...prevErrors, title: ""}))
+            } else if (value.length < 3) {
+                setErrors((prevErrors) => ({ ...prevErrors, title: "" }))
             }
             // Check for uniqueness
             else if (blogs.some(web => web.title.toLowerCase() === value.toLowerCase() && web.id !== currentBlogs.id)) {
                 setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
-            }else if (value.length === 200) {
+            } else if (value.length === 200) {
                 setErrors((prevErrors) => ({ ...prevErrors, title: "More than 200 characters are not allowed" }));
             }
             // Clear the title error if valid
@@ -379,7 +378,7 @@ function BlogsList({isDrawerOpen}) {
     }
 
     return (
-        <div style={{ display: 'flex',flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 240 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 240 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
             <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
                 <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>Blogs Table List</h3>
             </div>
@@ -409,7 +408,7 @@ function BlogsList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'title'}
-                                    direction={orderBy === 'title' ? order : 'asc'}
+                                    direction={orderBy === 'title' ? order : 'desc'}
                                     onClick={() => handleSort('title')}
                                 >
                                     <b>Title</b>
@@ -418,7 +417,7 @@ function BlogsList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'author'}
-                                    direction={orderBy === 'author' ? order : 'asc'}
+                                    direction={orderBy === 'author' ? order : 'desc'}
                                     onClick={() => handleSort('author')}
                                 >
                                     <b>Author</b>
@@ -427,7 +426,7 @@ function BlogsList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'status'}
-                                    direction={orderBy === 'status' ? order : 'asc'}
+                                    direction={orderBy === 'status' ? order : 'desc'}
                                     onClick={() => handleSort('status')}
                                 >
                                     <b>Status</b>
@@ -436,7 +435,7 @@ function BlogsList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'targetDate'}
-                                    direction={orderBy === 'targetDate' ? order : 'asc'}
+                                    direction={orderBy === 'targetDate' ? order : 'desc'}
                                     onClick={() => handleSort('targetDate')}
                                 >
                                     <b>TargetDate</b>
@@ -445,7 +444,7 @@ function BlogsList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'completedDate'}
-                                    direction={orderBy === 'completedDate' ? order : 'asc'}
+                                    direction={orderBy === 'completedDate' ? order : 'desc'}
                                     onClick={() => handleSort('completedDate')}
                                 >
                                     <b>CompletedDate</b>
@@ -454,7 +453,7 @@ function BlogsList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'publishedDate'}
-                                    direction={orderBy === 'publishedDate' ? order : 'asc'}
+                                    direction={orderBy === 'publishedDate' ? order : 'desc'}
                                     onClick={() => handleSort('publishedDate')}
                                 >
                                     <b>PublishedDate</b>
@@ -463,7 +462,7 @@ function BlogsList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'isActive'}
-                                    direction={orderBy === 'isActive' ? order : 'asc'}
+                                    direction={orderBy === 'isActive' ? order : 'desc'}
                                     onClick={() => handleSort('isActive')}
                                 >
                                     <b>Is Active</b>
@@ -472,7 +471,7 @@ function BlogsList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'createdBy'}
-                                    direction={orderBy === 'createdBy' ? order : 'asc'}
+                                    direction={orderBy === 'createdBy' ? order : 'desc'}
                                     onClick={() => handleSort('createdBy')}
                                 >
                                     <b>Created By</b>
@@ -481,7 +480,7 @@ function BlogsList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'createdDate'}
-                                    direction={orderBy === 'createdDate' ? order : 'asc'}
+                                    direction={orderBy === 'createdDate' ? order : 'desc'}
                                     onClick={() => handleSort('createdDate')}
                                 >
                                     <b>Created Date</b>
@@ -490,7 +489,7 @@ function BlogsList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'updatedBy'}
-                                    direction={orderBy === 'updatedBy' ? order : 'asc'}
+                                    direction={orderBy === 'updatedBy' ? order : 'desc'}
                                     onClick={() => handleSort('updatedBy')}
                                 >
                                     <b>Updated By</b>
@@ -499,7 +498,7 @@ function BlogsList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'updatedDate'}
-                                    direction={orderBy === 'updatedDate' ? order : 'asc'}
+                                    direction={orderBy === 'updatedDate' ? order : 'desc'}
                                     onClick={() => handleSort('updatedDate')}
                                 >
                                     <b>Updated Date</b>
@@ -512,7 +511,6 @@ function BlogsList({isDrawerOpen}) {
                         {filteredBlogs.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((Blogs) => (
                             <TableRow key={Blogs.id}
                                 sx={{ backgroundColor: Blogs.isActive ? 'inherit' : '#FFCCCB' }} >
-                                {/* <TableCell>{Blogs.id}</TableCell> */}
                                 <TableCell>{Blogs.title}</TableCell>
                                 <TableCell>{Blogs.author}</TableCell>
                                 <TableCell>{Blogs.status}</TableCell>
@@ -530,37 +528,29 @@ function BlogsList({isDrawerOpen}) {
                                     )}
                                 </TableCell>
                                 <TableCell>{Blogs.createdBy}</TableCell>
-                                <TableCell>{new Date(Blogs.createdDate).toLocaleString()}</TableCell>
+                                <TableCell>{Blogs.createdDate}</TableCell>
                                 <TableCell>{Blogs.updatedBy || 'N/A'}</TableCell>
-                                <TableCell>{new Date(Blogs.updatedDate).toLocaleString() || 'N/A'}</TableCell>
+                                <TableCell>{Blogs.updatedDate || 'N/A'}</TableCell>
                                 <TableCell>
                                     {Blogs.isActive ? (
-                                    <>
-                                    <IconButton onClick={() => handleUpdate(Blogs)}>
-                                        <EditIcon color="primary" />
-                                    </IconButton>
-                                    <IconButton onClick={() => confirmDelete(Blogs.id)}>
-                                        <DeleteIcon color="error" />
-                                    </IconButton>
+                                        <>
+                                            <IconButton onClick={() => handleUpdate(Blogs)}>
+                                                <EditIcon color="primary" />
+                                            </IconButton>
+                                            <IconButton onClick={() => confirmDelete(Blogs.id)}>
+                                                <DeleteIcon color="error" />
+                                            </IconButton>
                                         </>
-                                        ) : (
-                                    <IconButton onClick={() => handleUndoClick(Blogs)}>
-                                        <UndoIcon color="action" />
-                                    </IconButton>      
+                                    ) : (
+                                        <IconButton onClick={() => handleUndoClick(Blogs)}>
+                                            <UndoIcon color="action" />
+                                        </IconButton>
                                     )}
                                 </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
                 </Table>
-                {/* Pagination Component */}
-                {/* <PaginationComponent
-                    count={filteredBlogs.length}
-                    page={page}
-                    rowsPerPage={rowsPerPage}
-                    handlePageChange={handlePageChange}
-                    handleRowsPerPageChange={handleRowsPerPageChange}
-                /> */}
             </TableContainer>
             <TablePagination
                 rowsPerPageOptions={[10, 25, 100]}
@@ -586,9 +576,9 @@ function BlogsList({isDrawerOpen}) {
                         }}
                         fullWidth
                         error={!!errors.title}
-                        helperText={errors.title} 
-                        inputProps={{maxLength: 200}}
-                        />                       
+                        helperText={errors.title}
+                        inputProps={{ maxLength: 200 }}
+                    />
                     <InputLabel>Author</InputLabel>
                     <Select
                         margin="dense"
@@ -613,7 +603,7 @@ function BlogsList({isDrawerOpen}) {
                         onChange={handleChange}
                         fullWidth
                         error={!!errors.status}
-                        inputProps={{maxLength: 50}}
+                        inputProps={{ maxLength: 50 }}
                     >
                         {options.map((option, index) => (
                             <MenuItem key={index} value={option}>
@@ -625,7 +615,7 @@ function BlogsList({isDrawerOpen}) {
                     <InputLabel>TargetDate</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                        className='datetime'
+                            className='datetime'
                             value={currentBlogs.targetDate ? dayjs(currentBlogs.targetDate) : null}
                             onChange={handleTargetDateChange}
                             renderInput={(params) => (
@@ -638,7 +628,7 @@ function BlogsList({isDrawerOpen}) {
                     <InputLabel>CompletedDate</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                        className='datetime'
+                            className='datetime'
                             value={currentBlogs.completedDate ? dayjs(currentBlogs.completedDate) : null}
                             onChange={handleCompletedDateChange}
                             renderInput={(params) => (
@@ -651,7 +641,7 @@ function BlogsList({isDrawerOpen}) {
                     <InputLabel>PublishedDate</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                        className='datetime'
+                            className='datetime'
                             value={currentBlogs.publishedDate ? dayjs(currentBlogs.publishedDate) : null}
                             onChange={handlePublishedDateChange}
                             renderInput={(params) => (

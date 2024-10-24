@@ -3,8 +3,7 @@ import axios from 'axios';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
-import PaginationComponent from '../Components/PaginationComponent'; // Import your PaginationComponent
-import { InputLabel,TablePagination, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
+import { InputLabel, TablePagination, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
 
 function DesignationList({ isDrawerOpen }) {
     const [designations, setDesignations] = useState([]);
@@ -102,9 +101,9 @@ function DesignationList({ isDrawerOpen }) {
         // Name field validation
         if (!currentDesignation.name.trim()) {
             validationErrors.name = "Designation is required";
-        }else if (currentDesignation.name.length < 3) {
+        } else if (currentDesignation.name.length < 3) {
             validationErrors.name = "Name must be atleast 3 characters";
-        }  else if (designations.some(des => des.name.toLowerCase() === currentDesignation.name.toLowerCase() && des.id !== currentDesignation.id)) {
+        } else if (designations.some(des => des.name.toLowerCase() === currentDesignation.name.toLowerCase() && des.id !== currentDesignation.id)) {
             validationErrors.name = "Name must be unique";
         }
 
@@ -137,9 +136,9 @@ function DesignationList({ isDrawerOpen }) {
             // Check if the name is empty or only whitespace
             if (!value.trim()) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
-            }else if (value.length < 3) {
+            } else if (value.length < 3) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
-            } 
+            }
             // Check for uniqueness
             else if (designations.some(des => des.name.toLowerCase() === value.toLowerCase() && des.id !== currentDesignation.id)) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
@@ -191,7 +190,7 @@ function DesignationList({ isDrawerOpen }) {
     }
 
     return (
-        <div style={{ display: 'flex',flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 240 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 240 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
             <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
                 <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>Designation Table List</h3>
             </div>
@@ -218,7 +217,6 @@ function DesignationList({ isDrawerOpen }) {
                 <Table>
                     <TableHead>
                         <TableRow>
-                            {/* Sorting logic */}
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'name'}
@@ -281,7 +279,6 @@ function DesignationList({ isDrawerOpen }) {
                             <TableRow key={Designation.id}
                                 sx={{ backgroundColor: Designation.isActive ? 'inherit' : '#FFCCCB' }} // Set background color conditionally
                             >
-                                {/* <TableCell>{Designation.id}</TableCell> */}
                                 <TableCell>{Designation.name}</TableCell>
                                 <TableCell>{Designation.isActive ? 'Active' : 'Inactive'}</TableCell>
                                 <TableCell>{Designation.createdBy}</TableCell>
@@ -300,13 +297,6 @@ function DesignationList({ isDrawerOpen }) {
                         ))}
                     </TableBody>
                 </Table>
-                {/* <PaginationComponent
-                    count={filteredDesignation.length}
-                    page={page}
-                    rowsPerPage={rowsPerPage}
-                    handlePageChange={handlePageChange}
-                    handleRowsPerPageChange={handleRowsPerPageChange}
-                /> */}
             </TableContainer>
             <TablePagination
                 rowsPerPageOptions={[10, 25, 100]}

@@ -4,15 +4,13 @@ import { ListItemText, Checkbox, Select, MenuItem, Table, InputLabel, TableBody,
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
-import PaginationComponent from '../Components/PaginationComponent'; // Import your PaginationComponent
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import '../App.css';
-// import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
-function EmployeeList({isDrawerOpen}) {
+function EmployeeList({ isDrawerOpen }) {
     const [Employees, setEmployees] = useState([]);
     const [departments, setDepartments] = useState([]);
     const [designations, setDesignations] = useState([]);
@@ -46,7 +44,7 @@ function EmployeeList({isDrawerOpen}) {
 
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\W).{8,}$/;
 
-    const [order, setOrder] = useState('asc'); // Order of sorting: 'asc' or 'desc'
+    const [order, setOrder] = useState('desc'); // Order of sorting: 'asc' or 'desc'
     const [orderBy, setOrderBy] = useState('createdDate'); // Column to sort by
     const [searchQuery, setSearchQuery] = useState(''); // State for search query  
     const [errors, setErrors] = useState({
@@ -70,7 +68,6 @@ function EmployeeList({isDrawerOpen}) {
     useEffect(() => {
         const fetchEmployees = async () => {
             try {
-                // const empResponse = await axios.get('http://localhost:5033/api/Employee');
                 const empResponse = await axios.get('http://172.17.31.61:5033/api/Employee');
                 setEmployees(empResponse.data);
             } catch (error) {
@@ -82,7 +79,6 @@ function EmployeeList({isDrawerOpen}) {
 
         const fetchReportingTo = async () => {
             try {
-                // const repoResponse = await axios.get('http://localhost:5033/api/Employee');
                 const repoResponse = await axios.get('http://172.17.31.61:5033/api/Employee');
                 setReporting(repoResponse.data);
             } catch (error) {
@@ -94,7 +90,6 @@ function EmployeeList({isDrawerOpen}) {
 
         const fetchDepartments = async () => {
             try {
-                // const deptResponse = await axios.get('http://localhost:5560/api/Department');
                 const deptResponse = await axios.get('http://172.17.31.61:5160/api/department');
                 setDepartments(deptResponse.data);
             } catch (error) {
@@ -106,7 +101,6 @@ function EmployeeList({isDrawerOpen}) {
 
         const fetchDesignations = async () => {
             try {
-                // const desigResponse = await axios.get('http://localhost:5501/api/Designation');
                 const desigResponse = await axios.get('http://172.17.31.61:5201/api/designation');
                 setDesignations(desigResponse.data);
             } catch (error) {
@@ -118,7 +112,6 @@ function EmployeeList({isDrawerOpen}) {
 
         const fetchTechnologies = async () => {
             try {
-                // const techResponse = await axios.get('http://localhost:5574/api/Technology');
                 const techResponse = await axios.get('http://172.17.31.61:5274/api/technology');
                 setTechnologies(techResponse.data);
             } catch (error) {
@@ -130,7 +123,6 @@ function EmployeeList({isDrawerOpen}) {
 
         const fetchRole = async () => {
             try {
-                // const roleResponse = await axios.get('http://localhost:5763/api/Role');
                 const roleResponse = await axios.get('http://172.17.31.61:5063/api/role');
                 setRoles(roleResponse.data);
             } catch (error) {
@@ -149,8 +141,8 @@ function EmployeeList({isDrawerOpen}) {
     }, []);
 
     const handleSort = (property) => {
-        const isAsc = orderBy === property && order === 'asc';
-        setOrder(isAsc ? 'desc' : 'asc');
+        const isDesc = orderBy === property && order === 'desc';
+        setOrder(isDesc ? 'asc' : 'desc');
         setOrderBy(property);
     };
 
@@ -163,9 +155,17 @@ function EmployeeList({isDrawerOpen}) {
         const valueB = b[orderBy] || '';
 
         if (typeof valueA === 'string' && typeof valueB === 'string') {
-            return order === 'asc' ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
+            return order === 'desc'
+                ? valueB.localeCompare(valueA)
+                : valueA.localeCompare(valueB);
+        } else if (valueA instanceof Date && valueB instanceof Date) {
+            return order === 'desc'
+                ? valueB - valueA
+                : valueA - valueB;
         } else {
-            return order === 'asc' ? (valueA > valueB ? 1 : -1) : (valueB > valueA ? 1 : -1);
+            return order === 'desc'
+                ? (valueA > valueB ? 1 : -1)
+                : (valueB > valueA ? 1 : -1);
         }
     });
 
@@ -199,7 +199,7 @@ function EmployeeList({isDrawerOpen}) {
         setCurrentEmployee({
             name: '',
             designation: '',
-            employeeId: '',
+            employeeID: '',
             emailId: '',
             department: '',
             reportingTo: '',
@@ -222,9 +222,7 @@ function EmployeeList({isDrawerOpen}) {
     };
 
     const handleDelete = (id) => {
-        // axios.delete(`http://localhost:5033/api/Employee/${id}`)
-        // axios.delete(`http://172.17.31.61:5033/api/employee/${id}`)
-        axios.patch(`http://172.17.31.61:5033/api/Employee/${id}`)
+        axios.patch(`http://172.17.31.61:5033/api/employee/${id}`)
             .then(response => {
                 setEmployees(Employees.filter(tech => tech.id !== id));
             })
@@ -241,13 +239,9 @@ function EmployeeList({isDrawerOpen}) {
 
         if (!currentEmployee.name) {
             validationErrors.name = "Name  is required";
-        } else if (!currentEmployee.name.length < 3) {
+        } else if (currentEmployee.name.length < 3) {
             validationErrors.name = "Name must be at least 3 characters";
-        }
-        else if (Employees.some(emp => emp.name.toLowerCase() === currentEmployee.name.toLowerCase() && emp.id !== currentEmployee.id)) {
-            validationErrors.name = "Name must be unique";
-        }
-        // Department field validation 
+        }        
         if (!currentEmployee.designation) {
             validationErrors.designation = "Designation is required";
         }
@@ -282,7 +276,7 @@ function EmployeeList({isDrawerOpen}) {
         }
         if (!currentEmployee.projection) {
             validationErrors.projection = "Projection is required";
-        } else if(!currentEmployee.projection.length <3) {
+        } else if (currentEmployee.projection.length < 3) {
             validationErrors.projection = "Projection must be atleast 3 characters";
         }
         if (!currentEmployee.password) {
@@ -368,10 +362,7 @@ function EmployeeList({isDrawerOpen}) {
             } else if (value.lenth < 3) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }))
             }
-            // Check for uniqueness
-            else if (Employees.some(emp => emp.name.toLowerCase() === value.toLowerCase() && emp.id !== currentEmployee.id)) {
-                setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
-            } else if (value.length === 50) {
+            else if (value.length === 50) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "More than 50 characters are not allowed" }));
             }
             // Clear the title error if valid
@@ -425,8 +416,8 @@ function EmployeeList({isDrawerOpen}) {
         if (name === "projection") {
             if (value) {
                 setErrors((prevErrors) => ({ ...prevErrors, projection: "" }));
-            }else if (value.length < 3) {
-                setErrors((prevErrors) => ({ ...prevErrors, projection: ""}))
+            } else if (value.length < 3) {
+                setErrors((prevErrors) => ({ ...prevErrors, projection: "" }))
             }
         }
         if (name === 'password') {
@@ -513,8 +504,8 @@ function EmployeeList({isDrawerOpen}) {
         return formIsValid;
     };
     const handleClose = () => {
-        setCurrentEmployee({ name: '', designation: '', employeeId: '', emailId: '', department: '', reportingTo: '', joiningDate: '', relievingDate: '', projection: '', password: '', profile: '', phoneNo: '', role: '', technology: [] }); // Reset the department fields
-        setErrors({ name: '', designation: '', employeeId: '', emailId: '', department: '', reportingTo: '', joiningDate: '', relievingDate: '', projection: '', password: '', profile: '', phoneNo: '', role: '', technology: '' }); // Reset the error state
+        setCurrentEmployee({ name: '', designation: '', employeeID: '', emailId: '', department: '', reportingTo: '', joiningDate: '', relievingDate: '', projection: '', password: '', profile: '', phoneNo: '', role: '', technology: [] }); // Reset the department fields
+        setErrors({ name: '', designation: '', employeeID: '', emailId: '', department: '', reportingTo: '', joiningDate: '', relievingDate: '', projection: '', password: '', profile: '', phoneNo: '', role: '', technology: '' }); // Reset the error state
         setOpen(false); // Close the dialog
     };
 
@@ -595,11 +586,10 @@ function EmployeeList({isDrawerOpen}) {
                 <Table>
                     <TableHead>
                         <TableRow>
-                            {/* <TableCell>ID</TableCell> */}
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'name'}
-                                    direction={orderBy === 'name' ? order : 'asc'}
+                                    direction={orderBy === 'name' ? order : 'desc'}
                                     onClick={() => handleSort('name')}
                                 >
                                     Name
@@ -608,7 +598,7 @@ function EmployeeList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'designation'}
-                                    direction={orderBy === 'designation' ? order : 'asc'}
+                                    direction={orderBy === 'designation' ? order : 'desc'}
                                     onClick={() => handleSort('designation')}
                                 >
                                     Designation
@@ -620,13 +610,13 @@ function EmployeeList({isDrawerOpen}) {
                                     direction={orderBy === 'employeeId' ? order : 'asc'}
                                     onClick={() => handleSort('employeeId')}
                                 >
-                                    EmployeeId
+                                    EmployeeID
                                 </TableSortLabel>
                             </TableCell>
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'emailId'}
-                                    direction={orderBy === 'emailId' ? order : 'asc'}
+                                    direction={orderBy === 'emailId' ? order : 'desc'}
                                     onClick={() => handleSort('emailId')}
                                 >
                                     EmailId
@@ -635,7 +625,7 @@ function EmployeeList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'department'}
-                                    direction={orderBy === 'department' ? order : 'asc'}
+                                    direction={orderBy === 'department' ? order : 'desc'}
                                     onClick={() => handleSort('department')}
                                 >
                                     Department
@@ -644,7 +634,7 @@ function EmployeeList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'reportingTo'}
-                                    direction={orderBy === 'reportingTo' ? order : 'asc'}
+                                    direction={orderBy === 'reportingTo' ? order : 'desc'}
                                     onClick={() => handleSort('reportingTo')}
                                 >
                                     ReportingTo
@@ -653,7 +643,7 @@ function EmployeeList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'joiningDate'}
-                                    direction={orderBy === 'joiningDate' ? order : 'asc'}
+                                    direction={orderBy === 'joiningDate' ? order : 'desc'}
                                     onClick={() => handleSort('joiningDate')}
                                 >
                                     JoiningDate
@@ -662,7 +652,7 @@ function EmployeeList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'relievingDate'}
-                                    direction={orderBy === 'relievingDate' ? order : 'asc'}
+                                    direction={orderBy === 'relievingDate' ? order : 'desc'}
                                     onClick={() => handleSort('relievingDate')}
                                 >
                                     RelievingDate
@@ -671,7 +661,7 @@ function EmployeeList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'projection'}
-                                    direction={orderBy === 'projection' ? order : 'asc'}
+                                    direction={orderBy === 'projection' ? order : 'desc'}
                                     onClick={() => handleSort('projection')}
                                 >
                                     Projection
@@ -680,7 +670,7 @@ function EmployeeList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'phoneNo'}
-                                    direction={orderBy === 'phoneNo' ? order : 'asc'}
+                                    direction={orderBy === 'phoneNo' ? order : 'desc'}
                                     onClick={() => handleSort('phoneNo')}
                                 >
                                     PhoneNo
@@ -689,7 +679,7 @@ function EmployeeList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'profile'}
-                                    direction={orderBy === 'profile' ? order : 'asc'}
+                                    direction={orderBy === 'profile' ? order : 'desc'}
                                     onClick={() => handleSort('profile')}
                                 >
                                     Profile
@@ -698,7 +688,7 @@ function EmployeeList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'role'}
-                                    direction={orderBy === 'role' ? order : 'asc'}
+                                    direction={orderBy === 'role' ? order : 'desc'}
                                     onClick={() => handleSort('role')}
                                 >
                                     Role
@@ -707,7 +697,7 @@ function EmployeeList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'isActive'}
-                                    direction={orderBy === 'isActive' ? order : 'asc'}
+                                    direction={orderBy === 'isActive' ? order : 'desc'}
                                     onClick={() => handleSort('isActive')}
                                 >
                                     Is Active
@@ -716,7 +706,7 @@ function EmployeeList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'createdBy'}
-                                    direction={orderBy === 'createdBy' ? order : 'asc'}
+                                    direction={orderBy === 'createdBy' ? order : 'desc'}
                                     onClick={() => handleSort('createdBy')}
                                 >
                                     Created By
@@ -725,7 +715,7 @@ function EmployeeList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'createdDate'}
-                                    direction={orderBy === 'createdDate' ? order : 'asc'}
+                                    direction={orderBy === 'createdDate' ? order : 'desc'}
                                     onClick={() => handleSort('createdDate')}
                                 >
                                     Created Date
@@ -734,7 +724,7 @@ function EmployeeList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'updatedBy'}
-                                    direction={orderBy === 'updatedBy' ? order : 'asc'}
+                                    direction={orderBy === 'updatedBy' ? order : 'desc'}
                                     onClick={() => handleSort('updatedBy')}
                                 >
                                     Updated By
@@ -743,7 +733,7 @@ function EmployeeList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'updatedDate'}
-                                    direction={orderBy === 'updatedDate' ? order : 'asc'}
+                                    direction={orderBy === 'updatedDate' ? order : 'desc'}
                                     onClick={() => handleSort('updatedDate')}
                                 >
                                     Updated Date
@@ -766,8 +756,6 @@ function EmployeeList({isDrawerOpen}) {
                                 <TableCell>{Employee.relievingDate}</TableCell>
                                 <TableCell>{Employee.projection}</TableCell>
                                 <TableCell>{Employee.phoneNo}</TableCell>
-                                {/* <TableCell>{Employee.profile}</TableCell> */}
-                                <TableCell>{Employee.role}</TableCell>
                                 <TableCell>
                                     {Employee.profile ? (
                                         <>
@@ -777,13 +765,12 @@ function EmployeeList({isDrawerOpen}) {
                                         'N/A'
                                     )}
                                 </TableCell>
+                                <TableCell>{Employee.role}</TableCell>
                                 <TableCell>{Employee.isActive ? 'Active' : 'Inactive'}</TableCell>
                                 <TableCell>{Employee.createdBy}</TableCell>
                                 <TableCell>{new Date(Employee.createdDate).toLocaleString()}</TableCell>
                                 <TableCell>{Employee.updatedBy || 'N/A'}</TableCell>
                                 <TableCell>{new Date(Employee.updatedDate).toLocaleString() || 'N/A'}</TableCell>
-                                {/* <TableCell>{Employee.password}</TableCell> */}
-
                                 <TableCell >
                                     <IconButton onClick={() => handleUpdate(Employee)}>
                                         <EditIcon color="primary" />
@@ -796,14 +783,6 @@ function EmployeeList({isDrawerOpen}) {
                         ))}
                     </TableBody>
                 </Table>
-                {/* <PaginationComponent 
-                    count={filteredEmployees.length}
-                    page={page}
-                    rowsPerPage={rowsPerPage}
-                    handlePageChange={handlePageChange}
-                    handleRowsPerPageChange={handleRowsPerPageChange}
-                /> */}
-                
             </TableContainer>
             <TablePagination
                 rowsPerPageOptions={[10, 25, 100]}
@@ -889,17 +868,17 @@ function EmployeeList({isDrawerOpen}) {
                         ))}
                     </Select>
                     {errors.department && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.department}</Typography>}
-                    {/* <InputLabel id="demo-simple-select-label">Technology</InputLabel>
+                    <InputLabel id="demo-simple-select-label">Technology</InputLabel>
                     <Autocomplete
                         multiple
                         id="technologies-autocomplete"
-                        options={technologies.map((tech) => tech.name)}
-                        value={currentEmployee.technology}
+                        options={(technologies && technologies.length > 0) ? technologies.map((tech) => tech.name) : []}  // Ensure technologies is an array
+                        value={currentEmployee.technology || []}  // Ensure value is always an array
                         onChange={(event, newValue) => {
                             handleChange({
                                 target: {
                                     name: 'technology',
-                                    value: newValue,
+                                    value: newValue || [],  // Ensure newValue is always an array
                                 },
                             });
                         }}
@@ -921,40 +900,7 @@ function EmployeeList({isDrawerOpen}) {
                                 <ListItemText primary={option} />
                             </li>
                         )}
-                    /> */}
-                    <InputLabel id="demo-simple-select-label">Technology</InputLabel>
-<Autocomplete
-    multiple
-    id="technologies-autocomplete"
-    options={(technologies && technologies.length > 0) ? technologies.map((tech) => tech.name) : []}  // Ensure technologies is an array
-    value={currentEmployee.technology || []}  // Ensure value is always an array
-    onChange={(event, newValue) => {
-        handleChange({
-            target: {
-                name: 'technology',
-                value: newValue || [],  // Ensure newValue is always an array
-            },
-        });
-    }}
-    renderInput={(params) => (
-        <TextField
-            {...params}
-            variant="outlined"
-            placeholder="Select technologies"
-            fullWidth
-            error={!!errors.technology}
-        />
-    )}
-    renderOption={(props, option, { selected }) => (
-        <li {...props}>
-            <Checkbox
-                style={{ marginRight: 8 }}
-                checked={selected}
-            />
-            <ListItemText primary={option} />
-        </li>
-    )}
-/>
+                    />
                     {errors.technology && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.technology}</Typography>}
                     <InputLabel>ReportingTo</InputLabel>
                     <Autocomplete

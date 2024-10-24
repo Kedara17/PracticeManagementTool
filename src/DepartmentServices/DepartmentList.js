@@ -3,10 +3,9 @@ import axios from 'axios';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
-import PaginationComponent from '../Components/PaginationComponent'; // Import your PaginationComponent
-import { InputLabel,TablePagination, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
+import { InputLabel, TablePagination, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
 
-function DepartmentList({isDrawerOpen}) {
+function DepartmentList({ isDrawerOpen }) {
     const [departments, setDepartments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -30,7 +29,6 @@ function DepartmentList({isDrawerOpen}) {
     useEffect(() => {
         const fetchDepartments = async () => {
             try {
-                // const deptResponse = await axios.get('http://localhost:5560/api/department');
                 const deptResponse = await axios.get('http://172.17.31.61:5160/api/department');
                 setDepartments(deptResponse.data);
             } catch (error) {
@@ -87,8 +85,6 @@ function DepartmentList({isDrawerOpen}) {
     };
 
     const handleDelete = (id) => {
-        // axios.delete(`http://localhost:5560/api/Department/${id}`)
-        // axios.delete(`http://172.17.31.61:5160/api/department/${id}`)
         axios.patch(`http://172.17.31.61:5160/api/department/${id}`)
             .then(response => {
                 setDepartments(departments.filter(dept => dept.id !== id));
@@ -102,16 +98,16 @@ function DepartmentList({isDrawerOpen}) {
 
     const handleSave = async () => {
         let validationErrors = {};
-       
+
         // Name field validation
         if (!currentDepartment.name.trim()) {
             validationErrors.name = "Name is required";
-        }  else if (currentDepartment.name.length < 3) {
+        } else if (currentDepartment.name.length < 3) {
             validationErrors.name = "Name must be at least 3 characters";
-         } else if (departments.some(dep => dep.name.toLowerCase() === currentDepartment.name.toLowerCase() && dep.id !== currentDepartment.id)) {
+        } else if (departments.some(dep => dep.name.toLowerCase() === currentDepartment.name.toLowerCase() && dep.id !== currentDepartment.id)) {
             validationErrors.name = "Name must be unique";
         }
-        
+
         // If there are validation errors, update the state and prevent save
         if (Object.keys(validationErrors).length > 0) {
             setErrors(validationErrors);
@@ -127,7 +123,6 @@ function DepartmentList({isDrawerOpen}) {
             setDepartments(deptResponse1.data);
 
         } else {
-            // axios.post('http://localhost:5560/api/Department', currentDepartment)
             await axios.post('http://172.17.31.61:5160/api/department', currentDepartment)
             const deptResponse = await axios.get('http://172.17.31.61:5160/api/department');
             setDepartments(deptResponse.data);
@@ -138,15 +133,15 @@ function DepartmentList({isDrawerOpen}) {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setCurrentDepartment({ ...currentDepartment, [name]: value });    
+        setCurrentDepartment({ ...currentDepartment, [name]: value });
         if (name === "name") {
             // Perform validation
             if (!value.trim()) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
-            }  else if (value.length < 3) {
+            } else if (value.length < 3) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
-            } 
-             // Check for uniqueness
+            }
+            // Check for uniqueness
             else if (departments.some(dep => dep.name.toLowerCase() === value.toLowerCase() && dep.id !== currentDepartment.id)) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
             } else if (value.length === 50) {
@@ -155,7 +150,7 @@ function DepartmentList({isDrawerOpen}) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
             }
         }
-    };           
+    };
 
     const handleClose = () => {
         setCurrentDepartment({ name: '' }); // Reset the department fields
@@ -298,69 +293,62 @@ function DepartmentList({isDrawerOpen}) {
                                         <EditIcon color="primary" />
                                     </IconButton>
                                     <IconButton onClick={() => confirmDelete(Department.id)}>
-                                        <DeleteIcon color="error" />
-                                    </IconButton>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-                {/* <PaginationComponent
+                                        <DeleteIcon color="error" />        
+                                     </IconButton>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+                <TablePagination
+                    rowsPerPageOptions={[10, 25, 100]}
+                    component="div"
                     count={filteredDepartments.length}
-                    page={page}
                     rowsPerPage={rowsPerPage}
-                    handlePageChange={handlePageChange}
-                    handleRowsPerPageChange={handleRowsPerPageChange}
-                /> */}
-            </TableContainer>
-            <TablePagination
-                rowsPerPageOptions={[10, 25, 100]}
-                component="div"
-                count={filteredDepartments.length}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                onPageChange={handlePageChange}
-                onRowsPerPageChange={handleRowsPerPageChange}
-            />
-            <Dialog open={open} onClose={() => setOpen(false)}>
-                <DialogTitle>{currentDepartment.id ? 'Update Department' : 'Add Department'}</DialogTitle>
-                <DialogContent>
-                <InputLabel>Name</InputLabel>
-                    <TextField
-                        margin="dense"                       
-                        name="name"
-                        value={currentDepartment.name}
-                        onChange={(e) => {
-                            const value = e.target.value;
-                            if (/^[A-Za-z\s]*$/.test(value))
-                               handleChange(e);
-                        }}                       
-                        fullWidth
-                        error={!!errors.name} // Display error if exists
-                        helperText={errors.name}
-                        inputProps={{maxLength: 50}}
-                    />
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleClose}>Cancel</Button>
-                    <Button onClick={handleSave} color="primary">
-                        {currentDepartment.id ? 'Update' : 'Save'}
-                    </Button>
-                </DialogActions>
-            </Dialog>
+                    page={page}
+                    onPageChange={handlePageChange}
+                    onRowsPerPageChange={handleRowsPerPageChange}
+                />
+                <Dialog open={open} onClose={() => setOpen(false)}>
+                    <DialogTitle>{currentDepartment.id ? 'Update Department' : 'Add Department'}</DialogTitle>
+                    <DialogContent>
+                        <InputLabel>Name</InputLabel>
+                        <TextField
+                            margin="dense"
+                            name="name"
+                            value={currentDepartment.name}
+                            onChange={(e) => {
+                                const value = e.target.value;
+                                if (/^[A-Za-z\s]*$/.test(value))
+                                    handleChange(e);
+                            }}
+                            fullWidth
+                            error={!!errors.name} // Display error if exists
+                            helperText={errors.name}
+                            inputProps={{ maxLength: 50 }}
+                        />
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleClose}>Cancel</Button>
+                        <Button onClick={handleSave} color="primary">
+                            {currentDepartment.id ? 'Update' : 'Save'}
+                        </Button>
+                    </DialogActions>
+                </Dialog>
 
-            <Dialog open={confirmOpen} onClose={handleConfirmClose}>
-                <DialogTitle>Confirm Delete</DialogTitle>
-                <DialogContent>
-                    <Typography>Are you sure you want to delete this Department?</Typography>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleConfirmClose}>No</Button>
-                    <Button onClick={handleConfirmYes} color="error">Yes</Button>
-                </DialogActions>
-            </Dialog>
+                <Dialog open={confirmOpen} onClose={handleConfirmClose}>
+                    <DialogTitle>Confirm Delete</DialogTitle>
+                    <DialogContent>
+                        <Typography>Are you sure you want to delete this Department?</Typography>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleConfirmClose}>No</Button>
+                        <Button onClick={handleConfirmYes} color="error">Yes</Button>
+                    </DialogActions>
+                </Dialog>
+            </div>
         </div>
-    </div>
     );
 }
 

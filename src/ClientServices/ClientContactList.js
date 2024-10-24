@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Select, MenuItem,TablePagination, Table, InputLabel, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
+import { Select, MenuItem, TablePagination, Table, InputLabel, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
@@ -23,7 +23,7 @@ function ClientContactList({ isDrawerOpen }) {
         contactType: ''
     });
 
-    const [order, setOrder] = useState('asc'); // Order of sorting: 'asc' or 'desc'
+    const [order, setOrder] = useState('desc'); // Order of sorting: 'asc' or 'desc'
     const [orderBy, setOrderBy] = useState('createdDate'); // Column to sort by
     const [searchQuery, setSearchQuery] = useState(''); // State for search query
     const [errors, setErrors] = useState({
@@ -36,7 +36,7 @@ function ClientContactList({ isDrawerOpen }) {
     useEffect(() => {
         const fetchClientContacts = async () => {
             try {
-                const clientContactResponse = await axios.get('http://localhost:5542/api/ClientContact');
+                const clientContactResponse = await axios.get('http://172.17.31.61:5142/api/clientContact');
                 setClientContact(clientContactResponse.data);
             } catch (error) {
                 console.error('There was an error fetching the technologies!', error);
@@ -47,7 +47,7 @@ function ClientContactList({ isDrawerOpen }) {
 
         const fetchClient = async () => {
             try {
-                const clientResponse = await axios.get('http://localhost:5542/api/Client');
+                const clientResponse = await axios.get('http://172.17.31.61:5142/api/client');
                 setClient(clientResponse.data);
             } catch (error) {
                 console.error('There was an error fetching the client!', error);
@@ -57,13 +57,13 @@ function ClientContactList({ isDrawerOpen }) {
 
         const fetchContactType = async () => {
             try {
-                const contactTypeResponse = await axios.get('http://localhost:5542/api/ContactType');
+                const contactTypeResponse = await axios.get('http://172.17.31.61:5142/api/contactType');
                 setContactType(contactTypeResponse.data);
             } catch (error) {
                 console.error('There was an error fetching the contactType!', error);
                 setError(error);
             }
-        };    
+        };
 
         fetchClientContacts();
         fetchClient();
@@ -72,8 +72,8 @@ function ClientContactList({ isDrawerOpen }) {
 
 
     const handleSort = (property) => {
-        const isAsc = orderBy === property && order === 'asc';
-        setOrder(isAsc ? 'desc' : 'asc');
+        const isDesc = orderBy === property && order === 'desc';
+        setOrder(isDesc ? 'asc' : 'desc');
         setOrderBy(property);
     };
 
@@ -82,9 +82,17 @@ function ClientContactList({ isDrawerOpen }) {
         const valueB = b[orderBy] || '';
 
         if (typeof valueA === 'string' && typeof valueB === 'string') {
-            return order === 'asc' ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
+            return order === 'desc'
+                ? valueB.localeCompare(valueA)
+                : valueA.localeCompare(valueB);
+        } else if (valueA instanceof Date && valueB instanceof Date) {
+            return order === 'desc'
+                ? valueB - valueA
+                : valueA - valueB;
         } else {
-            return order === 'asc' ? (valueA > valueB ? 1 : -1) : (valueB > valueA ? 1 : -1);
+            return order === 'desc'
+                ? (valueA > valueB ? 1 : -1)
+                : (valueB > valueA ? 1 : -1);
         }
     });
 
@@ -112,8 +120,6 @@ function ClientContactList({ isDrawerOpen }) {
     };
 
     const handleDelete = (id) => {
-        //axios.delete(`http://localhost:5142/api/ClientContact/${id}`)
-        // axios.delete(`http://172.17.31.61:5142/api/clientContact/${id}`)
         axios.patch(`http://172.17.31.61:5142/api/clientContact/${id}`)
             .then(response => {
                 setClientContact(ClientContact.filter(tech => tech.id !== id));
@@ -131,7 +137,8 @@ function ClientContactList({ isDrawerOpen }) {
         // Name field validation
         if (!currentClientContact.contactValue) {
             validationErrors.contactValue = "ContactValue is required";
-        } else if(!currentClientContact.contactValue.length < 3 ) {
+
+        } else if(currentClientContact.contactValue.length < 3 ) {       
             validationErrors.contactValue = "ContactValue must be at least 3 characters";
         }
         else if (ClientContact.some(conval => conval.contactValue.toLowerCase() === currentClientContact.contactValue.toLowerCase() && conval.id !== currentClientContact.id)) {
@@ -164,8 +171,6 @@ function ClientContactList({ isDrawerOpen }) {
         setErrors({});
 
         if (currentClientContact.id) {
-            // Update existing ClientContact
-            //axios.put(`http://localhost:5142/api/ClientContact/${currentClientContact.id}`, currentClientContact)
             axios.put(`http://172.17.31.61:5142/api/clientContact/${currentClientContact.id}`, currentClientContact)
                 .then(response => {
                     console.log(response)
@@ -179,8 +184,6 @@ function ClientContactList({ isDrawerOpen }) {
                 });
 
         } else {
-            // Add new ClientContact
-            //axios.post('http://localhost:5142/api/ClientContact', currentClientContact)
             axios.post('http://172.17.31.61:5142/api/clientContact', currentClientContact)
                 .then(response => {
                     setClientContact([...ClientContact, response.data]);
@@ -201,8 +204,8 @@ function ClientContactList({ isDrawerOpen }) {
             // Check if the name is empty or only whitespace
             if (!value.trim()) {
                 setErrors((prevErrors) => ({ ...prevErrors, contactValue: "" }));
-            }else if(value.length < 3){
-                setErrors((prevErrors) => ({ ...prevErrors, contactValue: ""}))
+            } else if (value.length < 3) {
+                setErrors((prevErrors) => ({ ...prevErrors, contactValue: "" }))
             }
             // Check for uniqueness
             else if (ClientContact.some(conval => conval.contactValue && conval.contactValue.toLowerCase() === value.toLowerCase() && conval.id !== currentClientContact.id)) {
@@ -281,7 +284,7 @@ function ClientContactList({ isDrawerOpen }) {
     }
 
     return (
-        <div style={{ display: 'flex',flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 240 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 240 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
             <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
                 <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>Client Contact Table List</h3>
             </div>
@@ -312,7 +315,7 @@ function ClientContactList({ isDrawerOpen }) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'client'}
-                                    direction={orderBy === 'client' ? order : 'asc'}
+                                    direction={orderBy === 'client' ? order : 'desc'}
                                     onClick={() => handleSort('client')}
                                 >
                                     <b>Client</b>
@@ -321,7 +324,7 @@ function ClientContactList({ isDrawerOpen }) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'contactValue'}
-                                    direction={orderBy === 'contactValue' ? order : 'asc'}
+                                    direction={orderBy === 'contactValue' ? order : 'desc'}
                                     onClick={() => handleSort('contactValue')}
                                 >
                                     <b>ContactValue</b>
@@ -330,7 +333,7 @@ function ClientContactList({ isDrawerOpen }) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'contactType'}
-                                    direction={orderBy === 'contactType' ? order : 'asc'}
+                                    direction={orderBy === 'contactType' ? order : 'desc'}
                                     onClick={() => handleSort('contactType')}
                                 >
                                     <b>ContactType</b>
@@ -339,7 +342,7 @@ function ClientContactList({ isDrawerOpen }) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'isActive'}
-                                    direction={orderBy === 'isActive' ? order : 'asc'}
+                                    direction={orderBy === 'isActive' ? order : 'desc'}
                                     onClick={() => handleSort('isActive')}
                                 >
                                     <b>Is Active</b>
@@ -348,7 +351,7 @@ function ClientContactList({ isDrawerOpen }) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'createdBy'}
-                                    direction={orderBy === 'createdBy' ? order : 'asc'}
+                                    direction={orderBy === 'createdBy' ? order : 'desc'}
                                     onClick={() => handleSort('createdBy')}
                                 >
                                     <b>Created By</b>
@@ -357,7 +360,7 @@ function ClientContactList({ isDrawerOpen }) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'createdDate'}
-                                    direction={orderBy === 'createdDate' ? order : 'asc'}
+                                    direction={orderBy === 'createdDate' ? order : 'desc'}
                                     onClick={() => handleSort('createdDate')}
                                 >
                                     <b>Created Date</b>
@@ -366,7 +369,7 @@ function ClientContactList({ isDrawerOpen }) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'updatedBy'}
-                                    direction={orderBy === 'updatedBy' ? order : 'asc'}
+                                    direction={orderBy === 'updatedBy' ? order : 'desc'}
                                     onClick={() => handleSort('updatedBy')}
                                 >
                                     <b>Updated By</b>
@@ -375,7 +378,7 @@ function ClientContactList({ isDrawerOpen }) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'updatedDate'}
-                                    direction={orderBy === 'updatedDate' ? order : 'asc'}
+                                    direction={orderBy === 'updatedDate' ? order : 'desc'}
                                     onClick={() => handleSort('updatedDate')}
                                 >
                                     <b>Updated Date</b>
@@ -388,13 +391,12 @@ function ClientContactList({ isDrawerOpen }) {
                         {filteredClientContact.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((ClientContact) => (
                             <TableRow key={ClientContact.id}
                                 sx={{ backgroundColor: ClientContact.isActive ? 'inherit' : '#FFCCCB' }} >
-                                {/* <TableCell>{ClientContact.id}</TableCell> */}
                                 <TableCell>{ClientContact.client}</TableCell>
                                 <TableCell>{ClientContact.contactValue}</TableCell>
                                 <TableCell>{ClientContact.contactType}</TableCell>
                                 <TableCell>{ClientContact.isActive ? 'Active' : 'Inactive'}</TableCell>
                                 <TableCell>{ClientContact.createdBy}</TableCell>
-                                <TableCell>{new Date(ClientContact.createdDate).toLocaleString()}</TableCell>
+                                <TableCell>{ClientContact.createdDate}</TableCell>
                                 <TableCell>{ClientContact.updatedBy || 'N/A'}</TableCell>
                                 <TableCell>{ClientContact.updatedDate ? new Date(ClientContact.updatedDate).toLocaleString() : 'N/A'}</TableCell>
                                 <TableCell >
@@ -409,14 +411,6 @@ function ClientContactList({ isDrawerOpen }) {
                         ))}
                     </TableBody>
                 </Table>
-                {/* Pagination Component */}
-                {/* <PaginationComponent
-                    count={filteredClientContact.length}
-                    page={page}
-                    rowsPerPage={rowsPerPage}
-                    handlePageChange={handlePageChange}
-                    handleRowsPerPageChange={handleRowsPerPageChange}
-                /> */}
             </TableContainer>
             <TablePagination
                 rowsPerPageOptions={[10, 25, 100]}

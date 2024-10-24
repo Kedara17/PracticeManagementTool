@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Select,TablePagination, MenuItem, Table, InputLabel, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
+import { Select, TablePagination, MenuItem, Table, InputLabel, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
-import PaginationComponent from '../Components/PaginationComponent'; // Import your PaginationComponent
 
-function SOWProposedTeamList({isDrawerOpen}) {
+function SOWProposedTeamList({ isDrawerOpen }) {
     const [SOWProposedTeams, setSOWProposedTeams] = useState([]);
     const [SOWRequirements, setSOWRequirements] = useState([]);
     const [Employees, setEmployees] = useState([]);
@@ -21,7 +20,7 @@ function SOWProposedTeamList({isDrawerOpen}) {
         sowRequirement: '',
         employee: ''
     });
-    const [order, setOrder] = useState('asc'); // Order of sorting: 'asc' or 'desc'
+    const [order, setOrder] = useState('desc'); // Order of sorting: 'asc' or 'desc'
     const [orderBy, setOrderBy] = useState('createdDate'); // Column to sort by
     const [searchQuery, setSearchQuery] = useState(''); // State for search query
     const [errors, setErrors] = useState({
@@ -39,7 +38,6 @@ function SOWProposedTeamList({isDrawerOpen}) {
     useEffect(() => {
         const fetchSOWProposedTeam = async () => {
             try {
-                // const sowProTeamResponse = await axios.get('http://localhost:5041/api/sowProposedTeam');
                 const sowProTeamResponse = await axios.get('http://172.17.31.61:5041/api/sowProposedTeam');
                 setSOWProposedTeams(sowProTeamResponse.data);
             } catch (error) {
@@ -51,7 +49,6 @@ function SOWProposedTeamList({isDrawerOpen}) {
 
         const fetchSOWRequirements = async () => {
             try {
-                // const sowReqResponse = await axios.get('http://localhost:5041/api/SOWRequirement');
                 const sowReqResponse = await axios.get('http://172.17.31.61:5041/api/sowRequirement');
                 setSOWRequirements(sowReqResponse.data);
             } catch (error) {
@@ -62,7 +59,6 @@ function SOWProposedTeamList({isDrawerOpen}) {
 
         const fetchEmployees = async () => {
             try {
-                // const empResponse = await axios.get('http://localhost:5033/api/Employee');
                 const empResponse = await axios.get('http://172.17.31.61:5033/api/employee');
                 setEmployees(empResponse.data);
             } catch (error) {
@@ -77,8 +73,8 @@ function SOWProposedTeamList({isDrawerOpen}) {
     }, []);
 
     const handleSort = (property) => {
-        const isAsc = orderBy === property && order === 'asc';
-        setOrder(isAsc ? 'desc' : 'asc');
+        const isAsc = orderBy === property && order === 'desc';
+        setOrder(isAsc ? 'asc' : 'desc');
         setOrderBy(property);
     };
 
@@ -87,9 +83,17 @@ function SOWProposedTeamList({isDrawerOpen}) {
         const valueB = b[orderBy] || '';
 
         if (typeof valueA === 'string' && typeof valueB === 'string') {
-            return order === 'asc' ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
+            return order === 'desc'
+                ? valueB.localeCompare(valueA)
+                : valueA.localeCompare(valueB);
+        } else if (valueA instanceof Date && valueB instanceof Date) {
+            return order === 'desc'
+                ? valueB - valueA
+                : valueA - valueB;
         } else {
-            return order === 'asc' ? (valueA > valueB ? 1 : -1) : (valueB > valueA ? 1 : -1);
+            return order === 'desc'
+                ? (valueA > valueB ? 1 : -1)
+                : (valueB > valueA ? 1 : -1);
         }
     });
 
@@ -116,8 +120,6 @@ function SOWProposedTeamList({isDrawerOpen}) {
     };
 
     const handleDelete = (id) => {
-        //axios.delete(`http://localhost:5041/api/SOWProposedTeam/${id}`)
-        // axios.delete(`http://172.17.31.61:5041/api/sowProposedTeam/${id}`)
         axios.patch(`http://172.17.31.61:5041/api/sowProposedTeam/${id}`)
             .then(response => {
                 setSOWProposedTeams(SOWProposedTeams.filter(tech => tech.id !== id));
@@ -150,13 +152,8 @@ function SOWProposedTeamList({isDrawerOpen}) {
         setErrors({});
 
         if (currentSOWProposedTeam.id) {
-            // Update existing SOWProposedTeam
-            //axios.put(`http://localhost:5041/api/SOWProposedTeam/${currentSOWProposedTeam.id}`, currentSOWProposedTeam)
             axios.put(`http://172.17.31.61:5041/api/sowProposedTeam/${currentSOWProposedTeam.id}`, currentSOWProposedTeam)
                 .then(response => {
-                    console.log(response)
-                    //setSOWProposedTeams([...SOWProposedTeams, response.data]);
-                    // setSOWProposedTeams(response.data);
                     setSOWProposedTeams(SOWProposedTeams.map(tech => tech.id === currentSOWProposedTeam.id ? response.data : tech));
                 })
                 .catch(error => {
@@ -165,8 +162,6 @@ function SOWProposedTeamList({isDrawerOpen}) {
                 });
 
         } else {
-            // Add new SOWProposedTeam
-            //axios.post('http://localhost:5041/api/SOWProposedTeam', currentSOWProposedTeam)
             axios.post('http://172.17.31.61:5041/api/sowProposedTeam', currentSOWProposedTeam)
                 .then(response => {
                     setSOWProposedTeams([...SOWProposedTeams, response.data]);
@@ -232,7 +227,7 @@ function SOWProposedTeamList({isDrawerOpen}) {
     }
 
     return (
-        <div style={{ display: 'flex',flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 240 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 240 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
             <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
                 <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>SOW Proposed Team Table List</h3>
             </div>
@@ -259,11 +254,10 @@ function SOWProposedTeamList({isDrawerOpen}) {
                 <Table>
                     <TableHead>
                         <TableRow>
-                            {/* <TableCell>ID</TableCell> */}
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'sowRequirement'}
-                                    direction={orderBy === 'sowRequirement' ? order : 'asc'}
+                                    direction={orderBy === 'sowRequirement' ? order : 'desc'}
                                     onClick={() => handleSort('sowRequirement')}
                                 >
                                     <b>SOWRequirement</b>
@@ -272,7 +266,7 @@ function SOWProposedTeamList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'employee'}
-                                    direction={orderBy === 'employee' ? order : 'asc'}
+                                    direction={orderBy === 'employee' ? order : 'desc'}
                                     onClick={() => handleSort('employee')}
                                 >
                                     <b>Employee</b>
@@ -281,7 +275,7 @@ function SOWProposedTeamList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'isActive'}
-                                    direction={orderBy === 'isActive' ? order : 'asc'}
+                                    direction={orderBy === 'isActive' ? order : 'desc'}
                                     onClick={() => handleSort('isActive')}
                                 >
                                     <b>Is Active</b>
@@ -290,7 +284,7 @@ function SOWProposedTeamList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'createdBy'}
-                                    direction={orderBy === 'createdBy' ? order : 'asc'}
+                                    direction={orderBy === 'createdBy' ? order : 'desc'}
                                     onClick={() => handleSort('createdBy')}
                                 >
                                     <b>Created By</b>
@@ -299,7 +293,7 @@ function SOWProposedTeamList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'createdDate'}
-                                    direction={orderBy === 'createdDate' ? order : 'asc'}
+                                    direction={orderBy === 'createdDate' ? order : 'desc'}
                                     onClick={() => handleSort('createdDate')}
                                 >
                                     <b>Created Date</b>
@@ -308,7 +302,7 @@ function SOWProposedTeamList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'updatedBy'}
-                                    direction={orderBy === 'updatedBy' ? order : 'asc'}
+                                    direction={orderBy === 'updatedBy' ? order : 'desc'}
                                     onClick={() => handleSort('updatedBy')}
                                 >
                                     <b>Updated By</b>
@@ -317,7 +311,7 @@ function SOWProposedTeamList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'updatedDate'}
-                                    direction={orderBy === 'updatedDate' ? order : 'asc'}
+                                    direction={orderBy === 'updatedDate' ? order : 'desc'}
                                     onClick={() => handleSort('updatedDate')}
                                 >
                                     <b>Updated Date</b>
@@ -330,14 +324,13 @@ function SOWProposedTeamList({isDrawerOpen}) {
                         {filteredSOWProposedTeams.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((SOWProposedTeam) => (
                             <TableRow key={SOWProposedTeam.id}
                                 sx={{ backgroundColor: SOWProposedTeam.isActive ? 'inherit' : '#FFCCCB' }} >
-                                {/* <TableCell>{SOWProposedTeam.id}</TableCell> */}
                                 <TableCell>{SOWProposedTeam.sowRequirement}</TableCell>
                                 <TableCell>{SOWProposedTeam.employee}</TableCell>
                                 <TableCell>{SOWProposedTeam.isActive ? 'Active' : 'Inactive'}</TableCell>
                                 <TableCell>{SOWProposedTeam.createdBy}</TableCell>
-                                <TableCell>{new Date(SOWProposedTeam.createdDate).toLocaleString()}</TableCell>
+                                <TableCell>{SOWProposedTeam.createdDate}</TableCell>
                                 <TableCell>{SOWProposedTeam.updatedBy || 'N/A'}</TableCell>
-                                <TableCell>{new Date(SOWProposedTeam.updatedDate).toLocaleString() || 'N/A'}</TableCell>
+                                <TableCell>{SOWProposedTeam.updatedDate || 'N/A'}</TableCell>
                                 <TableCell >
                                     <IconButton onClick={() => handleUpdate(SOWProposedTeam)}>
                                         <EditIcon color="primary" />
@@ -350,13 +343,6 @@ function SOWProposedTeamList({isDrawerOpen}) {
                         ))}
                     </TableBody>
                 </Table>
-                {/* <PaginationComponent
-                    count={filteredSOWProposedTeams.length}
-                    page={page}
-                    rowsPerPage={rowsPerPage}
-                    handlePageChange={handlePageChange}
-                    handleRowsPerPageChange={handleRowsPerPageChange}
-                /> */}
             </TableContainer>
             <TablePagination
                 rowsPerPageOptions={[10, 25, 100]}

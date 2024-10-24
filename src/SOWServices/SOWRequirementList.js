@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Autocomplete,TablePagination, Checkbox, ListItemText, Select, MenuItem, Table, InputLabel, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
+import { Autocomplete, TablePagination, Checkbox, ListItemText, Select, MenuItem, Table, InputLabel, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
-import PaginationComponent from '../Components/PaginationComponent'; // Import your PaginationComponent
 
-function SOWRequirementList({isDrawerOpen}) {
+function SOWRequirementList({ isDrawerOpen }) {
     const [SOWRequirements, setSOWRequirements] = useState([]);
     const [SOWs, setSOWs] = useState([]);
     const [Designations, setDesignations] = useState([]);
@@ -25,7 +24,7 @@ function SOWRequirementList({isDrawerOpen}) {
         teamSize: '',
         technology: []
     });
-    const [order, setOrder] = useState('asc'); // Order of sorting: 'asc' or 'desc'
+    const [order, setOrder] = useState('desc'); // Order of sorting: 'asc' or 'desc'
     const [orderBy, setOrderBy] = useState('createdDate'); // Column to sort by
     const [searchQuery, setSearchQuery] = useState(''); // State for search query
     const [errors, setErrors] = useState({
@@ -68,7 +67,6 @@ function SOWRequirementList({isDrawerOpen}) {
         };
         const fetchTechnologies = async () => {
             try {
-                // const techResponse = await axios.get('http://localhost:5574/api/Technology');
                 const techResponse = await axios.get('http://172.17.31.61:5274/api/technology');
                 setTechnologies(techResponse.data);
             } catch (error) {
@@ -86,8 +84,8 @@ function SOWRequirementList({isDrawerOpen}) {
 
 
     const handleSort = (property) => {
-        const isAsc = orderBy === property && order === 'asc';
-        setOrder(isAsc ? 'desc' : 'asc');
+        const isDesc = orderBy === property && order === 'desc';
+        setOrder(isDesc ? 'asc' : 'desc');
         setOrderBy(property);
     };
 
@@ -96,9 +94,17 @@ function SOWRequirementList({isDrawerOpen}) {
         const valueB = b[orderBy] || '';
 
         if (typeof valueA === 'string' && typeof valueB === 'string') {
-            return order === 'asc' ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
+            return order === 'desc'
+                ? valueB.localeCompare(valueA)
+                : valueA.localeCompare(valueB);
+        } else if (valueA instanceof Date && valueB instanceof Date) {
+            return order === 'desc'
+                ? valueB - valueA
+                : valueA - valueB;
         } else {
-            return order === 'asc' ? (valueA > valueB ? 1 : -1) : (valueB > valueA ? 1 : -1);
+            return order === 'desc'
+                ? (valueA > valueB ? 1 : -1)
+                : (valueB > valueA ? 1 : -1);
         }
     });
 
@@ -128,8 +134,6 @@ function SOWRequirementList({isDrawerOpen}) {
     };
 
     const handleDelete = (id) => {
-        //axios.delete(`http://localhost:5041/api/SOWRequirement/${id}`)
-        // axios.delete(`http://172.17.31.61:5041/api/sowRequirement/${id}`)
         axios.patch(`http://172.17.31.61:5041/api/sowRequirement/${id}`)
             .then(response => {
                 setSOWRequirements(SOWRequirements.filter(tech => tech.id !== id));
@@ -142,7 +146,7 @@ function SOWRequirementList({isDrawerOpen}) {
     };
 
     const handleSave = async () => {
-        setFormSubmitted(true); 
+        setFormSubmitted(true);
         let validationErrors = {};
 
         // Name field validation
@@ -177,15 +181,10 @@ function SOWRequirementList({isDrawerOpen}) {
         };
 
         if (currentSOWRequirement.id) {
-            // Update existing SOWRequirement
-            //axios.put(`http://localhost:5041/api/SOWRequirement/${currentSOWRequirement.id}`, currentSOWRequirement)
-            // axios.put(`http://172.17.31.61:5041/api/sowRequirement/${currentSOWRequirement.id}`, currentSOWRequirement)           
             const response = await axios.put(`http://172.17.31.61:5041/api/sowRequirement/${currentSOWRequirement.id}`, sowReqToSave);
             setSOWRequirements(SOWRequirements.map(tech => tech.id === currentSOWRequirement.id ? response.data : tech));
 
         } else {
-            // Add new SOWRequirement
-            //axios.post('http://localhost:5041/api/SOWRequirement', currentSOWRequirement)
             const response = axios.post('http://172.17.31.61:5041/api/sowRequirement', sowReqToSave);
             setSOWRequirements([...SOWRequirements, response.data]);
         }
@@ -213,7 +212,7 @@ function SOWRequirementList({isDrawerOpen}) {
             if (value) {
                 setErrors((prevErrors) => ({ ...prevErrors, technology: "" }));
             }
-        }  
+        }
         if (name === "teamSize") {
             if (value) {
                 setErrors((prevErrors) => ({ ...prevErrors, teamSize: "" }));
@@ -265,7 +264,7 @@ function SOWRequirementList({isDrawerOpen}) {
     }
 
     return (
-        <div style={{ display: 'flex',flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 240 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 240 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
             <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
                 <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>SOW Requirement Table List</h3>
             </div>
@@ -295,7 +294,7 @@ function SOWRequirementList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'sow'}
-                                    direction={orderBy === 'sow' ? order : 'asc'}
+                                    direction={orderBy === 'sow' ? order : 'desc'}
                                     onClick={() => handleSort('sow')}
                                 >
                                     <b>SOW</b>
@@ -304,7 +303,7 @@ function SOWRequirementList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'designation'}
-                                    direction={orderBy === 'designation' ? order : 'asc'}
+                                    direction={orderBy === 'designation' ? order : 'desc'}
                                     onClick={() => handleSort('designation')}
                                 >
                                     <b>Designation</b>
@@ -313,7 +312,7 @@ function SOWRequirementList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'teamSize'}
-                                    direction={orderBy === 'teamSize' ? order : 'asc'}
+                                    direction={orderBy === 'teamSize' ? order : 'desc'}
                                     onClick={() => handleSort('teamSize')}
                                 >
                                     <b>TeamSize</b>
@@ -322,7 +321,7 @@ function SOWRequirementList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'isActive'}
-                                    direction={orderBy === 'isActive' ? order : 'asc'}
+                                    direction={orderBy === 'isActive' ? order : 'desc'}
                                     onClick={() => handleSort('isActive')}
                                 >
                                     <b>Is Active</b>
@@ -331,7 +330,7 @@ function SOWRequirementList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'createdBy'}
-                                    direction={orderBy === 'createdBy' ? order : 'asc'}
+                                    direction={orderBy === 'createdBy' ? order : 'desc'}
                                     onClick={() => handleSort('createdBy')}
                                 >
                                     <b>Created By</b>
@@ -340,7 +339,7 @@ function SOWRequirementList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'createdDate'}
-                                    direction={orderBy === 'createdDate' ? order : 'asc'}
+                                    direction={orderBy === 'createdDate' ? order : 'desc'}
                                     onClick={() => handleSort('createdDate')}
                                 >
                                     <b>Created Date</b>
@@ -349,7 +348,7 @@ function SOWRequirementList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'updatedBy'}
-                                    direction={orderBy === 'updatedBy' ? order : 'asc'}
+                                    direction={orderBy === 'updatedBy' ? order : 'desc'}
                                     onClick={() => handleSort('updatedBy')}
                                 >
                                     <b>Updated By</b>
@@ -358,7 +357,7 @@ function SOWRequirementList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'updatedDate'}
-                                    direction={orderBy === 'updatedDate' ? order : 'asc'}
+                                    direction={orderBy === 'updatedDate' ? order : 'desc'}
                                     onClick={() => handleSort('updatedDate')}
                                 >
                                     <b>Updated Date</b>
@@ -371,15 +370,14 @@ function SOWRequirementList({isDrawerOpen}) {
                         {filteredSOWRequirements.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((SOWRequirement) => (
                             <TableRow key={SOWRequirement.id}
                                 sx={{ backgroundColor: SOWRequirement.isActive ? 'inherit' : '#FFCCCB' }} >
-                                {/* <TableCell>{SOWRequirement.id}</TableCell> */}
                                 <TableCell>{SOWRequirement.sow}</TableCell>
                                 <TableCell>{SOWRequirement.designation}</TableCell>
                                 <TableCell>{SOWRequirement.teamSize}</TableCell>
                                 <TableCell>{SOWRequirement.isActive ? 'Active' : 'Inactive'}</TableCell>
                                 <TableCell>{SOWRequirement.createdBy}</TableCell>
-                                <TableCell>{new Date(SOWRequirement.createdDate).toLocaleString()}</TableCell>
+                                <TableCell>{SOWRequirement.createdDate}</TableCell>
                                 <TableCell>{SOWRequirement.updatedBy || 'N/A'}</TableCell>
-                                <TableCell>{new Date(SOWRequirement.updatedDate).toLocaleString() || 'N/A'}</TableCell>
+                                <TableCell>{SOWRequirement.updatedDate || 'N/A'}</TableCell>
                                 <TableCell >
                                     <IconButton onClick={() => handleUpdate(SOWRequirement)}>
                                         <EditIcon color="primary" />
@@ -392,13 +390,6 @@ function SOWRequirementList({isDrawerOpen}) {
                         ))}
                     </TableBody>
                 </Table>
-                {/* <PaginationComponent
-                    count={filteredSOWRequirements.length}
-                    page={page}
-                    rowsPerPage={rowsPerPage}
-                    handlePageChange={handlePageChange}
-                    handleRowsPerPageChange={handleRowsPerPageChange}
-                /> */}
             </TableContainer>
             <TablePagination
                 rowsPerPageOptions={[10, 25, 100]}
@@ -436,7 +427,7 @@ function SOWRequirementList({isDrawerOpen}) {
                         onChange={handleChange}
                         fullWidth
                         error={!!errors.designation}
-                        inputProps={{maxLength: 36}}
+                        inputProps={{ maxLength: 36 }}
                     >
                         {Designations.map((designation) => (
                             <MenuItem key={designation.id} value={designation.name}>
@@ -465,7 +456,7 @@ function SOWRequirementList({isDrawerOpen}) {
                                 variant="outlined"
                                 placeholder="Select technologies"
                                 fullWidth
-                                error={!!errors.technology && formSubmitted} 
+                                error={!!errors.technology && formSubmitted}
                             />
                         )}
                         renderOption={(props, option, { selected }) => (
@@ -482,15 +473,16 @@ function SOWRequirementList({isDrawerOpen}) {
 
                     <InputLabel>TeamSize</InputLabel>
                     <TextField
-                    type='text'
+                        type='text'
                         margin="dense"
                         name="teamSize"
                         value={currentSOWRequirement.teamSize}
-                        onChange={(e)=>{
+                        onChange={(e) => {
                             const value = e.target.value;
-                            if(/^\d*$/.test(value)){
+                            if (/^\d*$/.test(value)) {
                                 handleChange(e);
-                        }}}
+                            }
+                        }}
                         fullWidth
                         error={!!errors.teamSize} // Display error if exists
                         helperText={errors.teamSize}

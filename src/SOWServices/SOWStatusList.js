@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Table,TablePagination, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment, InputLabel } from '@mui/material';
+import { Table, TablePagination, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment, InputLabel } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
-import PaginationComponent from '../Components/PaginationComponent'; // Import your PaginationComponent
 
-function SOWStatusList({isDrawerOpen}) {
+function SOWStatusList({ isDrawerOpen }) {
     const [SOWStatus, setSOWStatus] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -18,7 +17,7 @@ function SOWStatusList({isDrawerOpen}) {
     const [currentSOWStatus, setCurrentSOWStatus] = useState({
         status: ''
     });
-    const [order, setOrder] = useState('asc'); // Order of sorting: 'asc' or 'desc'
+    const [order, setOrder] = useState('desc'); // Order of sorting: 'asc' or 'desc'
     const [orderBy, setOrderBy] = useState('createdDate'); // Column to sort by
     const [searchQuery, setSearchQuery] = useState(''); // State for search query
     const [errors, setErrors] = useState({
@@ -42,8 +41,8 @@ function SOWStatusList({isDrawerOpen}) {
     }, []);
 
     const handleSort = (property) => {
-        const isAsc = orderBy === property && order === 'asc';
-        setOrder(isAsc ? 'desc' : 'asc');
+        const isDesc = orderBy === property && order === 'desc';
+        setOrder(isDesc ? 'asc' : 'desc');
         setOrderBy(property);
     };
 
@@ -52,9 +51,17 @@ function SOWStatusList({isDrawerOpen}) {
         const valueB = b[orderBy] || '';
 
         if (typeof valueA === 'string' && typeof valueB === 'string') {
-            return order === 'asc' ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
+            return order === 'desc'
+                ? valueB.localeCompare(valueA)
+                : valueA.localeCompare(valueB);
+        } else if (valueA instanceof Date && valueB instanceof Date) {
+            return order === 'desc'
+                ? valueB - valueA
+                : valueA - valueB;
         } else {
-            return order === 'asc' ? (valueA > valueB ? 1 : -1) : (valueB > valueA ? 1 : -1);
+            return order === 'desc'
+                ? (valueA > valueB ? 1 : -1)
+                : (valueB > valueA ? 1 : -1);
         }
     });
 
@@ -78,7 +85,6 @@ function SOWStatusList({isDrawerOpen}) {
     };
 
     const handleDelete = (id) => {
-        //axios.delete(`http://localhost:5041/api/SOWStatus/${id}`)
         axios.delete(`http://172.17.31.61:5041/api/sowstatus/${id}`)
             .then(response => {
                 setSOWStatus(SOWStatus.filter(tech => tech.id !== id));
@@ -96,7 +102,7 @@ function SOWStatusList({isDrawerOpen}) {
         // Name field validation
         if (!currentSOWStatus.status.trim()) {
             validationErrors.status = "Status is required";
-        } else if(!currentSOWStatus.status.length < 3){
+        } else if(currentSOWStatus.status.length < 3){       
             validationErrors.status = "Status must be atleast 3 characters";
         }
         else if (SOWStatus.some(stat => stat.status === currentSOWStatus.status && stat.id !== currentSOWStatus.id)) {
@@ -113,8 +119,6 @@ function SOWStatusList({isDrawerOpen}) {
         setErrors({});
 
         if (currentSOWStatus.id) {
-            // Update existing SOWStatus
-            //axios.put(`http://localhost:5041/api/SOWStatus/${currentSOWStatus.id}`, currentSOWStatus)
             axios.put(`http://172.17.31.61:5041/api/sowstatus/${currentSOWStatus.id}`, currentSOWStatus)
                 .then(response => {
                     //setSOWStatuss([...SOWStatuss, response.data]);
@@ -126,8 +130,6 @@ function SOWStatusList({isDrawerOpen}) {
                 });
 
         } else {
-            // Add new SOWStatus
-            //axios.post('http://localhost:5041/api/SOWStatus', currentSOWStatus)
             axios.post('http://172.17.31.61:5041/api/sowstatus', currentSOWStatus)
                 .then(response => {
                     setSOWStatus([...SOWStatus, response.data]);
@@ -140,16 +142,16 @@ function SOWStatusList({isDrawerOpen}) {
         setOpen(false);
 
     };
-  
+
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setCurrentSOWStatus({ ...currentSOWStatus, [name]: value });    
+        setCurrentSOWStatus({ ...currentSOWStatus, [name]: value });
         if (name === "status") {
             // Check if the name is empty or only whitespace
             if (!value.trim()) {
                 setErrors((prevErrors) => ({ ...prevErrors, status: "" }));
-            } else if(value.length < 3) {
-                setErrors((prevErrors) => ({ ...prevErrors, status: ""}))
+            } else if (value.length < 3) {
+                setErrors((prevErrors) => ({ ...prevErrors, status: "" }))
             }
             // Check for uniqueness
             else if (SOWStatus.some(stat => stat.name === value && stat.id !== currentSOWStatus.id)) {
@@ -161,7 +163,7 @@ function SOWStatusList({isDrawerOpen}) {
             else {
                 setErrors((prevErrors) => ({ ...prevErrors, status: "" }));
             }
-        }   
+        }
     };
 
     const handleClose = () => {
@@ -200,7 +202,7 @@ function SOWStatusList({isDrawerOpen}) {
     }
 
     return (
-        <div style={{ display: 'flex',flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 240 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 240 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
             <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
                 <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>SOW Status Table List</h3>
             </div>
@@ -230,7 +232,7 @@ function SOWStatusList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'status'}
-                                    direction={orderBy === 'status' ? order : 'asc'}
+                                    direction={orderBy === 'status' ? order : 'desc'}
                                     onClick={() => handleSort('status')}
                                 >
                                     <b>Status</b>
@@ -239,7 +241,7 @@ function SOWStatusList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'isActive'}
-                                    direction={orderBy === 'isActive' ? order : 'asc'}
+                                    direction={orderBy === 'isActive' ? order : 'desc'}
                                     onClick={() => handleSort('isActive')}
                                 >
                                     <b>Is Active</b>
@@ -248,7 +250,7 @@ function SOWStatusList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'createdBy'}
-                                    direction={orderBy === 'createdBy' ? order : 'asc'}
+                                    direction={orderBy === 'createdBy' ? order : 'desc'}
                                     onClick={() => handleSort('createdBy')}
                                 >
                                     <b>Created By</b>
@@ -257,7 +259,7 @@ function SOWStatusList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'createdDate'}
-                                    direction={orderBy === 'createdDate' ? order : 'asc'}
+                                    direction={orderBy === 'createdDate' ? order : 'desc'}
                                     onClick={() => handleSort('createdDate')}
                                 >
                                     <b>Created Date</b>
@@ -266,7 +268,7 @@ function SOWStatusList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'updatedBy'}
-                                    direction={orderBy === 'updatedBy' ? order : 'asc'}
+                                    direction={orderBy === 'updatedBy' ? order : 'desc'}
                                     onClick={() => handleSort('updatedBy')}
                                 >
                                     <b>Updated By</b>
@@ -275,7 +277,7 @@ function SOWStatusList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'updatedDate'}
-                                    direction={orderBy === 'updatedDate' ? order : 'asc'}
+                                    direction={orderBy === 'updatedDate' ? order : 'desc'}
                                     onClick={() => handleSort('updatedDate')}
                                 >
                                     <b>Updated Date</b>
@@ -287,13 +289,12 @@ function SOWStatusList({isDrawerOpen}) {
                     <TableBody>
                         {filteredSOWStatus.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((SOWStatus) => (
                             <TableRow key={SOWStatus.id}>
-                                {/* <TableCell>{SOWStatus.id}</TableCell> */}
                                 <TableCell>{SOWStatus.status}</TableCell>
                                 <TableCell>{SOWStatus.isActive ? 'Active' : 'Inactive'}</TableCell>
                                 <TableCell>{SOWStatus.createdBy}</TableCell>
-                                <TableCell>{new Date(SOWStatus.createdDate).toLocaleString()}</TableCell>
+                                <TableCell>{SOWStatus.createdDate}</TableCell>
                                 <TableCell>{SOWStatus.updatedBy || 'N/A'}</TableCell>
-                                <TableCell>{SOWStatus.updatedDate ? new Date(SOWStatus.updatedDate).toLocaleString() : 'N/A'}</TableCell>
+                                <TableCell>{SOWStatus.updatedDate || 'N/A'}</TableCell>
                                 <TableCell >
                                     <IconButton onClick={() => handleUpdate(SOWStatus)}>
                                         <EditIcon color="primary" />
@@ -306,13 +307,6 @@ function SOWStatusList({isDrawerOpen}) {
                         ))}
                     </TableBody>
                 </Table>
-                {/* <PaginationComponent
-                    count={filteredSOWStatus.length}
-                    page={page}
-                    rowsPerPage={rowsPerPage}
-                    handlePageChange={handlePageChange}
-                    handleRowsPerPageChange={handleRowsPerPageChange}
-                /> */}
             </TableContainer>
             <TablePagination
                 rowsPerPageOptions={[10, 25, 100]}
@@ -339,7 +333,7 @@ function SOWStatusList({isDrawerOpen}) {
                         fullWidth
                         error={!!errors.status} // Display error if exists
                         helperText={errors.status}
-                        inputProps={{maxLength: 50}}
+                        inputProps={{ maxLength: 50 }}
                     />
                 </DialogContent>
                 <DialogActions>

@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Table,TablePagination, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment, InputLabel } from '@mui/material';
+import { Table, TablePagination, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment, InputLabel } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
-import PaginationComponent from '../Components/PaginationComponent'; // Import your PaginationComponent
 
-function InterviewStatusList({isDrawerOpen}) {
+function InterviewStatusList({ isDrawerOpen }) {
     const [InterviewStatus, setInterviewStatus] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -18,7 +17,7 @@ function InterviewStatusList({isDrawerOpen}) {
     const [currentInterviewStatus, setCurrentInterviewStatus] = useState({
         status: ''
     });
-    const [order, setOrder] = useState('asc'); // Order of sorting: 'asc' or 'desc'
+    const [order, setOrder] = useState('desc'); // Order of sorting: 'asc' or 'desc'
     const [orderBy, setOrderBy] = useState('createdDate'); // Column to sort by
     const [searchQuery, setSearchQuery] = useState(''); // State for search query
     const [errors, setErrors] = useState({
@@ -42,8 +41,8 @@ function InterviewStatusList({isDrawerOpen}) {
     }, []);
 
     const handleSort = (property) => {
-        const isAsc = orderBy === property && order === 'asc';
-        setOrder(isAsc ? 'desc' : 'asc');
+        const isDesc = orderBy === property && order === 'desc';
+        setOrder(isDesc ? 'asc' : 'desc');
         setOrderBy(property);
     };
 
@@ -52,9 +51,17 @@ function InterviewStatusList({isDrawerOpen}) {
         const valueB = b[orderBy] || '';
 
         if (typeof valueA === 'string' && typeof valueB === 'string') {
-            return order === 'asc' ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
+            return order === 'desc'
+                ? valueB.localeCompare(valueA)
+                : valueA.localeCompare(valueB);
+        } else if (valueA instanceof Date && valueB instanceof Date) {
+            return order === 'desc'
+                ? valueB - valueA
+                : valueA - valueB;
         } else {
-            return order === 'asc' ? (valueA > valueB ? 1 : -1) : (valueB > valueA ? 1 : -1);
+            return order === 'desc'
+                ? (valueA > valueB ? 1 : -1)
+                : (valueB > valueA ? 1 : -1);
         }
     });
 
@@ -77,8 +84,6 @@ function InterviewStatusList({isDrawerOpen}) {
     };
 
     const handleDelete = (id) => {
-        //axios.delete(`http://localhost:5200/api/InterviewStatus/${id}`)
-        // axios.delete(`http://172.17.31.61:5200/api/interviewStatus/${id}`)
         axios.patch(`http://172.17.31.61:5200/api/interviewStatus/${id}`)
             .then(response => {
                 setInterviewStatus(InterviewStatus.filter(tech => tech.id !== id));
@@ -95,7 +100,8 @@ function InterviewStatusList({isDrawerOpen}) {
 
         if (!currentInterviewStatus.status.trim()) {
             validationErrors.status = "Status is required";
-        }else if(!currentInterviewStatus.status.length < 3) {
+
+        }else if(currentInterviewStatus.status.length < 3) {
             validationErrors.status = "Status must be atleast 3 characters";
         }
 
@@ -109,13 +115,8 @@ function InterviewStatusList({isDrawerOpen}) {
         setErrors({});
 
         if (currentInterviewStatus.id) {
-            // Update existing InterviewStatus
-            //axios.put(`http://localhost:5200/api/InterviewStatus/${currentInterviewStatus.id}`, currentInterviewStatus)
             axios.put(`http://172.17.31.61:5200/api/interviewStatus/${currentInterviewStatus.id}`, currentInterviewStatus)
                 .then(response => {
-                    console.log(response)
-                    //setInterviewStatuss([...InterviewStatuss, response.data]);
-                    // setInterviewStatuss(response.data);
                     setInterviewStatus(InterviewStatus.map(tech => tech.id === currentInterviewStatus.id ? response.data : tech));
                 })
                 .catch(error => {
@@ -124,8 +125,6 @@ function InterviewStatusList({isDrawerOpen}) {
                 });
 
         } else {
-            // Add new InterviewStatus
-            //axios.post('http://localhost:5200/api/InterviewStatus', currentInterviewStatus)
             axios.post('http://172.17.31.61:5200/api/interviewStatus', currentInterviewStatus)
                 .then(response => {
                     setInterviewStatus([...InterviewStatus, response.data]);
@@ -138,20 +137,20 @@ function InterviewStatusList({isDrawerOpen}) {
         setOpen(false);
 
     };
-   
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setCurrentInterviewStatus({ ...currentInterviewStatus, [name]: value });
         if (name === "status") {
             if (value.length === 50) {
                 setErrors((prevErrors) => ({ ...prevErrors, status: "More than 50 characters are not allowed" }));
-            }else if(value.length < 3) {
-                setErrors((prevErrors) => ({ ...prevErrors, status: ""}))
+            } else if (value.length < 3) {
+                setErrors((prevErrors) => ({ ...prevErrors, status: "" }))
             }
             // Clear the title error if valid
             else {
                 setErrors((prevErrors) => ({ ...prevErrors, status: "" }));
-            }        
+            }
         }
     };
 
@@ -192,7 +191,7 @@ function InterviewStatusList({isDrawerOpen}) {
     }
 
     return (
-        <div style={{ display: 'flex',flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 240 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 240 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
             <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
                 <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>Interview Status Table List</h3>
             </div>
@@ -222,7 +221,7 @@ function InterviewStatusList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'status'}
-                                    direction={orderBy === 'status' ? order : 'asc'}
+                                    direction={orderBy === 'status' ? order : 'desc'}
                                     onClick={() => handleSort('status')}
                                 >
                                     <b>Status</b>
@@ -231,7 +230,7 @@ function InterviewStatusList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'isActive'}
-                                    direction={orderBy === 'isActive' ? order : 'asc'}
+                                    direction={orderBy === 'isActive' ? order : 'desc'}
                                     onClick={() => handleSort('isActive')}
                                 >
                                     <b>Is Active</b>
@@ -240,7 +239,7 @@ function InterviewStatusList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'createdBy'}
-                                    direction={orderBy === 'createdBy' ? order : 'asc'}
+                                    direction={orderBy === 'createdBy' ? order : 'desc'}
                                     onClick={() => handleSort('createdBy')}
                                 >
                                     <b>Created By</b>
@@ -249,7 +248,7 @@ function InterviewStatusList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'createdDate'}
-                                    direction={orderBy === 'createdDate' ? order : 'asc'}
+                                    direction={orderBy === 'createdDate' ? order : 'desc'}
                                     onClick={() => handleSort('createdDate')}
                                 >
                                     <b>Created Date</b>
@@ -258,7 +257,7 @@ function InterviewStatusList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'updatedBy'}
-                                    direction={orderBy === 'updatedBy' ? order : 'asc'}
+                                    direction={orderBy === 'updatedBy' ? order : 'desc'}
                                     onClick={() => handleSort('updatedBy')}
                                 >
                                     <b>Updated By</b>
@@ -267,7 +266,7 @@ function InterviewStatusList({isDrawerOpen}) {
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'updatedDate'}
-                                    direction={orderBy === 'updatedDate' ? order : 'asc'}
+                                    direction={orderBy === 'updatedDate' ? order : 'desc'}
                                     onClick={() => handleSort('updatedDate')}
                                 >
                                     <b>Updated Date</b>
@@ -280,13 +279,12 @@ function InterviewStatusList({isDrawerOpen}) {
                         {filteredInterviewStatus.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((InterviewStatus) => (
                             <TableRow key={InterviewStatus.id}
                                 sx={{ backgroundColor: InterviewStatus.isActive ? 'inherit' : '#FFCCCB' }} >
-                                {/* <TableCell>{InterviewStatus.id}</TableCell> */}
                                 <TableCell>{InterviewStatus.status}</TableCell>
                                 <TableCell>{InterviewStatus.isActive ? 'Active' : 'Inactive'}</TableCell>
                                 <TableCell>{InterviewStatus.createdBy}</TableCell>
-                                <TableCell>{new Date(InterviewStatus.createdDate).toLocaleString()}</TableCell>
+                                <TableCell>{InterviewStatus.createdDate}</TableCell>
                                 <TableCell>{InterviewStatus.updatedBy || 'N/A'}</TableCell>
-                                <TableCell>{new Date(InterviewStatus.updatedDate).toLocaleString() || 'N/A'}</TableCell>
+                                <TableCell>{InterviewStatus.updatedDate || 'N/A'}</TableCell>
                                 <TableCell >
                                     <IconButton onClick={() => handleUpdate(InterviewStatus)}>
                                         <EditIcon color="primary" />
@@ -299,13 +297,6 @@ function InterviewStatusList({isDrawerOpen}) {
                         ))}
                     </TableBody>
                 </Table>
-                {/* <PaginationComponent
-                    count={filteredInterviewStatus.length}
-                    page={page}
-                    rowsPerPage={rowsPerPage}
-                    handlePageChange={handlePageChange}
-                    handleRowsPerPageChange={handleRowsPerPageChange}
-                /> */}
             </TableContainer>
             <TablePagination
                 rowsPerPageOptions={[10, 25, 100]}
@@ -332,7 +323,7 @@ function InterviewStatusList({isDrawerOpen}) {
                         fullWidth
                         error={!!errors.status}
                         helperText={errors.status}
-                        inputProps={{maxLength: 50}}
+                        inputProps={{ maxLength: 50 }}
                     />
                 </DialogContent>
                 <DialogActions>
