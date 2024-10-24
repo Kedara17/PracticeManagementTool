@@ -109,6 +109,8 @@ function Home() {
 
   const [userData, setUserData] = useState({
     photo: '/profile.avif',
+    name: '',
+    role: ''
   });
 
   useEffect(() => {
@@ -430,11 +432,22 @@ function Home() {
 
           {/* Username and Profile Avatar */}
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            <Typography variant="body1" sx={{ marginRight: 1, color:'black' }}>
+            {/* <Typography variant="body1" sx={{ marginRight: 1, color:'black' }}>
               {username || 'U'}
-            </Typography>
+            </Typography> */}
+            <div style={{ marginRight: 2, textAlign: 'center' }}>
+              <Typography variant="body1" sx={{ color: '#232527' }}>
+                {userData.name || 'U'}
+              </Typography>
+              <Typography variant="body2" sx={{ color: '#004687', fontSize:'14px' }}>
+                {userData.role || 'User'}
+              </Typography>
+            </div>
             <IconButton onClick={handleProfileMenuClick} color="inherit">
-              <Avatar src={userData.photo} sx={{ bgcolor: '#00aae7' }}>{username[0] || 'U'}</Avatar>
+              <Avatar src={userData.photo} sx={{ bgcolor: '#00aae7' }}>
+                {/* {username[0] || 'U'} */}
+                {userData.name ? userData.name[0] : 'U'}
+              </Avatar>
             </IconButton>
           </div>
 
@@ -442,7 +455,7 @@ function Home() {
           <Menu
             anchorEl={profileMenuAnchorEl}
             open={Boolean(profileMenuAnchorEl)}
-            onClose={() => setProfileMenuAnchorEl(null)}
+           onClose={() => setProfileMenuAnchorEl(null)}
           >
             <MenuItem onClick={handleProfileMenuClose} sx={{fontFamily:'Lato'}}>Profile</MenuItem>
             <MenuItem onClick={handleLogout} sx={{fontFamily:'Lato'}}>Logout</MenuItem>
