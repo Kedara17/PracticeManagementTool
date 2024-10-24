@@ -32,7 +32,7 @@ function DesignationList({ isDrawerOpen }) {
     useEffect(() => {
         const fetchDesignations = async () => {
             try {
-                const desigResponse = await axios.get('http://localhost:5501/api/Designation');
+                const desigResponse = await axios.get('http://172.17.31.61:5201/api/designation');
                 setDesignations(desigResponse.data);
             } catch (error) {
                 console.error('There was an error fetching the designation!', error);
@@ -65,7 +65,7 @@ function DesignationList({ isDrawerOpen }) {
             };
     
             // Send the full designation object in the PUT request
-            await axios.put(`http://localhost:5501/api/Designation/${id}`, updatedDesignation);
+            await axios.put(`http://172.17.31.61:5201/api/designation/${id}`, updatedDesignation);
     
             // Update the state with the new designation data
             setDesignations(designations.map(des => des.id === id ? { ...des, isActive: !currentState } : des));
@@ -122,7 +122,7 @@ function DesignationList({ isDrawerOpen }) {
     };
 
     const handleDelete = (id) => {
-        axios.patch(`http://localhost:5501/api/Designation/${id}`)
+        axios.patch(`http://172.17.31.61:5201/api/designation/${id}`)
             .then(response => {
                 setDesignations(designations.filter(desig => desig.id !== id));
             })
@@ -155,13 +155,13 @@ function DesignationList({ isDrawerOpen }) {
         setErrors({});
 
         if (currentDesignation.id) {
-            await axios.put(`http://localhost:5501/api/Designation/${currentDesignation.id}`, currentDesignation)
-            const Response = await axios.get('http://localhost:5501/api/Designation');
+            await axios.put(`http://172.17.31.61:5201/api/designation/${currentDesignation.id}`, currentDesignation)
+            const Response = await axios.get('http://172.17.31.61:5201/api/designation');
             setDesignations(Response.data);
 
         } else {
-            await axios.post('http://localhost:5501/api/Designation', currentDesignation)
-            const Response = await axios.get('http://localhost:5501/api/Designation');
+            await axios.post('http://172.17.31.61:5201/api/designation', currentDesignation)
+            const Response = await axios.get('http://172.17.31.61:5201/api/designation');
             setDesignations(Response.data);
         }
         setOpen(false);

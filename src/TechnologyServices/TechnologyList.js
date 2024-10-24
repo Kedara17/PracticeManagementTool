@@ -34,7 +34,7 @@ function TechnologyList({isDrawerOpen}) {
     useEffect(() => {
         const fetchTechnologies = async () => {
             try {
-                const techResponse = await axios.get('http://localhost:5574/api/Technology');
+                const techResponse = await axios.get('http://172.17.31.61:5274/api/technology');
                 setTechnologies(techResponse.data);
             } catch (error) {
                 console.error('There was an error fetching the technologies!', error);
@@ -79,7 +79,7 @@ function TechnologyList({isDrawerOpen}) {
             };
     
             // Send the full technology object in the PUT request
-            await axios.put(`http://localhost:5574/api/Technology/${id}`, updatedTechnology);
+            await axios.put(`http://172.17.31.61:5274/api/technology/${id}`, updatedTechnology);
     
             // Update the state with the new technology data
             setTechnologies(technologies.map(tech => tech.id === id ? { ...tech, isActive: !currentState } : tech));
@@ -138,7 +138,7 @@ function TechnologyList({isDrawerOpen}) {
     };
 
     const handleDelete = (id) => {
-        axios.patch(`http://localhost:5574/api/Technology/${id}`)
+        axios.patch(`http://172.17.31.61:5274/api/technology/${id}`)
             .then(response => {
                 setTechnologies(technologies.filter(tech => tech.id !== id));
             })
@@ -177,12 +177,12 @@ function TechnologyList({isDrawerOpen}) {
         setErrors({});
 
         if (currentTechnology.id) {
-            await axios.put(`http://localhost:5574/api/Technology/${currentTechnology.id}`, currentTechnology)
-            const response = await axios.get('http://localhost:5574/api/Technology');
+            await axios.put(`http://172.17.31.61:5274/api/technology/${currentTechnology.id}`, currentTechnology)
+            const response = await axios.get('http://172.17.31.61:5274/api/technology');
             setTechnologies(response.data);
         } else {
-            await axios.post('http://localhost:5574/api/Technology', currentTechnology)
-            const response = await axios.get('http://localhost:5574/api/Technology');
+            await axios.post('http://172.17.31.61:5274/api/technology', currentTechnology)
+            const response = await axios.get('http://172.17.31.61:5274/api/technology');
             setTechnologies(response.data);
         }
         setOpen(false);

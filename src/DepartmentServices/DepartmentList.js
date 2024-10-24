@@ -32,7 +32,7 @@ function DepartmentList({ isDrawerOpen }) {
     useEffect(() => {
         const fetchDepartments = async () => {
             try {
-                const deptResponse = await axios.get('http://localhost:5560/api/Department');
+                const deptResponse = await axios.get('http://172.17.31.61:5160/api/department');
                 setDepartments(deptResponse.data);
             } catch (error) {
                 console.error('There was an error fetching the departments!', error);
@@ -65,7 +65,7 @@ function DepartmentList({ isDrawerOpen }) {
             };
     
             // Send the full department object in the PUT request
-            await axios.put(`http://localhost:5560/api/Department/${id}`, updatedDepartment);
+            await axios.put(`http://172.17.31.61:5160/api/department/${id}`, updatedDepartment);
     
             // Update the state with the new department data
             setDepartments(departments.map(dept => dept.id === id ? { ...dept, isActive: !currentState } : dept));
@@ -123,7 +123,7 @@ function DepartmentList({ isDrawerOpen }) {
     };
 
     const handleDelete = (id) => {
-        axios.patch(`http://localhost:5560/api/Department/${id}`)
+        axios.patch(`http://172.17.31.61:5160/api/department/${id}`)
             .then(response => {
                 setDepartments(departments.filter(dept => dept.id !== id));
             })
@@ -156,13 +156,13 @@ function DepartmentList({ isDrawerOpen }) {
         setErrors({});
 
         if (currentDepartment.id) {
-            await axios.put(`http://localhost:5560/api/Department/${currentDepartment.id}`, currentDepartment)
+            await axios.put(`http://172.17.31.61:5160/api/department/${currentDepartment.id}`, currentDepartment)
             const deptResponse1 = await axios.get('http://172.17.31.61:5160/api/department');
             setDepartments(deptResponse1.data);
 
         } else {
-            await axios.post('http://localhost:5560/api/Department', currentDepartment)
-            const deptResponse = await axios.get('http://localhost:5560/api/Department');
+            await axios.post('http://172.17.31.61:5160/api/department', currentDepartment)
+            const deptResponse = await axios.get('http://172.17.31.61:5160/api/department');
             setDepartments(deptResponse.data);
         }
         setOpen(false);
