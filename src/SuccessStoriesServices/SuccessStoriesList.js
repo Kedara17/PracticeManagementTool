@@ -20,7 +20,15 @@ function SuccessStoriesList() {
     const [deleteTechId, setDeleteTechId] = useState(null);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
-    // const [technologies, setTechnologies] = useState([]);
+    const options = [
+        'Published', 
+        'Draft', 
+        'InReview', 
+        'Approved', 
+        'Rejected'
+      ];
+      
+
     const [currentSuccessStorie, setCurrentSuccessStorie] = useState({
         client: '',
         project: '',
@@ -48,7 +56,7 @@ function SuccessStoriesList() {
     useEffect(() => {
         const fetchSuccessStories = async () => {
             try {
-                const successStoriesResponse = await axios.get('http://localhost:5235/api/SuccessStories');
+                const successStoriesResponse = await axios.get('http://localhost:5128/api/SuccessStories');
                 setSuccessStories(successStoriesResponse.data);
             } catch (error) {
                 console.error('There was an error fetching the SuccessStories!', error);
@@ -159,7 +167,7 @@ function SuccessStoriesList() {
 
     const handleDelete = (id) => {
         //axios.delete(`http://localhost:5151/api/Project/${id}`)
-        axios.patch(`http://localhost:5235/api/SuccessStories/${id}`)
+        axios.patch(`http://localhost:5128/api/SuccessStories/${id}`)
             .then(response => {
                 setSuccessStories(SuccessStories.filter(tech => tech.id !== id));
             })
@@ -172,7 +180,7 @@ function SuccessStoriesList() {
         setConfirmOpen(false);
     }
 
-    const handleSave = () => {
+    const handleSave = async() => {
         let validationErrors = {};
 
         // Client field validation
@@ -199,34 +207,18 @@ function SuccessStoriesList() {
 
         // Clear any previous errors if validation passes
         setErrors({});
+
         if (currentSuccessStorie.id) {
-            // axios.put(`http://localhost:5574/api/Technology/${currentTechnology.id}`, currentTechnology)
-            axios.put(`http://localhost:5235/api/SuccessStories/${currentSuccessStorie.id}`, currentSuccessStorie)
-                .then(response => {
-                    // setSuccessStories(SuccessStories.map(tech => tech.id === response.data.id ? response.data : tech));
-                    setSuccessStories(prevSuccessStories => 
-                        prevSuccessStories.map(tech => 
-                          tech.id === response.data.id ? response.data : tech
-                        )
-                      );
-                })
-                .catch(error => {
-                    console.error('There was an error updating the SuccessStorie!', error);
-                    setError(error);
-                });
+            await axios.put(`http://localhost:5128/api/SuccessStories/${currentSuccessStorie.id}`, currentSuccessStorie)
+            const response = await axios.get('http://localhost:5128/api/SuccessStories');
+            setSuccessStories(response.data);
         } else {
-            // axios.post('http://localhost:5574/api/Technology', currentTechnology)
-            axios.post('http://localhost:5235/api/SuccessStories', currentSuccessStorie)
-                .then(response => {
-                    setSuccessStories([...SuccessStories, response.data]);
-                })
-                .catch(error => {
-                    console.error('There was an error adding the SuccessStorie!', error);
-                    setError(error);
-                });
+            await axios.post('http://localhost:5128/api/SuccessStories', currentSuccessStorie)
+            const response = await axios.get('http://localhost:5128/api/SuccessStories');
+            setSuccessStories(response.data);
         }
         setOpen(false);
-    };
+    };  
 
 
 
@@ -585,16 +577,23 @@ function SuccessStoriesList() {
                    
 
 
-                    <TextField
+                    <InputLabel>Status</InputLabel>
+                    <Select
                         margin="dense"
                         name="status"
-                        label="Status"
-                        value={currentSuccessStorie.status}
+                        value={SuccessStories.status}
                         onChange={handleChange}
                         fullWidth
-                        error={!!errors.comments} // Display error if exists
-                        helperText={errors.comments}
-                    />
+                        error={!!errors.status}
+                    >
+                        {options.map((option, index) => (
+                            <MenuItem key={index} value={option}>
+                                {option}
+                            </MenuItem>
+                        ))}
+                    </Select>
+
+                    {errors.status && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.status}</Typography>}
 
 <TextField
                         margin="dense"
