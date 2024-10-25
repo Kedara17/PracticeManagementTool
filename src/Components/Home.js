@@ -37,7 +37,7 @@ import SOWProposedTeamList from '../SOWServices/SOWProposedTeamList';
 import SOWRequirementList from '../SOWServices/SOWRequirementList';
 import SOWStatusList from '../SOWServices/SOWStatusList';
 import POCList from '../POCServices/POCList';
-
+import NewLeadEnquiryList from '../NewLeadEnquiryServices/NewLeadEnquiryList';
 
 function Home() {
 
@@ -523,6 +523,7 @@ function Home() {
         {view === 'sowrequirement' && <SOWRequirementList isDrawerOpen={isDrawerOpen} />}
         {view === 'sowstatus' && <SOWStatusList isDrawerOpen={isDrawerOpen} />}
         {view === 'poc' && <POCList isDrawerOpen={isDrawerOpen} />}
+        {view === 'newleadenquiry' && <NewLeadEnquiryList isDrawerOpen={isDrawerOpen} />}
       </Box>
     </div>
   )
