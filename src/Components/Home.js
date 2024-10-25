@@ -39,7 +39,7 @@ import SOWStatusList from '../SOWServices/SOWStatusList';
 import POCList from '../POCServices/POCList';
 import CustomBreadcrumbs from './CustomBreadCrumbs';
 import CertificationsList from '../CertificationsServices/CertificationsList';
-
+import NewLeadEnquiryList from '../NewLeadEnquiryServices/NewLeadEnquiryList';
 
 function Home() {
 
@@ -537,6 +537,7 @@ function Home() {
           <Route path='sow/sowstatuslist' element={<SOWStatusList isDrawerOpen={isDrawerOpen} />} />
           <Route path='poc' element={<POCList isDrawerOpen={isDrawerOpen} />} />
           <Route path='certifications' element={<CertificationsList isDrawerOpen={isDrawerOpen} />} />
+          <Route path='newLeadEnquiry' element={<NewLeadEnquiryList isDrawerOpen={isDrawerOpen} />} />
         </Routes>
 
         {/* {view === 'slider' && <SliderComponent  isDrawerOpen={isDrawerOpen} />}
@@ -558,6 +559,7 @@ function Home() {
         {view === 'sowrequirement' && <SOWRequirementList isDrawerOpen={isDrawerOpen} />}
         {view === 'sowstatus' && <SOWStatusList isDrawerOpen={isDrawerOpen} />}
         {view === 'poc' && <POCList isDrawerOpen={isDrawerOpen} />} */}
+        {/* {view === 'newleadenquiry' && <NewLeadEnquiryList isDrawerOpen={isDrawerOpen} />} */}
       </Box>
     </div>
   )
