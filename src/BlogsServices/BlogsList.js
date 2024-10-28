@@ -370,11 +370,11 @@ function BlogsList({ isDrawerOpen }) {
     };
 
     if (loading) {
-        return <p>Loading...</p>;
+        return <p style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop:'200px' }}>Loading...</p>;
     }
 
     if (error) {
-        return <p>There was an error loading the data: {error.message}</p>;
+        return <p style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop:'200px' }}>There was an error loading the data: {error.message}</p>;
     }
 
     return (
