@@ -1,9 +1,6 @@
-// import React from 'react'
-// import { Box, Avatar, Typography, TextField} from '@mui/material'
 import React, { useState } from 'react';
-import { Avatar,Box,Button,TextField,Typography,Snackbar,IconButton, AppBar,Toolbar,CssBaseline,Alert} from '@mui/material';
+import { Avatar,Grid,Box,Button,TextField,Typography,Snackbar,IconButton, AppBar,Toolbar,CssBaseline,Alert} from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
-import CloseIcon from '@mui/icons-material/Close';
 import { useNavigate } from 'react-router-dom';
 
 function Profile() {
@@ -113,85 +110,165 @@ function Profile() {
     };
       
   return (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
-      <CssBaseline />
+    // <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column' }}>
+    //   <CssBaseline />
 
-      {/* AppBar */}
-      <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, backgroundColor:' #232527' }}>
-        <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <img src='/miraclelogo.png' alt="Miracle Logo" style={{ width: '160px', marginLeft: '16px' }} />  
-            <Button sx={{backgroundColor:'#00aae7', color:'white'}} onClick={handleBack}>
-                Back
-            </Button>
-        </Toolbar>
-      </AppBar>
+    //   {/* AppBar */}
+    //   <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, backgroundColor:' #232527' }}>
+    //     <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+    //         <img src='/miraclelogo.png' alt="Miracle Logo" style={{ width: '160px', marginLeft: '16px' }} />  
+    //         <Button sx={{backgroundColor:'#00aae7', color:'white'}} onClick={handleBack}>
+    //             Back
+    //         </Button>
+    //     </Toolbar>
+    //   </AppBar>
 
-      <Box sx={{ mt: 10 }}> 
-        <Box sx={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
-          <Avatar src={photo} sx={{ width: 100, height: 100, mb: 2 }}>
-            {name[0] || 'U'}
-          </Avatar>
-          <input
-            accept="image/png, image/jpeg"
-            style={{ display: 'none' }}
-            id="icon-button-file"
-            type="file"
-            onChange={handleFileChange}
-          />
-          <label htmlFor="icon-button-file">
-            <IconButton component="span" sx={{ position: 'absolute', top: 150, right: 590 }}>
-              <EditIcon />
-            </IconButton>
-          </label>
-          <Typography sx={{ fontFamily: 'Montserrat', fontSize: '22px' }}>{name}</Typography>
-        </Box>
+    //   <Box sx={{ mt: 10 }}> 
+    //     <Box sx={{ display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
+    //       <Avatar src={photo} sx={{ width: 100, height: 100, mb: 2 }}>
+    //         {name[0] || 'U'}
+    //       </Avatar>
+    //       <input
+    //         accept="image/png, image/jpeg"
+    //         style={{ display: 'none' }}
+    //         id="icon-button-file"
+    //         type="file"
+    //         onChange={handleFileChange}
+    //       />
+    //       <label htmlFor="icon-button-file">
+    //         <IconButton component="span" sx={{ position: 'absolute', top: 150, right: 590 }}>
+    //           <EditIcon />
+    //         </IconButton>
+    //       </label>
+    //       <Typography sx={{ fontFamily: 'Montserrat', fontSize: '22px' }}>{name}</Typography>
+    //     </Box>
 
-        <Box sx={{ mt: 5, width: 600, display: 'flex', justifyContent: 'space-between' }}>
-          <TextField
-            label="Name"
-            value={name}
-            onChange={handleNameChange}
-            error={!!nameError || !!nameCharError}
-            helperText={nameError || nameCharError}
-            sx={{ width: '48%' }}
-          />
-          <TextField
-            label="Role"
-            value={role}
-            onChange={handleRoleChange}
-            error={!!roleError || !!roleCharError}
-            helperText={roleError || roleCharError}
-            sx={{ width: '48%' }}
-          />
-        </Box>
+    //     <Box sx={{ mt: 5, width: 600, display: 'flex', justifyContent: 'space-between' }}>
+    //       <TextField
+    //         label="Name"
+    //         value={name}
+    //         onChange={handleNameChange}
+    //         error={!!nameError || !!nameCharError}
+    //         helperText={nameError || nameCharError}
+    //         sx={{ width: '48%' }}
+    //       />
+    //       <TextField
+    //         label="Role"
+    //         value={role}
+    //         onChange={handleRoleChange}
+    //         error={!!roleError || !!roleCharError}
+    //         helperText={roleError || roleCharError}
+    //         sx={{ width: '48%' }}
+    //       />
+    //     </Box>
 
-        <Box sx={{display: 'flex', flexDirection: 'column', alignItems:'center'}}>
-            <TextField
-                label="Email"
-                value={email}
-                onChange={handleEmailChange}
-                error={!!emailError || !!emailCharError}
-                helperText={emailError || emailCharError}
-                fullWidth
-                sx={{ mt: 4, width: 400 }}
-            />
-            <Button variant="contained" onClick={handleSave} sx={{ mt: 4, bgcolor: '#00aae7' }}>
-                SAVE
-            </Button>
-        </Box>
+    //     <Box sx={{display: 'flex', flexDirection: 'column', alignItems:'center'}}>
+    //         <TextField
+    //             label="Email"
+    //             value={email}
+    //             onChange={handleEmailChange}
+    //             error={!!emailError || !!emailCharError}
+    //             helperText={emailError || emailCharError}
+    //             fullWidth
+    //             sx={{ mt: 4, width: 400 }}
+    //         />
+    //         <Button variant="contained" onClick={handleSave} sx={{ mt: 4, bgcolor: '#00aae7' }}>
+    //             SAVE
+    //         </Button>
+    //     </Box>
 
-        <Snackbar 
-            open={openSnackbar} 
-            autoHideDuration={3000} 
-            onClose={handleSnackbarClose}
-            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-        >
-          <Alert onClose={handleSnackbarClose} severity="success" sx={{ width: '100%' }}>
-            Data updated successfully
-          </Alert>
-        </Snackbar>
-      </Box>
-    </div>
+    //     <Snackbar 
+    //         open={openSnackbar} 
+    //         autoHideDuration={3000} 
+    //         onClose={handleSnackbarClose}
+    //         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+    //     >
+    //       <Alert onClose={handleSnackbarClose} severity="success" sx={{ width: '100%' }}>
+    //         Data updated successfully
+    //       </Alert>
+    //     </Snackbar>
+    //   </Box>
+    // </div>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', minHeight: '100vh' }}>
+            <CssBaseline />
+
+            {/* AppBar */}
+            <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, backgroundColor: '#232527' }}>
+                <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <img src='/miraclelogo.png' alt="Miracle Logo" style={{ width: '160px', marginLeft: '16px' }} />
+                    <Button sx={{ backgroundColor: '#00aae7', color: 'white' }} onClick={handleBack}>
+                        Back
+                    </Button>
+                </Toolbar>
+            </AppBar>
+
+            <Box sx={{ mt: 8, width: '100%', maxWidth: '600px', px: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', flexDirection: 'column', mb: 2 }}>
+                    <label htmlFor="icon-button-file" style={{ cursor: 'pointer' }}>
+                        <Avatar src={photo} sx={{ width: 140, height: 140, mb: 2 }}>
+                            {name[0] || 'U'}
+                        </Avatar>
+                    </label>
+                    <input
+                        accept="image/png, image/jpeg, image/avif"
+                        style={{ display: 'none' }}
+                        id="icon-button-file"
+                        type="file"
+                        onChange={handleFileChange}
+                    />
+                    <Typography sx={{ fontFamily: 'Montserrat', fontSize: { xs: '20px', sm: '30px' } }}>{name}</Typography>
+                </Box>
+
+                <Grid container spacing={2} sx={{ mt: 2 }}>
+                    <Grid item xs={12} sm={6}>
+                        <TextField
+                            label="Name"
+                            value={name}
+                            onChange={handleNameChange}
+                            error={!!nameError || !!nameCharError}
+                            helperText={nameError || nameCharError}
+                            fullWidth
+                        />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                        <TextField
+                            label="Role"
+                            value={role}
+                            onChange={handleRoleChange}
+                            error={!!roleError || !!roleCharError}
+                            helperText={roleError || roleCharError}
+                            fullWidth
+                        />
+                    </Grid>
+                </Grid>
+
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                    <TextField
+                        label="Email"
+                        value={email}
+                        onChange={handleEmailChange}
+                        error={!!emailError || !!emailCharError}
+                        helperText={emailError || emailCharError}
+                        fullWidth
+                        sx={{ mt: 4 }}
+                    />
+                    <Button variant="contained" onClick={handleSave} sx={{ mt: 4, bgcolor: '#00aae7' }}>
+                        SAVE
+                    </Button>
+                </Box>
+
+                <Snackbar
+                    open={openSnackbar}
+                    autoHideDuration={3000}
+                    onClose={handleSnackbarClose}
+                    anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                >
+                    <Alert onClose={handleSnackbarClose} severity="success" sx={{ width: '100%' }}>
+                        Data updated successfully
+                    </Alert>
+                </Snackbar>
+            </Box>
+        </div>
   )
 }
 

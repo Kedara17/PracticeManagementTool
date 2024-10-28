@@ -3,15 +3,17 @@ import axios from 'axios';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
-import PaginationComponent from '../Components/PaginationComponent'; // Import your PaginationComponent
-import { InputLabel,TablePagination, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
+import UndoIcon from '@mui/icons-material/Undo'; // Undo icon for inactive
+import { Switch, InputLabel, TablePagination, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
 
-function DepartmentList({isDrawerOpen}) {
+function DepartmentList({ isDrawerOpen }) {
     const [departments, setDepartments] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [open, setOpen] = useState(false);
     const [confirmOpen, setConfirmOpen] = useState(false);
+    const [confirmAction, setConfirmAction] = useState(null); // Store the action to be confirmed (delete/undo)
+    const [targetDepartment, setTargetDepartment] = useState(null); // Store the target department for confirmation
     const [deleteTechId, setDeleteTechId] = useState(null);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -30,7 +32,6 @@ function DepartmentList({isDrawerOpen}) {
     useEffect(() => {
         const fetchDepartments = async () => {
             try {
-                // const deptResponse = await axios.get('http://localhost:5560/api/department');
                 const deptResponse = await axios.get('http://172.17.31.61:5160/api/department');
                 setDepartments(deptResponse.data);
             } catch (error) {
@@ -46,6 +47,41 @@ function DepartmentList({isDrawerOpen}) {
         const isDesc = orderBy === property && order === 'desc';
         setOrder(isDesc ? 'asc' : 'desc');
         setOrderBy(property);
+    };
+
+    const handleToggleActive = async (id, currentState) => {
+        try {
+            // Find the full department object based on the id
+            const departmentToUpdate = departments.find(dept => dept.id === id);
+            if (!departmentToUpdate) {
+                console.error('Department not found');
+                return;
+            }
+    
+            // Create an updated object with the toggled isActive state
+            const updatedDepartment = {
+                ...departmentToUpdate,
+                isActive: !currentState
+            };
+    
+            // Send the full department object in the PUT request
+            await axios.put(`http://172.17.31.61:5160/api/department/${id}`, updatedDepartment);
+    
+            // Update the state with the new department data
+            setDepartments(departments.map(dept => dept.id === id ? { ...dept, isActive: !currentState } : dept));
+        } catch (error) {
+            console.error('Error updating department active state:', error);
+        }
+    };
+
+    const handleUndo = async (id) => {
+        try {
+            await handleToggleActive(id, false); // Activate the department
+        } catch (error) {
+            console.error('Error activating the Department!', error);
+            setError(error);
+        }
+        setConfirmOpen(false);
     };
 
     const sortedDepartments = [...departments].sort((a, b) => {
@@ -87,8 +123,6 @@ function DepartmentList({isDrawerOpen}) {
     };
 
     const handleDelete = (id) => {
-        // axios.delete(`http://localhost:5560/api/Department/${id}`)
-        // axios.delete(`http://172.17.31.61:5160/api/department/${id}`)
         axios.patch(`http://172.17.31.61:5160/api/department/${id}`)
             .then(response => {
                 setDepartments(departments.filter(dept => dept.id !== id));
@@ -102,16 +136,16 @@ function DepartmentList({isDrawerOpen}) {
 
     const handleSave = async () => {
         let validationErrors = {};
-       
+
         // Name field validation
         if (!currentDepartment.name.trim()) {
             validationErrors.name = "Name is required";
-        }  else if (currentDepartment.name.length < 3) {
+        } else if (currentDepartment.name.length < 3) {
             validationErrors.name = "Name must be at least 3 characters";
-         } else if (departments.some(dep => dep.name.toLowerCase() === currentDepartment.name.toLowerCase() && dep.id !== currentDepartment.id)) {
+        } else if (departments.some(dep => dep.name.toLowerCase() === currentDepartment.name.toLowerCase() && dep.id !== currentDepartment.id)) {
             validationErrors.name = "Name must be unique";
         }
-        
+
         // If there are validation errors, update the state and prevent save
         if (Object.keys(validationErrors).length > 0) {
             setErrors(validationErrors);
@@ -127,7 +161,6 @@ function DepartmentList({isDrawerOpen}) {
             setDepartments(deptResponse1.data);
 
         } else {
-            // axios.post('http://localhost:5560/api/Department', currentDepartment)
             await axios.post('http://172.17.31.61:5160/api/department', currentDepartment)
             const deptResponse = await axios.get('http://172.17.31.61:5160/api/department');
             setDepartments(deptResponse.data);
@@ -138,15 +171,15 @@ function DepartmentList({isDrawerOpen}) {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setCurrentDepartment({ ...currentDepartment, [name]: value });    
+        setCurrentDepartment({ ...currentDepartment, [name]: value });
         if (name === "name") {
             // Perform validation
             if (!value.trim()) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
-            }  else if (value.length < 3) {
+            } else if (value.length < 3) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
-            } 
-             // Check for uniqueness
+            }
+            // Check for uniqueness
             else if (departments.some(dep => dep.name.toLowerCase() === value.toLowerCase() && dep.id !== currentDepartment.id)) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
             } else if (value.length === 50) {
@@ -155,7 +188,7 @@ function DepartmentList({isDrawerOpen}) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
             }
         }
-    };           
+    };
 
     const handleClose = () => {
         setCurrentDepartment({ name: '' }); // Reset the department fields
@@ -174,7 +207,14 @@ function DepartmentList({isDrawerOpen}) {
     };
 
     const confirmDelete = (id) => {
-        setDeleteTechId(id);
+        setConfirmAction('delete');
+        setTargetDepartment(id);
+        setConfirmOpen(true);
+    };
+
+    const confirmUndo = (id) => {
+        setConfirmAction('undo');
+        setTargetDepartment(id);
         setConfirmOpen(true);
     };
 
@@ -182,22 +222,26 @@ function DepartmentList({isDrawerOpen}) {
         setConfirmOpen(false);
     };
 
-    const handleConfirmYes = () => {
-        handleDelete(deleteTechId);
+    const handleConfirmYes = () => {       
+        if (confirmAction === 'delete') {
+            handleDelete(targetDepartment);
+        } else if (confirmAction === 'undo') {
+            handleUndo(targetDepartment);
+        }
     };
 
     if (loading) {
-        return <p>Loading...</p>;
+        return <p style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop:'200px' }} >Loading...</p>;
     }
 
     if (error) {
-        return <p>There was an error loading the data: {error.message}</p>;
+        return <p style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop:'200px' }}>There was an error loading the data: {error.message}</p>;
     }
 
     return (
-    <div style={{ display: 'flex', padding: '10px', marginLeft: isDrawerOpen ? 260 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
-        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>Department Table List</h3>
+    <div style={{ display: 'flex',flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 240 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
+        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <h3 style={{ marginBottom: '20px', fontSize: '25px', display:'flex', justifyContent:'center' }}>Department</h3>
         <div style={{ display: 'flex', marginBottom: '20px', width: '100%' }}>
             <TextField
                 label="Search"
@@ -213,7 +257,7 @@ function DepartmentList({isDrawerOpen}) {
                         </InputAdornment>
                     ),
                 }}
-                style={{ marginRight: '20px', flexGrow: 1 }}
+                style={{ flexGrow: 1, marginRight: '10px' }}
             />
             <Button variant="contained" sx={{ backgroundColor: '#00aae7' }} onClick={handleAdd}>Add Department</Button>
         </div>
@@ -288,79 +332,90 @@ function DepartmentList({isDrawerOpen}) {
                                 sx={{ backgroundColor: Department.isActive ? 'inherit' : '#FFCCCB' }} >
                                 
                                 <TableCell>{Department.name}</TableCell>
-                                <TableCell>{Department.isActive ? 'Active' : 'Inactive'}</TableCell>
+                                <TableCell>
+                                    <Switch
+                                        checked={Department.isActive}
+                                        disabled={!Department.isActive} // Disable toggle for inactive records
+                                        onChange={() => handleToggleActive(Department.id, Department.isActive)}
+                                        color="primary"
+                                    />
+                                </TableCell>
                                 <TableCell>{Department.createdBy}</TableCell>
                                 <TableCell>{Department.createdDate}</TableCell>
                                 <TableCell>{Department.updatedBy || 'N/A'}</TableCell>
                                 <TableCell>{Department.updatedDate || 'N/A'}</TableCell>
-                                <TableCell >
-                                    <IconButton onClick={() => handleUpdate(Department)}>
-                                        <EditIcon color="primary" />
-                                    </IconButton>
-                                    <IconButton onClick={() => confirmDelete(Department.id)}>
-                                        <DeleteIcon color="error" />
-                                    </IconButton>
+                                <TableCell>
+                                    {Department.isActive ? (
+                                        <>
+                                            <IconButton onClick={() => handleUpdate(Department)}>
+                                                <EditIcon color="primary" />
+                                            </IconButton>
+                                            <IconButton onClick={() => confirmDelete(Department.id)}>
+                                                <DeleteIcon color="error" />
+                                            </IconButton>
+                                        </>
+                                    ) : (
+                                        <IconButton onClick={() => confirmUndo(Department.id)}>
+                                            <UndoIcon color="secondary" />
+                                        </IconButton>
+                                    )}
                                 </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-                {/* <PaginationComponent
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+                <TablePagination
+                    rowsPerPageOptions={[10, 25, 100]}
+                    component="div"
                     count={filteredDepartments.length}
-                    page={page}
                     rowsPerPage={rowsPerPage}
-                    handlePageChange={handlePageChange}
-                    handleRowsPerPageChange={handleRowsPerPageChange}
-                /> */}
-            </TableContainer>
-            <TablePagination
-                rowsPerPageOptions={[10, 25, 100]}
-                component="div"
-                count={filteredDepartments.length}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                onPageChange={handlePageChange}
-                onRowsPerPageChange={handleRowsPerPageChange}
-            />
-            <Dialog open={open} onClose={() => setOpen(false)}>
-                <DialogTitle>{currentDepartment.id ? 'Update Department' : 'Add Department'}</DialogTitle>
+                    page={page}
+                    onPageChange={handlePageChange}
+                    onRowsPerPageChange={handleRowsPerPageChange}
+                />
+                <Dialog open={open} onClose={() => setOpen(false)}>
+                    <DialogTitle>{currentDepartment.id ? 'Update Department' : 'Add Department'}</DialogTitle>
+                    <DialogContent>
+                        <InputLabel>Name</InputLabel>
+                        <TextField
+                            margin="dense"
+                            name="name"
+                            value={currentDepartment.name}
+                            onChange={(e) => {
+                                const value = e.target.value;
+                                if (/^[A-Za-z\s]*$/.test(value))
+                                    handleChange(e);
+                            }}
+                            fullWidth
+                            error={!!errors.name} // Display error if exists
+                            helperText={errors.name}
+                            inputProps={{ maxLength: 50 }}
+                        />
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleClose}>Cancel</Button>
+                        <Button onClick={handleSave} color="primary">
+                            {currentDepartment.id ? 'Update' : 'Save'}
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+                <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
+                <DialogTitle>{confirmAction === 'delete' ? 'Confirm Delete' : 'Confirm Activation'}</DialogTitle>
                 <DialogContent>
-                <InputLabel>Name</InputLabel>
-                    <TextField
-                        margin="dense"                       
-                        name="name"
-                        value={currentDepartment.name}
-                        onChange={(e) => {
-                            const value = e.target.value;
-                            if (/^[A-Za-z\s]*$/.test(value))
-                               handleChange(e);
-                        }}                       
-                        fullWidth
-                        error={!!errors.name} // Display error if exists
-                        helperText={errors.name}
-                        inputProps={{maxLength: 50}}
-                    />
+                    <Typography>
+                        {confirmAction === 'delete'
+                            ? 'Are you sure you want to delete this Department?'
+                            : 'Are you sure you want to activate this Department?'}
+                    </Typography>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleClose}>Cancel</Button>
-                    <Button onClick={handleSave} color="primary">
-                        {currentDepartment.id ? 'Update' : 'Save'}
-                    </Button>
+                    <Button onClick={() => setConfirmOpen(false)}>No</Button>
+                    <Button onClick={handleConfirmYes} color="primary">Yes</Button>
                 </DialogActions>
             </Dialog>
-
-            <Dialog open={confirmOpen} onClose={handleConfirmClose}>
-                <DialogTitle>Confirm Delete</DialogTitle>
-                <DialogContent>
-                    <Typography>Are you sure you want to delete this Department?</Typography>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleConfirmClose}>No</Button>
-                    <Button onClick={handleConfirmYes} color="error">Yes</Button>
-                </DialogActions>
-            </Dialog>
+            </div>
         </div>
-    </div>
     );
 }
 

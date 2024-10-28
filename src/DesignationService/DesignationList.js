@@ -3,8 +3,8 @@ import axios from 'axios';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
-import PaginationComponent from '../Components/PaginationComponent'; // Import your PaginationComponent
-import { InputLabel,TablePagination, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
+import UndoIcon from '@mui/icons-material/Undo';
+import { Switch, InputLabel, TablePagination, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
 
 function DesignationList({ isDrawerOpen }) {
     const [designations, setDesignations] = useState([]);
@@ -12,6 +12,8 @@ function DesignationList({ isDrawerOpen }) {
     const [error, setError] = useState(null);
     const [open, setOpen] = useState(false);
     const [confirmOpen, setConfirmOpen] = useState(false);
+    const [confirmAction, setConfirmAction] = useState(null); // Store the action to be confirmed (delete/undo)
+    const [targetDesignation, setTargetDesignation] = useState(null);
     const [deleteTechId, setDeleteTechId] = useState(null);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -45,6 +47,41 @@ function DesignationList({ isDrawerOpen }) {
         const isDesc = orderBy === property && order === 'desc';
         setOrder(isDesc ? 'asc' : 'desc');
         setOrderBy(property);
+    };
+
+    const handleToggleActive = async (id, currentState) => {
+        try {
+            // Find the full designation object based on the id
+            const designationToUpdate = designations.find(des => des.id === id);
+            if (!designationToUpdate) {
+                console.error('Designation not found');
+                return;
+            }
+    
+            // Create an updated object with the toggled isActive state
+            const updatedDesignation = {
+                ...designationToUpdate,
+                isActive: !currentState
+            };
+    
+            // Send the full designation object in the PUT request
+            await axios.put(`http://172.17.31.61:5201/api/designation/${id}`, updatedDesignation);
+    
+            // Update the state with the new designation data
+            setDesignations(designations.map(des => des.id === id ? { ...des, isActive: !currentState } : des));
+        } catch (error) {
+            console.error('Error updating designation active state:', error);
+        }
+    };
+
+    const handleUndo = async (id) => {
+        try {
+            await handleToggleActive(id, false); // Activate the designation
+        } catch (error) {
+            console.error('Error activating the Designation!', error);
+            setError(error);
+        }
+        setConfirmOpen(false);
     };
 
     const sortedDesignation = [...designations].sort((a, b) => {
@@ -102,9 +139,9 @@ function DesignationList({ isDrawerOpen }) {
         // Name field validation
         if (!currentDesignation.name.trim()) {
             validationErrors.name = "Designation is required";
-        }else if (currentDesignation.name.length < 3) {
+        } else if (currentDesignation.name.length < 3) {
             validationErrors.name = "Name must be atleast 3 characters";
-        }  else if (designations.some(des => des.name.toLowerCase() === currentDesignation.name.toLowerCase() && des.id !== currentDesignation.id)) {
+        } else if (designations.some(des => des.name.toLowerCase() === currentDesignation.name.toLowerCase() && des.id !== currentDesignation.id)) {
             validationErrors.name = "Name must be unique";
         }
 
@@ -137,9 +174,9 @@ function DesignationList({ isDrawerOpen }) {
             // Check if the name is empty or only whitespace
             if (!value.trim()) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
-            }else if (value.length < 3) {
+            } else if (value.length < 3) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
-            } 
+            }
             // Check for uniqueness
             else if (designations.some(des => des.name.toLowerCase() === value.toLowerCase() && des.id !== currentDesignation.id)) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
@@ -154,7 +191,7 @@ function DesignationList({ isDrawerOpen }) {
     };
 
     const handleClose = () => {
-        setCurrentDesignation({ name: '' }); // Reset the department fields
+        setCurrentDesignation({ name: '' }); // Reset the designation fields
         setErrors({ name: '' }); // Reset the error state
         setOpen(false); // Close the dialog
     };
@@ -170,7 +207,14 @@ function DesignationList({ isDrawerOpen }) {
     };
 
     const confirmDelete = (id) => {
-        setDeleteTechId(id);
+        setConfirmAction('delete');
+        setTargetDesignation(id);
+        setConfirmOpen(true);
+    };
+
+    const confirmUndo = (id) => {
+        setConfirmAction('undo');
+        setTargetDesignation(id);
         setConfirmOpen(true);
     };
 
@@ -179,21 +223,25 @@ function DesignationList({ isDrawerOpen }) {
     };
 
     const handleConfirmYes = () => {
-        handleDelete(deleteTechId);
+        if (confirmAction === 'delete') {
+            handleDelete(targetDesignation);
+        } else if (confirmAction === 'undo') {
+            handleUndo(targetDesignation);
+        }
     };
 
     if (loading) {
-        return <p>Loading...</p>;
+        return <p style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop:'200px' }}>Loading...</p>;
     }
 
     if (error) {
-        return <p>There was an error loading the data: {error.message}</p>;
+        return <p style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop:'200px' }}>There was an error loading the data: {error.message}</p>;
     }
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 250 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 240 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
             <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-                <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>Designation Table List</h3>
+                <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>Designation</h3>
             </div>
             <div style={{ display: 'flex', marginBottom: '20px', width: '100%' }}>
                 <TextField
@@ -218,7 +266,6 @@ function DesignationList({ isDrawerOpen }) {
                 <Table>
                     <TableHead>
                         <TableRow>
-                            {/* Sorting logic */}
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'name'}
@@ -281,32 +328,39 @@ function DesignationList({ isDrawerOpen }) {
                             <TableRow key={Designation.id}
                                 sx={{ backgroundColor: Designation.isActive ? 'inherit' : '#FFCCCB' }} // Set background color conditionally
                             >
-                                {/* <TableCell>{Designation.id}</TableCell> */}
                                 <TableCell>{Designation.name}</TableCell>
-                                <TableCell>{Designation.isActive ? 'Active' : 'Inactive'}</TableCell>
+                                <TableCell>
+                                    <Switch
+                                        checked={Designation.isActive}
+                                        disabled={!Designation.isActive} // Disable toggle for inactive records
+                                        onChange={() => handleToggleActive(Designation.id, Designation.isActive)}
+                                        color="primary"
+                                    />
+                                </TableCell>
                                 <TableCell>{Designation.createdBy}</TableCell>
                                 <TableCell>{Designation.createdDate}</TableCell>
                                 <TableCell>{Designation.updatedBy || 'N/A'}</TableCell>
                                 <TableCell>{Designation.updatedDate || 'N/A'}</TableCell>
-                                <TableCell >
-                                    <IconButton onClick={() => handleUpdate(Designation)}>
-                                        <EditIcon color="primary" />
-                                    </IconButton>
-                                    <IconButton onClick={() => confirmDelete(Designation.id)}>
-                                        <DeleteIcon color="error" />
-                                    </IconButton>
+                                <TableCell>
+                                    {Designation.isActive ? (
+                                        <>
+                                            <IconButton onClick={() => handleUpdate(Designation)}>
+                                                <EditIcon color="primary" />
+                                            </IconButton>
+                                            <IconButton onClick={() => confirmDelete(Designation.id)}>
+                                                <DeleteIcon color="error" />
+                                            </IconButton>
+                                        </>
+                                    ) : (
+                                        <IconButton onClick={() => confirmUndo(Designation.id)}>
+                                            <UndoIcon color="secondary" />
+                                        </IconButton>
+                                    )}
                                 </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
                 </Table>
-                {/* <PaginationComponent
-                    count={filteredDesignation.length}
-                    page={page}
-                    rowsPerPage={rowsPerPage}
-                    handlePageChange={handlePageChange}
-                    handleRowsPerPageChange={handleRowsPerPageChange}
-                /> */}
             </TableContainer>
             <TablePagination
                 rowsPerPageOptions={[10, 25, 100]}
@@ -343,15 +397,18 @@ function DesignationList({ isDrawerOpen }) {
                     </Button>
                 </DialogActions>
             </Dialog>
-
-            <Dialog open={confirmOpen} onClose={handleConfirmClose}>
-                <DialogTitle>Confirm Delete</DialogTitle>
+            <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
+                <DialogTitle>{confirmAction === 'delete' ? 'Confirm Delete' : 'Confirm Activation'}</DialogTitle>
                 <DialogContent>
-                    <Typography>Are you sure you want to delete this Designation?</Typography>
+                    <Typography>
+                        {confirmAction === 'delete'
+                            ? 'Are you sure you want to delete this Designation?'
+                            : 'Are you sure you want to activate this Designation?'}
+                    </Typography>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleConfirmClose}>Cancel</Button>
-                    <Button onClick={handleConfirmYes} color="error">Ok</Button>
+                    <Button onClick={() => setConfirmOpen(false)}>No</Button>
+                    <Button onClick={handleConfirmYes} color="primary">Yes</Button>
                 </DialogActions>
             </Dialog>
         </div>

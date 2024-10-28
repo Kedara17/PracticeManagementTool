@@ -13,7 +13,7 @@
     width: 339px;
 }
 .date {
-    width: 338px;
+    width: 352px;
 }
 .time {
     width: 351px;
@@ -21,5 +21,12 @@
 .MuiDialogContent-root {
     width: 400px;
 }
+.drawer-invisible-scrollbar {
+    scrollbar-width: none; /* Hide scrollbar for Firefox */
+    -ms-overflow-style: none; /* Hide scrollbar for Internet Explorer and Edge */
+}
 
+.drawer-invisible-scrollbar::-webkit-scrollbar {
+    display: none; /* Hide scrollbar for Chrome, Safari, and Opera */
+}
 

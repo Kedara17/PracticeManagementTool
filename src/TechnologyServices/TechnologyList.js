@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Select,TablePagination, MenuItem, Table, InputLabel, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
+import {Switch, Select,TablePagination, MenuItem, Table, InputLabel, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
-import PaginationComponent from '../Components/PaginationComponent'; // Import your PaginationComponent
+import UndoIcon from '@mui/icons-material/Undo';
 
 function TechnologyList({isDrawerOpen}) {
     const [technologies, setTechnologies] = useState([]);
@@ -13,6 +13,8 @@ function TechnologyList({isDrawerOpen}) {
     const [error, setError] = useState(null);
     const [open, setOpen] = useState(false);
     const [confirmOpen, setConfirmOpen] = useState(false);
+    const [confirmAction, setConfirmAction] = useState(null); // Store the action to be confirmed (delete/undo)
+    const [targetTechnology, setTargetTechnology] = useState(null);
     const [deleteTechId, setDeleteTechId] = useState(null);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -61,6 +63,40 @@ function TechnologyList({isDrawerOpen}) {
         setOrderBy(property);
     };
 
+    const handleToggleActive = async (id, currentState) => {
+        try {
+            // Find the full technology object based on the id
+            const technologyToUpdate = technologies.find(tech => tech.id === id);
+            if (!technologyToUpdate) {
+                console.error('Technology not found');
+                return;
+            }
+    
+            // Create an updated object with the toggled isActive state
+            const updatedTechnology = {
+                ...technologyToUpdate,
+                isActive: !currentState
+            };
+    
+            // Send the full technology object in the PUT request
+            await axios.put(`http://172.17.31.61:5274/api/technology/${id}`, updatedTechnology);
+    
+            // Update the state with the new technology data
+            setTechnologies(technologies.map(tech => tech.id === id ? { ...tech, isActive: !currentState } : tech));
+        } catch (error) {
+            console.error('Error updating technology active state:', error);
+        }
+    };
+
+    const handleUndo = async (id) => {
+        try {
+            await handleToggleActive(id, false); // Activate the technology
+        } catch (error) {
+            console.error('Error activating the Technology!', error);
+            setError(error);
+        }
+        setConfirmOpen(false);
+    };
     const sortedTechnologies = [...technologies].sort((a, b) => {
         const valueA = a[orderBy] || '';
         const valueB = b[orderBy] || '';
@@ -119,19 +155,13 @@ function TechnologyList({isDrawerOpen}) {
         // Name field validation
         if (!currentTechnology.name.trim()) {
             validationErrors.name = "Name is required";
-        } else if(!currentTechnology.length < 3){
+        } else if(currentTechnology.length < 3){
             validationErrors.name = "Name must be at least 3 characters";
         }
         else if (technologies.some(tech => tech.name.toLowerCase() === currentTechnology.name.toLowerCase() && tech.id !== currentTechnology.id)) {
             validationErrors.name = "Name must be unique";
         }
 
-        // Department field validation 
-        if (!currentTechnology.department) {
-            validationErrors.department = "Department is required";
-        }
-
-        // If there are validation errors, update the state and prevent save
         if (Object.keys(validationErrors).length > 0) {
             setErrors(validationErrors);
             return;
@@ -173,12 +203,6 @@ function TechnologyList({isDrawerOpen}) {
                 setErrors((prevErrors) => ({ ...prevErrors, name: "" }));
             }
         }
-
-        if (name === "department") {
-            if (value) {
-                setErrors((prevErrors) => ({ ...prevErrors, department: "" }));
-            }
-        }
     };
 
     const handleClose = () => {
@@ -197,7 +221,14 @@ function TechnologyList({isDrawerOpen}) {
     };
 
     const confirmDelete = (id) => {
-        setDeleteTechId(id);
+        setConfirmAction('delete');
+        setTargetTechnology(id);
+        setConfirmOpen(true);
+    };
+
+    const confirmUndo = (id) => {
+        setConfirmAction('undo');
+        setTargetTechnology(id);
         setConfirmOpen(true);
     };
 
@@ -205,22 +236,26 @@ function TechnologyList({isDrawerOpen}) {
         setConfirmOpen(false);
     };
 
-    const handleConfirmYes = () => {
-        handleDelete(deleteTechId);
+    const handleConfirmYes = () => {       
+        if (confirmAction === 'delete') {
+            handleDelete(targetTechnology);
+        } else if (confirmAction === 'undo') {
+            handleUndo(targetTechnology);
+        }
     };
 
     if (loading) {
-        return <p>Loading...</p>;
+        return <p style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop:'200px' }}>Loading...</p>;
     }
 
     if (error) {
-        return <p>There was an error loading the data: {error.message}</p>;
+        return <p style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop:'200px' }}>There was an error loading the data: {error.message}</p>;
     }
 
     return (
-        <div style={{ display: 'flex',flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 250 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
+        <div style={{ display: 'flex',flexDirection: 'column', padding: '10px', marginLeft: isDrawerOpen ? 240 : 0, transition: 'margin-left 0.3s', flexGrow: 1 }}>
             <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-                <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>Technology Table List</h3>
+                <h3 style={{ marginBottom: '20px', fontSize: '25px' }}>Technology</h3>
             </div>
             <div style={{ display: 'flex', marginBottom: '20px' }}>
                 <TextField
@@ -319,31 +354,38 @@ function TechnologyList({isDrawerOpen}) {
                                 sx={{ backgroundColor: technology.isActive ? 'inherit' : '#FFCCCB' }} >
                                 <TableCell>{technology.name}</TableCell>
                                 <TableCell>{technology.department}</TableCell>
-                                <TableCell>{technology.isActive ? 'Active' : 'Inactive'}</TableCell>
+                                <TableCell>
+                                    <Switch
+                                        checked={technology.isActive}
+                                        disabled={!technology.isActive} // Disable toggle for inactive records
+                                        onChange={() => handleToggleActive(technology.id, technology.isActive)}
+                                        color="primary"
+                                    />
+                                </TableCell>
                                 <TableCell>{technology.createdBy}</TableCell>
                                 <TableCell>{technology.createdDate}</TableCell>
                                 <TableCell>{technology.updatedBy || 'N/A'}</TableCell>
                                 <TableCell>{technology.updatedDate || 'N/A'}</TableCell>
-                                <TableCell >
-                                    <IconButton onClick={() => handleUpdate(technology)}>
-                                        <EditIcon color="primary" />
-                                    </IconButton>
-                                    <IconButton onClick={() => confirmDelete(technology.id)}>
-                                        <DeleteIcon color="error" />
-                                    </IconButton>
+                                <TableCell>
+                                    {technology.isActive ? (
+                                        <>
+                                            <IconButton onClick={() => handleUpdate(technology)}>
+                                                <EditIcon color="primary" />
+                                            </IconButton>
+                                            <IconButton onClick={() => confirmDelete(technology.id)}>
+                                                <DeleteIcon color="error" />
+                                            </IconButton>
+                                        </>
+                                    ) : (
+                                        <IconButton onClick={() => confirmUndo(technology.id)}>
+                                            <UndoIcon color="secondary" />
+                                        </IconButton>
+                                    )}
                                 </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
                 </Table>
-                {/* Pagination Component */}
-                {/* <PaginationComponent
-                    count={filteredTechnologies.length}
-                    page={page}
-                    rowsPerPage={rowsPerPage}
-                    handlePageChange={handlePageChange}
-                    handleRowsPerPageChange={handleRowsPerPageChange}
-                /> */}
             </TableContainer>
             <TablePagination
                 rowsPerPageOptions={[10, 25, 100]}
@@ -354,8 +396,6 @@ function TechnologyList({isDrawerOpen}) {
                 onPageChange={handlePageChange}
                 onRowsPerPageChange={handleRowsPerPageChange}
             />
-
-            {/* Dialogs for adding/editing and confirming delete */}
             <Dialog open={open} onClose={() => setOpen(false)}>
                 <DialogTitle>{currentTechnology.id ? 'Update Technology' : 'Add Technology'}</DialogTitle>
                 <DialogContent>
@@ -399,14 +439,18 @@ function TechnologyList({isDrawerOpen}) {
                 </DialogActions>
             </Dialog>
 
-            <Dialog open={confirmOpen} onClose={handleConfirmClose}>
-                <DialogTitle>Confirm Delete</DialogTitle>
+            <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
+                <DialogTitle>{confirmAction === 'delete' ? 'Confirm Delete' : 'Confirm Activation'}</DialogTitle>
                 <DialogContent>
-                    <Typography>Are you sure you want to delete this technology?</Typography>
+                    <Typography>
+                        {confirmAction === 'delete'
+                            ? 'Are you sure you want to delete this Department?'
+                            : 'Are you sure you want to activate this Department?'}
+                    </Typography>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleConfirmClose}>No</Button>
-                    <Button onClick={handleConfirmYes} color="error">Yes</Button>
+                    <Button onClick={() => setConfirmOpen(false)}>No</Button>
+                    <Button onClick={handleConfirmYes} color="primary">Yes</Button>
                 </DialogActions>
             </Dialog>
         </div>
@@ -414,4 +458,3 @@ function TechnologyList({isDrawerOpen}) {
 }
 
 export default TechnologyList;
-
