@@ -160,17 +160,17 @@ function InterviewList({ isDrawerOpen }) {
         setConfirmOpen(false);
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         let validationErrors = {};
 
         // Name field validation
-        if (!currentInterview.sowRequirement.trim()) {
+        if (!currentInterview.sowRequirement) {
             validationErrors.sowRequirement = "SowRequirement is required";
         }
         if (!currentInterview.name) {
             validationErrors.name = "Name is required";
 
-        }else if(currentInterview.name.length < 3) {
+        } else if (currentInterview.name.length < 3) {
             validationErrors.name = "Name must be atleast 3 characters";
         }
         if (!currentInterview.interviewDate) {
@@ -198,25 +198,30 @@ function InterviewList({ isDrawerOpen }) {
         // Clear any previous errors if validation passes
         setErrors({});
 
-        if (currentInterview.id) {
-            axios.put(`http://172.17.31.61:5200/api/interview/${currentInterview.id}`, currentInterview)
-                .then(response => {
-                    setInterviews(Interviews.map(tech => tech.id === currentInterview.id ? response.data : tech));
-                })
-                .catch(error => {
-                    console.error('There was an error updating the Interview!', error);
-                    setError(error);
-                });
+        const selectedSOWRequirement = SOWRequirement.find(sr => sr.teamSize === currentInterview.sowRequirement);
+        const SOWRequirementId = selectedSOWRequirement ? selectedSOWRequirement.id : null;
 
+        const selectedStatus = InterviewStatus.find(s => s.status === currentInterview.status);
+        const statusId = selectedStatus ? selectedStatus.id : null;
+
+        const selectedRecruiter = Employee.find(e => e.name === currentInterview.recruiter);
+        const RecruiterId = selectedRecruiter ? selectedRecruiter.id : null;
+
+        const InterviewToSave = {
+            ...currentInterview,
+            sowRequirement: SOWRequirementId,
+            status: statusId,
+            recruiter: RecruiterId,
+        }
+
+        if (currentInterview.id) {
+            axios.put(`http://172.17.31.61:5200/api/interview/${currentInterview.id}`, InterviewToSave)
+            const res = await axios.get('http://172.17.31.61:5200/api/interview');
+            setInterviews(res.data);              
         } else {
-            axios.post('http://172.17.31.61:5200/api/interview', currentInterview)
-                .then(response => {
-                    setInterviews([...Interviews, response.data]);
-                })
-                .catch(error => {
-                    console.error('There was an error adding the Interview!', error);
-                    setError(error);
-                });
+            axios.post('http://localhost:5500/api/Interview', InterviewToSave)
+            const res = await axios.get('http://172.17.31.61:5200/api/interview');
+            setInterviews(res.data);
         }
         setOpen(false);
 

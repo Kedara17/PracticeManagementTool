@@ -180,7 +180,7 @@ function BlogsList({ isDrawerOpen }) {
     };
 
 
-    const handleSave = () => {
+    const handleSave = async () => {
         let validationErrors = {};
 
         // Title field validation
@@ -225,25 +225,21 @@ function BlogsList({ isDrawerOpen }) {
             console.log("Webinar Date:", blogDate);
         }
 
-        if (currentBlogs.id) {
-            axios.put(`http://172.17.31.61:5174/api/blogs/${currentBlogs.id}`, currentBlogs)
-                .then(response => {
-                    setBlogs(blogs.map(tech => tech.id === currentBlogs.id ? response.data : tech));
-                })
-                .catch(error => {
-                    console.error('There was an error updating the Blogs!', error);
-                    setError(error);
-                });
+        const selectedAuthor = Employees.find(a => a.name === currentBlogs.author);
+        const AuthorId = selectedAuthor ? selectedAuthor.id : null;
 
+        const BlogsToSave = {
+            ...currentBlogs,
+            author: AuthorId,
+        }
+        if (currentBlogs.id) {
+            axios.put(`http://172.17.31.61:5174/api/blogs/${currentBlogs.id}`, BlogsToSave)
+            const res = await axios.get('http://172.17.31.61:5174/api/blogs');
+            setBlogs(res.data);            
         } else {
-            axios.post('http://172.17.31.61:5174/api/blogs', currentBlogs)
-                .then(response => {
-                    setBlogs([...blogs, response.data]);
-                })
-                .catch(error => {
-                    console.error('There was an error adding the Blogs!', error);
-                    setError(error);
-                });
+            axios.post('http://localhost:5147/api/Blogs', BlogsToSave)
+            const res = await axios.get('http://172.17.31.61:5174/api/blogs');
+            setBlogs(res.data);
         }
         setOpen(false);
     };

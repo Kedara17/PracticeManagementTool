@@ -141,7 +141,7 @@ function ClientList({ isDrawerOpen }) {
         setConfirmOpen(false);
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         let validationErrors = {};
 
         // Name field validation
@@ -156,7 +156,7 @@ function ClientList({ isDrawerOpen }) {
         }
         if (!currentClient.lineofBusiness) {
             validationErrors.lineofBusiness = "LineofBusiness is required";
-        } else if (!currentClient.lineofBusiness.length < 3) {
+        } else if (currentClient.lineofBusiness.length < 3) {
             validationErrors.lineofBusiness = "LineofBusiness must be atleast 3 characters";
         }
         if (!currentClient.salesEmployee) {
@@ -164,17 +164,17 @@ function ClientList({ isDrawerOpen }) {
         }
         if (!currentClient.country) {
             validationErrors.country = "Country is required";
-        } else if (!currentClient.country.length < 3) {
+        } else if (currentClient.country.length < 3) {
             validationErrors.country = "Country must be atleast 3 characters";
         }
         if (!currentClient.city) {
             validationErrors.city = "City is required";
-        } else if (!currentClient.city.length < 3) {
+        } else if (currentClient.city.length < 3) {
             validationErrors.city = "City must be atleast 3 characters";
         }
         if (!currentClient.state) {
             validationErrors.state = "State is required";
-        } else if (!currentClient.state.length < 3) {
+        } else if (currentClient.state.length < 3) {
             validationErrors.state = "State must be atleast 3 characters";
         }
         if (!currentClient.address) {
@@ -190,30 +190,26 @@ function ClientList({ isDrawerOpen }) {
         // Clear any previous errors if validation passes
         setErrors({});
 
+        const selectedSalesEmployee = employees.find(c => c.name === currentClient.salesEmployee);
+        const salesEmployeeId = selectedSalesEmployee ? selectedSalesEmployee.id : null; 
+    
+        const salesEmployeeToSave = {
+            ...currentClient,
+            salesEmployee: salesEmployeeId
+        };
+
         if (currentClient.id) {
             //axios.put(`http://localhost:5142/api/Client/${currentClient.id}`, currentClient)
-            axios.put(`http://172.17.31.61:5142/api/client/${currentClient.id}`, currentClient)
-                .then(response => {
-                    setClients(Clients.map(tech => tech.id === currentClient.id ? response.data : tech));
-                })
-                .catch(error => {
-                    console.error('There was an error updating the Client!', error);
-                    setError(error);
-                });
-
+            axios.put(`http://172.17.31.61:5142/api/client/${currentClient.id}`, salesEmployeeToSave)
+            const res = await axios.get('http://172.17.31.61:5142/api/client');
+            setClients(res.data);               
         } else {
             //axios.post('http://localhost:5142/api/Client', currentClient)
-            axios.post('http://172.17.31.61:5142/api/client', currentClient)
-                .then(response => {
-                    setClients([...Clients, response.data]);
-                })
-                .catch(error => {
-                    console.error('There was an error adding the Client!', error);
-                    setError(error);
-                });
+            axios.post('http://172.17.31.61:5142/api/client', salesEmployeeToSave)
+            const res = await axios.get('http://172.17.31.61:5142/api/client');
+            setClients(res.data);
         }
         setOpen(false);
-
     };
 
     const handleChange = (e) => {
