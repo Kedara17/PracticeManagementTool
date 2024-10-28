@@ -160,7 +160,7 @@ function SOWList({ isDrawerOpen }) {
         setConfirmOpen(false);
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         let validationErrors = {};
         // if (!currentSOW.client.trim()) {
         //     validationErrors.client = "Please select a Project";
@@ -202,25 +202,45 @@ function SOWList({ isDrawerOpen }) {
         // Clear any previous errors if validation passes
         setErrors({});
 
+        const selectedClientt = Clients.find(c => c.name === currentSOW.client);
+        const clientId = selectedClientt ? selectedClientt.id : null;
+        
+        const selectedProject = Projects.find(p => p.projectName === currentSOW.project);
+        const projectId = selectedProject ? selectedProject.id : null;
+
+        const selectedStatus = SOWStatus.find(s => s.status === currentSOW.status);
+        const statusId = selectedStatus ? selectedStatus.id : null;
+    
+        const SOWToSave = {
+            ...currentSOW,
+            client: clientId,
+            project : projectId,
+            status : statusId,
+        };
+
         if (currentSOW.id) {
-            axios.put(`http://172.17.31.61:5041/api/sow/${currentSOW.id}`, currentSOW)
-                .then(response => {
-                    setSOWs(SOWs.map(tech => tech.id === currentSOW.id ? response.data : tech));
-                })
-                .catch(error => {
-                    console.error('There was an error updating the SOW!', error);
-                    setError(error);
-                });
+            axios.put(`http://172.17.31.61:5041/api/sow/${currentSOW.id}`, SOWToSave)
+            const res = await axios.get('http://172.17.31.61:5041/api/sow');
+            setSOWs(res.data); 
+                // .then(response => {
+                //     setSOWs(SOWs.map(tech => tech.id === currentSOW.id ? response.data : tech));
+                // })
+                // .catch(error => {
+                //     console.error('There was an error updating the SOW!', error);
+                //     setError(error);
+                // });
 
         } else {
-            axios.post('http://172.17.31.61:5041/api/sow', currentSOW)
-                .then(response => {
-                    setSOWs([...SOWs, response.data]);
-                })
-                .catch(error => {
-                    console.error('There was an error adding the SOW!', error);
-                    setError(error);
-                });
+            axios.post('http://172.17.31.61:5041/api/sow', SOWToSave)
+            const res = await axios.get('http://172.17.31.61:5041/api/sow');
+            setSOWs(res.data); 
+                // .then(response => {
+                //     setSOWs([...SOWs, response.data]);
+                // })
+                // .catch(error => {
+                //     console.error('There was an error adding the SOW!', error);
+                //     setError(error);
+                // });
         }
         setOpen(false);
 

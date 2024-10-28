@@ -160,11 +160,11 @@ function InterviewList({ isDrawerOpen }) {
         setConfirmOpen(false);
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         let validationErrors = {};
 
         // Name field validation
-        if (!currentInterview.sowRequirement.trim()) {
+        if (!currentInterview.sowRequirement) {
             validationErrors.sowRequirement = "SowRequirement is required";
         }
         if (!currentInterview.name) {
@@ -198,25 +198,45 @@ function InterviewList({ isDrawerOpen }) {
         // Clear any previous errors if validation passes
         setErrors({});
 
+        const selectedSowRequirement = SOWRequirement.find(se => se.teamSize === currentInterview.sowRequirement);
+        const sowRequirementId = selectedSowRequirement ? selectedSowRequirement.id : null; 
+    
+        const selectedStatus = InterviewStatus.find(s => s.status === currentInterview.status);
+        const statusId = selectedStatus ? selectedStatus.id : null; 
+    
+        const selectedRecruiter = Employee.find(r => r.name === currentInterview.recruiter);
+        const recruiterId = selectedRecruiter ? selectedRecruiter.id : null; 
+    
+        const interviewToSave = {
+            ...currentInterview,
+            recruiter : recruiterId,
+            status : statusId,
+            sowRequirement: sowRequirementId,
+        };
+        
         if (currentInterview.id) {
-            axios.put(`http://172.17.31.61:5200/api/interview/${currentInterview.id}`, currentInterview)
-                .then(response => {
-                    setInterviews(Interviews.map(tech => tech.id === currentInterview.id ? response.data : tech));
-                })
-                .catch(error => {
-                    console.error('There was an error updating the Interview!', error);
-                    setError(error);
-                });
+            axios.put(`http://172.17.31.61:5200/api/interview/${currentInterview.id}`, interviewToSave)
+            const res = await axios.get('http://172.17.31.61:5200/api/interview');
+            setInterviews(res.data); 
+                // .then(response => {
+                //     setInterviews(Interviews.map(tech => tech.id === currentInterview.id ? response.data : tech));
+                // })
+                // .catch(error => {
+                //     console.error('There was an error updating the Interview!', error);
+                //     setError(error);
+                // });
 
         } else {
-            axios.post('http://172.17.31.61:5200/api/interview', currentInterview)
-                .then(response => {
-                    setInterviews([...Interviews, response.data]);
-                })
-                .catch(error => {
-                    console.error('There was an error adding the Interview!', error);
-                    setError(error);
-                });
+            axios.post('http://172.17.31.61:5200/api/interview', interviewToSave)
+            const res = await axios.get('http://172.17.31.61:5200/api/interview');
+            setInterviews(res.data); 
+                // .then(response => {
+                //     setInterviews([...Interviews, response.data]);
+                // })
+                // .catch(error => {
+                //     console.error('There was an error adding the Interview!', error);
+                //     setError(error);
+                // });
         }
         setOpen(false);
 

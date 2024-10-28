@@ -180,7 +180,7 @@ function BlogsList({ isDrawerOpen }) {
     };
 
 
-    const handleSave = () => {
+    const handleSave = async () => {
         let validationErrors = {};
 
         // Title field validation
@@ -215,6 +215,15 @@ function BlogsList({ isDrawerOpen }) {
         // Clear any previous errors if validation passes
         setErrors({});
 
+        const selectedAuthor = Employees.find(e => e.name === currentBlogs.author);
+        const authorId = selectedAuthor ? selectedAuthor.id : null; 
+           
+        const blogToSave = {
+            ...currentBlogs,
+            author: authorId,
+        };
+
+
         const { blogDate } = currentBlogs;
 
         // Check if the webinarDate field is empty
@@ -226,24 +235,28 @@ function BlogsList({ isDrawerOpen }) {
         }
 
         if (currentBlogs.id) {
-            axios.put(`http://172.17.31.61:5174/api/blogs/${currentBlogs.id}`, currentBlogs)
-                .then(response => {
-                    setBlogs(blogs.map(tech => tech.id === currentBlogs.id ? response.data : tech));
-                })
-                .catch(error => {
-                    console.error('There was an error updating the Blogs!', error);
-                    setError(error);
-                });
+            axios.put(`http://172.17.31.61:5174/api/blogs/${currentBlogs.id}`, blogToSave)
+            const res = await axios.get('http://172.17.31.61:5174/api/blogs');
+            setBlogs(res.data);
+            // .then(response => {
+                //     setBlogs(blogs.map(tech => tech.id === currentBlogs.id ? response.data : tech));
+                // })
+                // .catch(error => {
+                //     console.error('There was an error updating the Blogs!', error);
+                //     setError(error);
+                // });
 
         } else {
-            axios.post('http://172.17.31.61:5174/api/blogs', currentBlogs)
-                .then(response => {
-                    setBlogs([...blogs, response.data]);
-                })
-                .catch(error => {
-                    console.error('There was an error adding the Blogs!', error);
-                    setError(error);
-                });
+            axios.post('http://localhost:5147/api/Blogs', blogToSave)
+            const res = await axios.get('http://172.17.31.61:5174/api/blogs');
+            setBlogs(res.data);   
+            // .then(response => {
+                //     setBlogs([...blogs, response.data]);
+                // })
+                // .catch(error => {
+                //     console.error('There was an error adding the Blogs!', error);
+                //     setError(error);
+                // });
         }
         setOpen(false);
     };
