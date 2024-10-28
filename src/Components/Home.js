@@ -39,6 +39,7 @@ import SOWStatusList from '../SOWServices/SOWStatusList';
 import POCList from '../POCServices/POCList';
 import CustomBreadcrumbs from './CustomBreadCrumbs';
 import CertificationsList from '../CertificationsServices/CertificationsList';
+import SuccessStoriesList from '../SuccessStoriesServices/SuccessStoriesList';
 import NewLeadEnquiryList from '../NewLeadEnquiryServices/NewLeadEnquiryList';
 
 function Home() {
@@ -548,6 +549,9 @@ function Home() {
           <Route path='sow/sowproposedteamlist' element={<SOWProposedTeamList isDrawerOpen={isDrawerOpen} />} />
           <Route path='sow/sowrequirementlist' element={<SOWRequirementList isDrawerOpen={isDrawerOpen} />} />
           <Route path='sow/sowstatuslist' element={<SOWStatusList isDrawerOpen={isDrawerOpen} />} />
+          <Route path='poc/poclist' element={<POCList isDrawerOpen={isDrawerOpen} />} />
+          <Route path='certifications/certificationslist' element={<CertificationsList isDrawerOpen={isDrawerOpen} />} />
+          <Route path='successStories/successStoriesList' element={<SuccessStoriesList isDrawerOpen={isDrawerOpen} />} />
           <Route path='poc' element={<POCList isDrawerOpen={isDrawerOpen} />} />
           <Route path='certifications' element={<CertificationsList isDrawerOpen={isDrawerOpen} />} />
           <Route path='newLeadEnquiry' element={<NewLeadEnquiryList isDrawerOpen={isDrawerOpen} />} />
