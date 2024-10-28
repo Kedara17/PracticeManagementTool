@@ -4,6 +4,8 @@
 
 //new one
 
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
@@ -37,6 +39,8 @@ const CertificationsList = () => {
         'Expired',
         'Renewed',
         'Failed'];
+
+        // toast.configure();
 
 
     const [currentCertifications, setCurrentCertifications] = useState({
@@ -186,51 +190,54 @@ const CertificationsList = () => {
 
     const handleSave = async () => {
         let validationErrors = {};
-
+    
         // Name field validation
         if (!currentCertifications.name.trim()) {
             validationErrors.name = "Certification is required";
         } else if (!/^[A-Za-z\s]+$/.test(currentCertifications.name)) {
             validationErrors.name = "Enter a valid certificate name (only alphabetical characters)";
         }
+    
         if (!currentCertifications.status) {
             validationErrors.status = "Status is required";
         }
-        <br></br>
+    
         if (!currentCertifications.employeeId) {
-            validationErrors.employee = "employee is required";
+            validationErrors.employeeId = "Employee is required";
         }
-
-
+    
         // If there are validation errors, update the state and prevent save
         if (Object.keys(validationErrors).length > 0) {
             setErrors(validationErrors);
             return;
         }
-
+    
         setErrors({});
         console.log(currentCertifications);
-
-        if (currentCertifications.id) {
-
-            await axios.put(`http://localhost:5019/api/Certifications/${currentCertifications.id}`, currentCertifications)
-
+    
+        try {
+            if (currentCertifications.id) {
+                // Update the certification
+                await axios.put(`http://localhost:5019/api/Certifications/${currentCertifications.id}`, currentCertifications);
+                toast.success("Certification updated successfully!");
+            } else {
+                // Add a new certification
+                await axios.post('http://localhost:5019/api/Certifications', currentCertifications);
+                toast.success("New certification added successfully!");
+            }
+    
+            // Refresh certifications list
             const response = await axios.get('http://localhost:5019/api/Certifications');
             setCertifications(response.data);
-
-        } else {
-            // Add new Designation
-            // axios.post('http://localhost:5501/api/Designation', currentDesignation)
-            await axios.post('http://localhost:5019/api/Certifications', currentCertifications)
-            const response = await axios.get('http://localhost:5019/api/Certifications');
-            setCertifications(response.data);
+        } catch (error) {
+            console.error("Error:", error);
+            toast.error("An error occurred while updating the certification.");
+        } finally {
+            setOpen(false);  // Close modal or reset form as needed
         }
-        setOpen(false);
     };
 
-
-
-
+    
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -336,6 +343,9 @@ const CertificationsList = () => {
 
     return (
         <div>
+
+<ToastContainer position="top-right" autoClose={3000} />
+
             <div style={{ display: 'flex' }}>
                 <h3>Certification</h3>
             </div>
@@ -606,6 +616,8 @@ const CertificationsList = () => {
                     <Button onClick={handleClose}>Cancel</Button>
                     <Button onClick={handleSave} color="primary">
                         {currentCertifications.id ? 'Update' : 'Save'}
+                        
+                        {/* <ToastContainer position="top-right" autoClose={3000} /> */}
                     </Button>
                 </DialogActions>
             </Dialog>
