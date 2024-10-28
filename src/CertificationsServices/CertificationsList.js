@@ -18,7 +18,6 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import '../App.css';
 
-
 const CertificationsList = () => {
     const [certifications, setCertifications] = useState([]);
     const [employees, setEmployees] = useState([]);
@@ -30,10 +29,18 @@ const CertificationsList = () => {
     const [deleteTechId, setDeleteTechId] = useState(null);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
+    // const [CertificateStatus, setCertificateStatus] = useState([]);
+    const options = [
+        'Completed',
+        'InProgress',
+        'Pending',
+        'Expired',
+        'Renewed',
+        'Failed'];
 
 
     const [currentCertifications, setCurrentCertifications] = useState({
-        employee: '',
+        employeeId: '',
         name: '',
         examDate: '',
         validTill: '',
@@ -42,7 +49,7 @@ const CertificationsList = () => {
         isActive: true // New field to track isActive status
     });
 
-    const [order, setOrder] = useState('asc'); // Order of sorting: 'asc' or 'desc'
+    const [order, setOrder] = useState('desc'); // Order of sorting: 'asc' or 'desc'
     const [orderBy, setOrderBy] = useState('createdDate'); // Column to sort by
     const [searchQuery, setSearchQuery] = useState(''); // State for search query
     const [errors, setErrors] = useState({
@@ -95,11 +102,20 @@ const CertificationsList = () => {
         const valueB = b[orderBy] || '';
 
         if (typeof valueA === 'string' && typeof valueB === 'string') {
-            return order === 'asc' ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
+            return order === 'desc'
+                ? valueB.localeCompare(valueA)
+                : valueA.localeCompare(valueB);
+        } else if (valueA instanceof Date && valueB instanceof Date) {
+            return order === 'desc'
+                ? valueB - valueA
+                : valueA - valueB;
         } else {
-            return order === 'asc' ? (valueA > valueB ? 1 : -1) : (valueB > valueA ? 1 : -1);
+            return order === 'desc'
+                ? (valueA > valueB ? 1 : -1)
+                : (valueB > valueA ? 1 : -1);
         }
     });
+
 
     const filteredCertifications = sortedCertifications.filter((certification) =>
         (certification.name && typeof certification.name === 'string' &&
@@ -107,11 +123,17 @@ const CertificationsList = () => {
 
         (certification.employeeId && typeof certification.employeeId === 'string' &&
             certification.employeeId.toLowerCase().includes(searchQuery.toLowerCase()))
+
+            (certification.status && typeof certification.status === 'string' &&
+                certification.status.toLowerCase().includes(searchQuery.toLowerCase()))
+
+            (certification.comments && typeof certification.comments === 'string' &&
+                certification.comments.toLowerCase().includes(searchQuery.toLowerCase()))
     );
 
     const handleAdd = () => {
         setCurrentCertifications({
-            employee: '',
+            employeeId: '',
             name: '',
             examDate: '',
             validTill: '',
@@ -134,7 +156,7 @@ const CertificationsList = () => {
                 setCertifications(certifications.filter(tech => tech.id !== id));
             })
             .catch(error => {
-                console.error('There was an error deleting the technology!', error);
+                console.error('There was an error deleting the certification!', error);
                 setError(error);
             });
         setConfirmOpen(false);
@@ -162,7 +184,7 @@ const CertificationsList = () => {
 
 
 
-    const handleSave = () => {
+    const handleSave = async () => {
         let validationErrors = {};
 
         // Name field validation
@@ -170,6 +192,13 @@ const CertificationsList = () => {
             validationErrors.name = "Certification is required";
         } else if (!/^[A-Za-z\s]+$/.test(currentCertifications.name)) {
             validationErrors.name = "Enter a valid certificate name (only alphabetical characters)";
+        }
+        if (!currentCertifications.status) {
+            validationErrors.status = "Status is required";
+        }
+        <br></br>
+        if (!currentCertifications.employeeId) {
+            validationErrors.employee = "employee is required";
         }
 
 
@@ -179,34 +208,22 @@ const CertificationsList = () => {
             return;
         }
 
-        // Clear any previous errors if validation passes
         setErrors({});
+        console.log(currentCertifications);
 
         if (currentCertifications.id) {
-            // Update existing Designation
-            // axios.put(`http://localhost:5501/api/Designation/${currentDesignation.id}`, currentDesignation)
-            axios.put(`http://localhost:5019/api/Certifications/${currentCertifications.id}`, currentCertifications)
-                .then(response => {
-                    //setDesignations([...Designations, response.data]);
-                    // setDesignations(response.data);
-                    setCertifications(certifications.map(tech => tech.id === currentCertifications.id ? response.data : tech));
-                })
-                .catch(error => {
-                    console.error('There was an error updating the Certifications!', error);
-                    setError(error);
-                });
+
+            await axios.put(`http://localhost:5019/api/Certifications/${currentCertifications.id}`, currentCertifications)
+
+            const response = await axios.get('http://localhost:5019/api/Certifications');
+            setCertifications(response.data);
 
         } else {
             // Add new Designation
             // axios.post('http://localhost:5501/api/Designation', currentDesignation)
-            axios.post('http://localhost:5019/api/Certifications', currentCertifications)
-                .then(response => {
-                    setCertifications([...certifications, response.data]);
-                })
-                .catch(error => {
-                    console.error('There was an error adding the Certifications!', error);
-                    setError(error);
-                });
+            await axios.post('http://localhost:5019/api/Certifications', currentCertifications)
+            const response = await axios.get('http://localhost:5019/api/Certifications');
+            setCertifications(response.data);
         }
         setOpen(false);
     };
@@ -238,12 +255,22 @@ const CertificationsList = () => {
                 setErrors((prevErrors) => ({ ...prevErrors, employeeId: "" }));
             }
         }
+        if (name === "status") {
+            if (value) {
+                setErrors((prevErrors) => ({ ...prevErrors, status: "" }));
+            }
+        }
+        if (name === "comments") {
+            if (value) {
+                setErrors((prevErrors) => ({ ...prevErrors, comments: "" }));
+            }
+        }
     };
 
 
     const handleClose = () => {
-        setCurrentCertifications({ name: '', certification: '' }); // Reset the department fields
-        setErrors({ name: '', certification: '' }); // Reset the error state
+        setCurrentCertifications({ name: '', certification: '', status: '', comments: '' }); // Reset the department fields
+        setErrors({ name: '', certification: '', status: '', comments: '' }); // Reset the error state
         setOpen(false); // Close the dialog
     };
 
@@ -373,6 +400,28 @@ const CertificationsList = () => {
                                     <b>ValidTill</b>
                                 </TableSortLabel>
                             </TableCell>
+
+                            <TableCell>
+                                <TableSortLabel
+                                    active={orderBy === 'status'}
+                                    direction={orderBy === 'status' ? order : 'asc'}
+                                    onClick={() => handleSort('status')}
+                                >
+                                    <b>Status</b>
+                                </TableSortLabel>
+                            </TableCell>
+
+
+                            <TableCell>
+                                <TableSortLabel
+                                    active={orderBy === 'comments'}
+                                    direction={orderBy === 'comments' ? order : 'asc'}
+                                    onClick={() => handleSort('comments')}
+                                >
+                                    <b>Comments</b>
+                                </TableSortLabel>
+                            </TableCell>
+
                             <TableCell>
                                 <TableSortLabel
                                     active={orderBy === 'isActive'}
@@ -426,14 +475,17 @@ const CertificationsList = () => {
                             <TableRow key={certification.id}
                                 sx={{ backgroundColor: certification.isActive ? 'inherit' : '#FFCCCB' }} >
                                 <TableCell>{certification.name}</TableCell>
-                                <TableCell>{certification.employee}</TableCell>
+                                <TableCell>{certification.employeeId}</TableCell>
                                 <TableCell>{certification.examDate}</TableCell>
                                 <TableCell>{certification.validTill}</TableCell>
+                                <TableCell>{certification.status}</TableCell>
+
+                                <TableCell>{certification.comments}</TableCell>
                                 <TableCell>{certification.isActive ? 'Active' : 'InActive'}</TableCell>
                                 <TableCell>{certification.createdBy}</TableCell>
-                                <TableCell>{new Date(certification.createdDate).toLocaleDateString()}</TableCell>
+                                <TableCell>{(certification.createdDate)}</TableCell>
                                 <TableCell>{certification.updatedBy || 'N/A'}</TableCell>
-                                <TableCell>{new Date(certification.updatedDate).toLocaleDateString()}</TableCell>
+                                <TableCell>{(certification.updatedDate) || 'N/A'}</TableCell>
                                 <TableCell >
                                     <IconButton onClick={() => handleUpdate(certification)}>
                                         <EditIcon color="primary" />
@@ -482,17 +534,26 @@ const CertificationsList = () => {
                     />
 
 
+                    <div></div>
 
-                    <TextField
+                    <InputLabel>Status</InputLabel>
+                    <Select
                         margin="dense"
                         name="status"
-                        label="Status"
                         value={currentCertifications.status}
                         onChange={handleChange}
                         fullWidth
-                        error={!!errors.comments} // Display error if exists
-                        helperText={errors.comments}
-                    />
+                        error={!!errors.status}
+                        inputProps={{ maxLength: 50 }}
+                    >
+                        {options.map((option, index) => (
+                            <MenuItem key={index} value={option}>
+                                {option}
+                            </MenuItem>
+                        ))}
+                    </Select>
+                    {errors.status && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.status}</Typography>}
+
 
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
@@ -527,14 +588,14 @@ const CertificationsList = () => {
                     <InputLabel>Employee</InputLabel>
                     <Select
                         margin="dense"
-                        name="employee"
+                        name="employeeId"
                         value={currentCertifications.employee}
                         onChange={handleChange}
                         fullWidth
                         error={!!errors.employee}
                     >
                         {employees.map((employee) => (
-                            <MenuItem key={employee.id} value={employee.name}>
+                            <MenuItem key={employee.id} value={employee.id}>
                                 {employee.name}
                             </MenuItem>
                         ))}
