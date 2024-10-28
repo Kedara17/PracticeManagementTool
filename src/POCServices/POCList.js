@@ -172,6 +172,14 @@ function POCList({ isDrawerOpen }) {
         }
         setErrors({});
 
+        const selectedClient = Clients.find(c => c.name === currentPOC.client);
+        const clientId = selectedClient ? selectedClient.id : null; 
+    
+        const pocToSave = {
+            ...currentPOC,
+            client : clientId,            
+        };
+        
         try {
             let documentPath = currentPOC.document;
             // If a new file is selected, upload it
@@ -180,20 +188,20 @@ function POCList({ isDrawerOpen }) {
                 formData.append('document', selectedFile);
                 formData.append('id', "");
 
-                const uploadResponse = await axios.post('http://localhost:5254/api/POC/uploadFile', formData, {
+                const uploadResponse = await axios.post('http://172.17.31.61:5254/api/poc/uploadFile', formData, {
                     headers: {
                         'Content-Type': 'multipart/form-data',
                     },
                 });
-                documentPath = uploadResponse.data.path; // Adjust based on your backend response
+                documentPath = uploadResponse.data; // Adjust based on your backend response
             }
-
-            currentPOC.document = documentPath;
+            pocToSave.profile = documentPath.path;
+            // currentPOC.document = documentPath;
             if (currentPOC.id) {
-                const response = axios.put(`http://localhost:5254/api/POC/${currentPOC.id}`, currentPOC)
+                const response = axios.put(`http://172.17.31.61:5254/api/poc/${currentPOC.id}`, pocToSave)
                 setPOCs(POCs.map(poc => poc.id === currentPOC.id ? response.data : poc));
             } else {
-                const response = axios.post('http://localhost:5254/api/POC', currentPOC)
+                const response = axios.post('http://172.17.31.61:5254/api/poc', pocToSave)
                 setPOCs([...POCs, response.data]);
             }
             setSelectedFile(null);
@@ -561,7 +569,7 @@ function POCList({ isDrawerOpen }) {
                     <InputLabel>TargetDate</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                            className='date'
+                            className='datetime'
                             value={currentPOC.targetDate ? dayjs(currentPOC.targetDate) : null}
                             onChange={handleTargetDateChange}
                             renderInput={(params) => (
@@ -573,7 +581,7 @@ function POCList({ isDrawerOpen }) {
                     <InputLabel>CompletedDate</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                            className='date'
+                            className='datetime'
                             value={currentPOC.completedDate ? dayjs(currentPOC.completedDate) : null}
                             onChange={handleCompletedDateChange}
                             renderInput={(params) => (

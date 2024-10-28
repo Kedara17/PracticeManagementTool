@@ -227,12 +227,31 @@ function ProjectList({isDrawerOpen}) {
         // Clear any previous errors if validation passes
         setErrors({});
 
+        // const projectToSave = {
+        //     ...currentProject,
+        //     technology: currentProject.technology.map(tech => {
+        //         const selectedTech = Technologies.find(t => t.name === tech);
+        //         return selectedTech ? selectedTech.id : null;
+        //     }).filter(id => id !== null) // Convert technology names to IDs
+        // };
+
+        const technologyIds = currentProject.technology.map(tech => {
+            const selectedTech = Technologies.find(t => t.name === tech);
+            return selectedTech ? selectedTech.id : null;
+        }).filter(id => id !== null);
+
+        const clientId = Clients.find(c => c.name === currentProject.client)?.id || null;
+        const salesContactId = Employees.find(sc => sc.name === currentProject.salesContact)?.id || null;
+        const pmoId = Employees.find(pmo => pmo.name === currentProject.pmo)?.id || null;
+        const technicalProjectManagerId = Employees.find(tpm => tpm.name === currentProject.technicalProjectManager)?.id || null;
+
         const projectToSave = {
             ...currentProject,
-            technology: currentProject.technology.map(tech => {
-                const selectedTech = Technologies.find(t => t.name === tech);
-                return selectedTech ? selectedTech.id : null;
-            }).filter(id => id !== null) // Convert technology names to IDs
+            client: clientId,
+            salesContact: salesContactId,
+            pmo: pmoId,
+            technicalProjectManager: technicalProjectManagerId,
+            technology: technologyIds,               
         };
 
         if (currentProject.id) {
