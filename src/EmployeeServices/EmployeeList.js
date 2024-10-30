@@ -295,13 +295,32 @@ function EmployeeList({ isDrawerOpen }) {
                 profilePath = uploadResponse.data; 
             }
 
+            // const employeeToSave = {
+            //     ...currentEmployee,
+            //     technology: currentEmployee.technology.map(tech => {
+            //         const selectedTech = technologies.find(t => t.name === tech);
+            //         return selectedTech ? selectedTech.id : null;
+            //     }).filter(id => id !== null) 
+            // };
+            const technologyIds = currentEmployee.technology.map(tech => {
+                const selectedTech = technologies.find(t => t.name === tech);
+                return selectedTech ? selectedTech.id : null;
+            }).filter(id => id !== null);
+    
+            const designationId = designations.find(d => d.name === currentEmployee.designation)?.id || null;
+            const departmentId = departments.find(dep => dep.name === currentEmployee.department)?.id || null;
+            const reportingToId = reportingTo.find(rep => rep.name === currentEmployee.reportingTo)?.id || null;
+            const roleId = roles.find(r => r.roleName === currentEmployee.role)?.id || null;
+    
             const employeeToSave = {
                 ...currentEmployee,
-                technology: currentEmployee.technology.map(tech => {
-                    const selectedTech = technologies.find(t => t.name === tech);
-                    return selectedTech ? selectedTech.id : null;
-                }).filter(id => id !== null) 
+                technology: technologyIds,
+                designation: designationId,
+                department: departmentId,
+                reportingTo: reportingToId,
+                role: roleId,               
             };
+    
 
             employeeToSave.profile = profilePath.path;
             if (currentEmployee.id) {
@@ -456,11 +475,11 @@ function EmployeeList({ isDrawerOpen }) {
     };
 
     if (loading) {
-        return <p>Loading...</p>;
+        return <p style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop:'200px' }}>Loading...</p>;
     }
 
     if (error) {
-        return <p>There was an error loading the data: {error.message}</p>;
+        return <p style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop:'200px' }}>There was an error loading the data: {error.message}</p>;
     }
 
     return (

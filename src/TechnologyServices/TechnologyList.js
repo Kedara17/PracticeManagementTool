@@ -170,12 +170,20 @@ function TechnologyList({isDrawerOpen}) {
         // Clear any previous errors if validation passes
         setErrors({});
 
+        const selectedDepartment = departments.find(d => d.name === currentTechnology.department);
+        const departmentId = selectedDepartment ? selectedDepartment.id : null; 
+    
+        const technologyToSave = {
+            ...currentTechnology,
+            department: departmentId,
+        };
+
         if (currentTechnology.id) {
-            await axios.put(`http://172.17.31.61:5274/api/technology/${currentTechnology.id}`, currentTechnology)
+            await axios.put(`http://172.17.31.61:5274/api/technology/${currentTechnology.id}`, technologyToSave)
             const response = await axios.get('http://172.17.31.61:5274/api/technology');
             setTechnologies(response.data);
         } else {
-            await axios.post('http://172.17.31.61:5274/api/technology', currentTechnology)
+            await axios.post('http://172.17.31.61:5274/api/technology', technologyToSave)
             const response = await axios.get('http://172.17.31.61:5274/api/technology');
             setTechnologies(response.data);
         }
@@ -245,11 +253,11 @@ function TechnologyList({isDrawerOpen}) {
     };
 
     if (loading) {
-        return <p>Loading...</p>;
+        return <p style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop:'200px' }}>Loading...</p>;
     }
 
     if (error) {
-        return <p>There was an error loading the data: {error.message}</p>;
+        return <p style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop:'200px' }}>There was an error loading the data: {error.message}</p>;
     }
 
     return (

@@ -172,13 +172,29 @@ function SOWRequirementList({ isDrawerOpen }) {
         // Clear any previous errors if validation passes
         setErrors({});
 
+        // const sowReqToSave = {
+        //     ...currentSOWRequirement,
+        //     technology: currentSOWRequirement.technology.map(tech => {
+        //         const selectedTech = technologies.find(t => t.name === tech);
+        //         return selectedTech ? selectedTech.id : null;
+        //     }).filter(id => id !== null) // Convert technology names to IDs
+        // };
+
+        const technologyIds = currentSOWRequirement.technology.map(tech => {
+            const selectedTech = technologies.find(t => t.name === tech);
+            return selectedTech ? selectedTech.id : null;
+        }).filter(id => id !== null);
+
+        const sowId = SOWs.find(s => s.title === currentSOWRequirement.sow)?.id || null;
+        const designationId = Designations.find(d => d.name === currentSOWRequirement.designation)?.id || null;
+        
         const sowReqToSave = {
             ...currentSOWRequirement,
-            technology: currentSOWRequirement.technology.map(tech => {
-                const selectedTech = technologies.find(t => t.name === tech);
-                return selectedTech ? selectedTech.id : null;
-            }).filter(id => id !== null) // Convert technology names to IDs
+            sow: sowId,
+            designation: designationId,            
+            technology: technologyIds,               
         };
+
 
         if (currentSOWRequirement.id) {
             const response = await axios.put(`http://172.17.31.61:5041/api/sowRequirement/${currentSOWRequirement.id}`, sowReqToSave);
@@ -256,11 +272,11 @@ function SOWRequirementList({ isDrawerOpen }) {
         });
     };
     if (loading) {
-        return <p>Loading...</p>;
+        return <p style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop:'200px' }}>Loading...</p>;
     }
 
     if (error) {
-        return <p>There was an error loading the data: {error.message}</p>;
+        return <p style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop:'200px' }}>There was an error loading the data: {error.message}</p>;
     }
 
     return (

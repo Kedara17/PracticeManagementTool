@@ -39,7 +39,8 @@ import SOWStatusList from '../SOWServices/SOWStatusList';
 import POCList from '../POCServices/POCList';
 import CustomBreadcrumbs from './CustomBreadCrumbs';
 import CertificationsList from '../CertificationsServices/CertificationsList';
-
+import SuccessStoriesList from '../SuccessStoriesServices/SuccessStoriesList';
+import NewLeadEnquiryList from '../NewLeadEnquiryServices/NewLeadEnquiryList';
 
 function Home() {
 
@@ -109,6 +110,8 @@ function Home() {
 
   const [userData, setUserData] = useState({
     photo: '/profile.avif',
+    name: '',
+    role: ''
   });
 
   useEffect(() => {
@@ -430,11 +433,22 @@ function Home() {
 
           {/* Username and Profile Avatar */}
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            <Typography variant="body1" sx={{ marginRight: 1, color:'black' }}>
+            {/* <Typography variant="body1" sx={{ marginRight: 1, color:'black' }}>
               {username || 'U'}
-            </Typography>
+            </Typography> */}
+            <div style={{ marginRight: 2, textAlign: 'center' }}>
+              <Typography variant="body1" sx={{ color: '#232527' }}>
+                {userData.name || 'U'}
+              </Typography>
+              <Typography variant="body2" sx={{ color: '#004687', fontSize:'14px' }}>
+                {userData.role || 'User'}
+              </Typography>
+            </div>
             <IconButton onClick={handleProfileMenuClick} color="inherit">
-              <Avatar src={userData.photo} sx={{ bgcolor: '#00aae7' }}>{username[0] || 'U'}</Avatar>
+              <Avatar src={userData.photo} sx={{ bgcolor: '#00aae7' }}>
+                {/* {username[0] || 'U'} */}
+                {userData.name ? userData.name[0] : 'U'}
+              </Avatar>
             </IconButton>
           </div>
 
@@ -442,7 +456,7 @@ function Home() {
           <Menu
             anchorEl={profileMenuAnchorEl}
             open={Boolean(profileMenuAnchorEl)}
-            onClose={() => setProfileMenuAnchorEl(null)}
+           onClose={() => setProfileMenuAnchorEl(null)}
           >
             <MenuItem onClick={handleProfileMenuClose} sx={{fontFamily:'Lato'}}>Profile</MenuItem>
             <MenuItem onClick={handleLogout} sx={{fontFamily:'Lato'}}>Logout</MenuItem>
@@ -535,8 +549,12 @@ function Home() {
           <Route path='sow/sowproposedteamlist' element={<SOWProposedTeamList isDrawerOpen={isDrawerOpen} />} />
           <Route path='sow/sowrequirementlist' element={<SOWRequirementList isDrawerOpen={isDrawerOpen} />} />
           <Route path='sow/sowstatuslist' element={<SOWStatusList isDrawerOpen={isDrawerOpen} />} />
+          <Route path='poc/poclist' element={<POCList isDrawerOpen={isDrawerOpen} />} />
+          <Route path='certifications/certificationslist' element={<CertificationsList isDrawerOpen={isDrawerOpen} />} />
+          <Route path='successStories/successStoriesList' element={<SuccessStoriesList isDrawerOpen={isDrawerOpen} />} />
           <Route path='poc' element={<POCList isDrawerOpen={isDrawerOpen} />} />
           <Route path='certifications' element={<CertificationsList isDrawerOpen={isDrawerOpen} />} />
+          <Route path='newLeadEnquiry' element={<NewLeadEnquiryList isDrawerOpen={isDrawerOpen} />} />
         </Routes>
 
         {/* {view === 'slider' && <SliderComponent  isDrawerOpen={isDrawerOpen} />}
@@ -558,6 +576,7 @@ function Home() {
         {view === 'sowrequirement' && <SOWRequirementList isDrawerOpen={isDrawerOpen} />}
         {view === 'sowstatus' && <SOWStatusList isDrawerOpen={isDrawerOpen} />}
         {view === 'poc' && <POCList isDrawerOpen={isDrawerOpen} />} */}
+        {/* {view === 'newleadenquiry' && <NewLeadEnquiryList isDrawerOpen={isDrawerOpen} />} */}
       </Box>
     </div>
   )
