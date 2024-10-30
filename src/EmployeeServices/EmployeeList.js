@@ -303,8 +303,7 @@ function EmployeeList({ isDrawerOpen }) {
         }
         if (!currentEmployee.emailId) {
             validationErrors.emailId = "Email is required";
-        }
-        
+        }        
         if (!currentEmployee.department) {
             validationErrors.department = "Department is required";
         }
@@ -317,10 +316,7 @@ function EmployeeList({ isDrawerOpen }) {
         if (!currentEmployee.phoneNo) {
             validationErrors.phoneNo = "PhoneNo is required";
         }
-        if (!currentEmployee.role) {
-            validationErrors.role = "Role is required";
-        }
-
+        
         if (Object.keys(validationErrors).length > 0) {
             setErrors(validationErrors);
             return;
@@ -340,26 +336,45 @@ function EmployeeList({ isDrawerOpen }) {
                         'Content-Type': 'multipart/form-data',
                     },
                 });
-                console.log("upload File", uploadResponse)
                 profilePath = uploadResponse.data; 
             }
 
+            const technologyIds = currentEmployee.technology.map(tech => {
+                const selectedTech = technologies.find(t => t.name === tech);
+                return selectedTech ? selectedTech.id : null;
+            }).filter(id => id !== null);
+
+            const selectedDesignation = designations.find(d => d.name === currentEmployee.designation);
+            const designationId = selectedDesignation ? selectedDesignation.id : null;
+    
+            // Convert department name to ID
+            const selectedDepartment = departments.find(dep => dep.name === currentEmployee.department);
+            const departmentId = selectedDepartment ? selectedDepartment.id : null;
+    
+            // Convert reportingTo name to ID
+            const selectedReportingTo = reportingTo.find(emp => emp.name === currentEmployee.reportingTo);
+            const reportingToId = selectedReportingTo ? selectedReportingTo.id : null;
+    
+            // Convert role name to ID
+             const selectedRole = roles.find(r => r.roleName === currentEmployee.role);
+             const roleId = selectedRole ? selectedRole.id : null;  
+
             const employeeToSave = {
                 ...currentEmployee,
-                technology: currentEmployee.technology.map(tech => {
-                    const selectedTech = technologies.find(t => t.name === tech);
-                    return selectedTech ? selectedTech.id : null;
-                }).filter(id => id !== null) 
+                technology: technologyIds,
+                designation: designationId,
+                department: departmentId,
+                reportingTo: reportingToId,
+                role: roleId,
             };
-
+      
             employeeToSave.profile = profilePath.path;
             if (currentEmployee.id) {
                 const response = await axios.put(`http://172.17.31.61:5033/api/employee/${currentEmployee.id}`, employeeToSave);
-                setEmployees(Employees.map(emp => emp.id === currentEmployee.id ? response.data : emp));
+                 setEmployees(Employees.map(emp => emp.id === currentEmployee.id ? response.data : emp));
             } else {
                 const response = axios.post('http://172.17.31.61:5033/api/employee', employeeToSave);
-                setEmployees([...Employees, response.data]);
-                console.log("emp res", response)
+                setEmployees([...Employees, response.data]);                
             }
 
             setSelectedFile(null);
@@ -369,6 +384,7 @@ function EmployeeList({ isDrawerOpen }) {
             setError(error);
         }
     };
+
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -445,11 +461,11 @@ function EmployeeList({ isDrawerOpen }) {
                 }
             }
         }       
-        if (name === "role") {
-            if (value) {
-                setErrors((prevErrors) => ({ ...prevErrors, role: "" }));
-            }
-        }
+        // if (name === "role") {
+        //     if (value) {
+        //         setErrors((prevErrors) => ({ ...prevErrors, role: "" }));
+        //     }
+        // }
         if (name === "technology") {
             if (value) {
                 setErrors((prevErrors) => ({ ...prevErrors, technology: "" }));
@@ -951,7 +967,8 @@ function EmployeeList({ isDrawerOpen }) {
                         margin="dense"
                         name="role"
                         value={currentEmployee.role}
-                        onChange={handleChange}
+                        // onChange={handleChange}
+                        onChange={(e) => setCurrentEmployee({ ...currentEmployee, role: e.target.value })}                        
                         fullWidth
                         error={!!errors.role}
                     >

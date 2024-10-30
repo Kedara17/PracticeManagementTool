@@ -221,11 +221,11 @@ function WebinarList({ isDrawerOpen }) {
         };
 
         if (currentWebinar.id) {
-            const webRespones= await axios.put(`http://172.17.31.61:5017/api/webinars/${currentWebinar.id}`, webinarToSave)
+           await axios.put(`http://172.17.31.61:5017/api/webinars/${currentWebinar.id}`, webinarToSave)
             const res= await axios.get('http://172.17.31.61:5017/api/webinars');
             setWebinars(res.data);    
       } else {
-            const webResponse = await axios.post('http://172.17.31.61:5017/api/webinars', webinarToSave)
+             await axios.post('http://172.17.31.61:5017/api/webinars', webinarToSave)
             const res= await axios.get('http://172.17.31.61:5017/api/webinars');
             setWebinars(res.data);                
         }

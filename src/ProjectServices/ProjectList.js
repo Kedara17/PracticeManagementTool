@@ -226,7 +226,7 @@ function ProjectList({isDrawerOpen}) {
 
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         setFormSubmitted(true);
         let validationErrors = {};
 
@@ -265,7 +265,7 @@ function ProjectList({isDrawerOpen}) {
         }
         if (!currentProject.technology || currentProject.technology.length === 0) {
             validationErrors.technology = "Technology is required";                  
-             }
+        }
 
         // If there are validation errors, update the state and prevent save
         if (Object.keys(validationErrors).length > 0) {
@@ -276,33 +276,50 @@ function ProjectList({isDrawerOpen}) {
         // Clear any previous errors if validation passes
         setErrors({});
 
+        // const projectToSave = {
+        //     ...currentProject,
+        //     technology: currentProject.technology.map(tech => {
+        //         const selectedTech = Technologies.find(t => t.name === tech);
+        //         return selectedTech ? selectedTech.id : null;
+        //     }).filter(id => id !== null) // Convert technology names to IDs
+        // };
+
+        const technologyIds = currentProject.technology.map(tech => {
+            const selectedTech = Technologies.find(t => t.name === tech);
+            return selectedTech ? selectedTech.id : null;
+        }).filter(id => id !== null);
+
+        const selectedClient = Clients.find(c => c.name === currentProject.client);
+        const clientId = selectedClient ? selectedClient.id : null;      
+
+        // Convert reportingTo name to ID
+        const selectedSalesContact = Employees.find(sc => sc.name === currentProject.salesContact);
+        const salesContactId = selectedSalesContact ? selectedSalesContact.id : null;
+
+        // Convert role name to ID
+         const selectedTechnicalProjectManager = Employees.find(tpm => tpm.name === currentProject.technicalProjectManager);
+         const technicalProjectManagerId = selectedTechnicalProjectManager ? selectedTechnicalProjectManager.id : null;  
+
+         const selectedPMO = Employees.find(p => p.name === currentProject.pmo);
+         const pmoId = selectedPMO ? selectedPMO.id : null;
+
         const projectToSave = {
             ...currentProject,
-            technology: currentProject.technology.map(tech => {
-                const selectedTech = Technologies.find(t => t.name === tech);
-                return selectedTech ? selectedTech.id : null;
-            }).filter(id => id !== null) // Convert technology names to IDs
+            client: clientId,
+            salesContact: salesContactId,           
+            technicalProjectManager: technicalProjectManagerId,
+            pmo: pmoId,
+            technology: technologyIds,
         };
 
         if (currentProject.id) {
             axios.put(`http://172.17.31.61:5151/api/project/${currentProject.id}`, projectToSave)
-                .then(response => {
-                    setProjects(Projects.map(tech => tech.id === currentProject.id ? response.data : tech));
-                })
-                .catch(error => {
-                    console.error('There was an error updating the Project!', error);
-                    setError(error);
-                });
-
-        } else {
-            axios.post('http://172.17.31.61:5151/api/project', projectToSave)
-                .then(response => {
-                    setProjects([...Projects, response.data]);
-                })
-                .catch(error => {
-                    console.error('There was an error adding the Project!', error);
-                    setError(error);
-                });
+            const res = await axios.get('http://172.17.31.61:5151/api/project');
+            setClients(res.data);
+            } else {
+            axios.post('http://localhost:5551/api/Project', projectToSave)
+            const res = await axios.get('http://172.17.31.61:5151/api/project');
+            setClients(res.data);
         }
         setOpen(false);
     };
