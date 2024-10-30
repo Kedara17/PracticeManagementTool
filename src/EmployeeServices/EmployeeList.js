@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { ListItemText, Checkbox, Select, MenuItem, Table, InputLabel, TableBody, TableCell, TableContainer, TablePagination, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment, FormHelperText, Autocomplete } from '@mui/material';
+import { Switch, ListItemText, Checkbox, Select, MenuItem, Table, InputLabel, TableBody, TableCell, TableContainer, TablePagination, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment, FormHelperText, Autocomplete } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
+import ActivateIcon from '@mui/icons-material/Undo';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -21,7 +22,10 @@ function EmployeeList({ isDrawerOpen }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [open, setOpen] = useState(false);
-    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [confirmAction, setConfirmAction] = useState(null); // 'delete' or 'activate'
+    const [accessDeniedDialogOpen, setAccessDeniedDialogOpen] = useState(false); // New dialog for non-admins
+    const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
     const [deleteTechId, setDeleteTechId] = useState(null);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -43,7 +47,7 @@ function EmployeeList({ isDrawerOpen }) {
     });
 
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\W).{8,}$/;
-
+    const userRole = localStorage.getItem('userRole'); // Fetch role from localStorage
     const [order, setOrder] = useState('desc'); 
     const [orderBy, setOrderBy] = useState('createdDate'); 
     const [searchQuery, setSearchQuery] = useState(''); 
@@ -68,7 +72,7 @@ function EmployeeList({ isDrawerOpen }) {
     useEffect(() => {
         const fetchEmployees = async () => {
             try {
-                const empResponse = await axios.get('http://172.17.31.61:5033/api/Employee');
+                const empResponse = await axios.get('http://172.17.31.61:5033/api/employee');
                 setEmployees(empResponse.data);
             } catch (error) {
                 console.error('There was an error fetching the employees!', error);
@@ -79,7 +83,7 @@ function EmployeeList({ isDrawerOpen }) {
 
         const fetchReportingTo = async () => {
             try {
-                const repoResponse = await axios.get('http://172.17.31.61:5033/api/Employee');
+                const repoResponse = await axios.get('http://172.17.31.61:5033/api/employee');
                 setReporting(repoResponse.data);
             } catch (error) {
                 console.error('There was an error fetching the repoting!', error);
@@ -219,16 +223,61 @@ function EmployeeList({ isDrawerOpen }) {
 
     };
 
-    const handleDelete = (id) => {
-        axios.patch(`http://172.17.31.61:5033/api/employee/${id}`)
-            .then(response => {
-                setEmployees(Employees.filter(tech => tech.id !== id));
-            })
-            .catch(error => {
-                console.error('There was an error deleting the Employee!', error);
-                setError(error);
-            });
-        setConfirmOpen(false);
+    // Toggle the active status of a employee after confirmation (Only admin has permission)
+    const handleToggleActive = (id, currentStatus) => {
+        if (userRole === 'Admin') {
+            const action = currentStatus ? 'deactivate' : 'activate';
+            axios.patch(`http://172.17.31.61:5033/api/employee/${id}/${action}`)
+                .then(() => {
+                    setEmployees(Employees.map(employee => employee.id === id ? { ...employee, isActive: !currentStatus } : employee));
+                    setDialogOpen(false);
+                })
+                .catch(error => {
+                    console.error(`Error ${action} employee:`, error);
+                    setError(error);
+                });
+        } else {
+            alert("Only admins can activate records.");
+        }
+    };
+
+    // Handle the deactivation of a employee (soft delete)
+    const handleDelete = () => {
+        if (selectedEmployeeId) {
+            axios.patch(`http://172.17.31.61:5033/api/employee/${selectedEmployeeId}`)
+                .then(() => {
+                    setEmployees(Employees.map(employee => employee.id === selectedEmployeeId ? { ...employee, isActive: false } : employee));
+                    setDialogOpen(false);
+                })
+                .catch(error => {
+                    console.error('Error deactivating employee:', error);
+                    setError(error);
+                });
+        }
+    };
+
+    // Open dialog for delete or activate confirmation for admin, or access denied dialog for non-admin
+    const openConfirmationDialog = (action, EmployeeId) => {
+        setConfirmAction(action);
+        setSelectedEmployeeId(EmployeeId);
+        
+        if (action === 'activate' && userRole !== 'Admin') {
+            setAccessDeniedDialogOpen(true); // Open access denied dialog for non-admins
+        } else {
+            setDialogOpen(true); // Open confirmation dialog for admins
+        }
+    };
+
+      // Handle Confirm in Dialog
+      const handleConfirmDialog = () => {
+        if (confirmAction === 'delete') {
+            handleDelete();
+        } else if (confirmAction === 'activate') {
+            if (userRole === 'Admin') {
+                handleToggleActive(selectedEmployeeId, false); // Admin can activate
+            }
+        }
+        setDialogOpen(false);
     };
 
     const handleSave = async () => {
@@ -286,7 +335,7 @@ function EmployeeList({ isDrawerOpen }) {
                 formData.append('profile', selectedFile);
                 formData.append('id', "");
 
-                const uploadResponse = await axios.post('http://172.17.31.61:5033/api/Employee/uploadFile', formData, {
+                const uploadResponse = await axios.post('http://172.17.31.61:5033/api/employee/uploadFile', formData, {
                     headers: {
                         'Content-Type': 'multipart/form-data',
                     },
@@ -420,19 +469,6 @@ function EmployeeList({ isDrawerOpen }) {
     const handleRowsPerPageChange = (event) => {
         setRowsPerPage(parseInt(event.target.value, 10));
         setPage(0);
-    };
-
-    const confirmDelete = (id) => {
-        setDeleteTechId(id);
-        setConfirmOpen(true);
-    };
-
-    const handleConfirmClose = () => {
-        setConfirmOpen(false);
-    };
-
-    const handleConfirmYes = () => {
-        handleDelete(deleteTechId);
     };
 
     const handleJoiningDateChange = (newDate) => {
@@ -671,19 +707,36 @@ function EmployeeList({ isDrawerOpen }) {
                                     )}
                                 </TableCell>
                                 <TableCell>{Employee.role}</TableCell>
-                                <TableCell>{Employee.isActive ? 'Active' : 'Inactive'}</TableCell>
+                                <TableCell>
+                                    <Switch
+                                        checked={Employee.isActive}
+                                        onChange={() => {
+                                            openConfirmationDialog('activate', Employee.id); // Opens dialog based on role
+                                        }}
+                                        color="primary"
+                                        disabled={userRole !== 'Admin'}
+                                    />
+                                </TableCell>
                                 <TableCell>{Employee.createdBy}</TableCell>
                                 <TableCell>{new Date(Employee.createdDate).toLocaleString()}</TableCell>
                                 <TableCell>{Employee.updatedBy || 'N/A'}</TableCell>
                                 <TableCell>{new Date(Employee.updatedDate).toLocaleString() || 'N/A'}</TableCell>
-                                <TableCell >
-                                    <IconButton onClick={() => handleUpdate(Employee)}>
-                                        <EditIcon color="primary" />
+                                <TableCell>
+                                    {Employee.isActive ? (
+                                        <>
+                                         <IconButton onClick={() => handleUpdate(Employee)}>
+                                             <EditIcon color="primary" />
+                                         </IconButton>
+                                         <IconButton onClick={() => openConfirmationDialog('delete', Employee.id)}>
+                                            <DeleteIcon color="error" />
+                                         </IconButton>
+                                         </>
+                                    ) : (
+                                    <IconButton onClick={() => openConfirmationDialog('activate', Employee.id)}>
+                                        <ActivateIcon color="primary" />
                                     </IconButton>
-                                    <IconButton onClick={() => confirmDelete(Employee.id)}>
-                                        <DeleteIcon color="error" />
-                                    </IconButton>
-                                </TableCell>
+                                )}
+                            </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
@@ -929,14 +982,37 @@ function EmployeeList({ isDrawerOpen }) {
                 </DialogActions>
             </Dialog>
 
-            <Dialog open={confirmOpen} onClose={handleConfirmClose}>
-                <DialogTitle>Confirm Delete</DialogTitle>
+            {/* Confirmation Dialog for Admins */}
+            <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
+                <DialogTitle>Confirm Action</DialogTitle>
                 <DialogContent>
-                    <Typography>Are you sure you want to delete this Employee?</Typography>
+                    <Typography>
+                        {confirmAction === 'delete'
+                            ? "Are you sure you want to deactivate this Employee?"
+                            : "Are you sure you want to activate this Employee?"}
+                    </Typography>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleConfirmClose}>Cancel</Button>
-                    <Button onClick={handleConfirmYes} color="error">Ok</Button>
+                    <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
+                    <Button
+                        onClick={handleConfirmDialog}
+                        color="primary"
+                    >
+                        Confirm
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Access Denied Dialog for Non-Admins */}
+            <Dialog open={accessDeniedDialogOpen} onClose={() => setAccessDeniedDialogOpen(false)}>
+                <DialogTitle>Access Denied</DialogTitle>
+                <DialogContent>
+                    <Typography>You do not have access to activate this record.</Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setAccessDeniedDialogOpen(false)} color="primary">
+                        OK
+                    </Button>
                 </DialogActions>
             </Dialog>
         </div>
