@@ -184,33 +184,14 @@ function ClientContactList({ isDrawerOpen }) {
 
         if (currentClientContact.id) {
             axios.put(`http://172.17.31.61:5142/api/clientContact/${currentClientContact.id}`, ClientContactToSave)
-            const res = await axios.get('http://172.17.31.61:5142/api/clientContact');
-            setClientContact(res.data);  
-                // .then(response => {
-                //     console.log(response)
-                //     //setClientContact([...ClientContact, response.data]);
-                //     // setClientContact(response.data);
-                //     setClientContact(ClientContact.map(tech => tech.id === currentClientContact.id ? response.data : tech));
-                // })
-                // .catch(error => {
-                //     console.error('There was an error updating the ClientContact!', error);
-                //     setError(error);
-                // });
-
+            const response = await axios.get('http://172.17.31.61:5142/api/clientContact');   
+            setClientContact(response.data);                       
         } else {
             axios.post('http://172.17.31.61:5142/api/clientContact', ClientContactToSave)
-            const res = await axios.get('http://172.17.31.61:5142/api/clientContact');
-            setClientContact(res.data); 
-                // .then(response => {
-                //     setClientContact([...ClientContact, response.data]);
-                // })
-                // .catch(error => {
-                //     console.error('There was an error adding the ClientContact!', error);
-                //     setError(error);
-                // });
+            const response = await axios.get('http://172.17.31.61:5142/api/clientContact');    
+            setClientContact(response.data);                    
         }
         setOpen(false);
-
     };
 
     const handleChange = (e) => {

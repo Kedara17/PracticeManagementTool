@@ -15,7 +15,6 @@ function TechnologyList({isDrawerOpen}) {
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [confirmAction, setConfirmAction] = useState(null); // Store the action to be confirmed (delete/undo)
     const [targetTechnology, setTargetTechnology] = useState(null);
-    const [deleteTechId, setDeleteTechId] = useState(null);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [currentTechnology, setCurrentTechnology] = useState({

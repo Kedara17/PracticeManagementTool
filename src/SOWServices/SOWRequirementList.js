@@ -202,7 +202,9 @@ function SOWRequirementList({ isDrawerOpen }) {
 
         } else {
             const response = axios.post('http://172.17.31.61:5041/api/sowRequirement', sowReqToSave);
-            setSOWRequirements([...SOWRequirements, response.data]);
+            // setSOWRequirements([...SOWRequirements, response.data]);
+            const res = await axios.get('http://172.17.31.61:5041/api/sowRequirement');
+            setSOWRequirements(res.data);
         }
         setOpen(false);
 
