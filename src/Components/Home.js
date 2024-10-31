@@ -41,7 +41,7 @@ import CustomBreadcrumbs from './CustomBreadCrumbs';
 import CertificationsList from '../CertificationsServices/CertificationsList';
 import SuccessStoriesList from '../SuccessStoriesServices/SuccessStoriesList';
 import NewLeadEnquiryList from '../NewLeadEnquiryServices/NewLeadEnquiryList';
-
+import NewLeadEnquiryFollowUpList from '../NewLeadEnquiryServices/NewLeadEnquiryFollowUpList';
 function Home() {
 
   const [isDrawerOpen, setDrawerOpen] = useState(false);
@@ -380,15 +380,9 @@ function Home() {
             <List component="div" disablePadding>
                <ListItem button component={Link} to="newleadenquiry" onClick={handleClose}>
                     <ListItemText primary="New Lead Enquiry" />
-                </ListItem>
-                <ListItem button component={Link} to="newleadenquiry/newleadenquirytechnologylist" onClick={handleClose}>
-                    <ListItemText primary="New Lead Enquiry Technology" />
-                </ListItem>
+                </ListItem>              
                 <ListItem button component={Link} to="newleadenquiry/newleadenquiryfollowuplist" onClick={handleClose}>
                     <ListItemText primary="New Lead Enquiry Follow Up" />
-                </ListItem>
-                <ListItem button component={Link} to="newleadenquiry/newleadenquirydocumentslist" onClick={handleClose}>
-                    <ListItemText primary="New Lead Enquiry Documents" />
                 </ListItem>
             </List>
         </Collapse>
@@ -555,6 +549,7 @@ function Home() {
           <Route path='poc' element={<POCList isDrawerOpen={isDrawerOpen} />} />
           <Route path='certifications' element={<CertificationsList isDrawerOpen={isDrawerOpen} />} />
           <Route path='newLeadEnquiry' element={<NewLeadEnquiryList isDrawerOpen={isDrawerOpen} />} />
+          <Route path='newleadenquiry/newleadenquiryfollowuplist' element={<NewLeadEnquiryFollowUpList isDrawerOpen={isDrawerOpen} />} />
         </Routes>
 
         {/* {view === 'slider' && <SliderComponent  isDrawerOpen={isDrawerOpen} />}

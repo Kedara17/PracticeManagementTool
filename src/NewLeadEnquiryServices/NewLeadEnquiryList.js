@@ -26,7 +26,9 @@ import {
     InputLabel,
     Autocomplete,
     Checkbox,
-    ListItemText
+    ListItemText,
+    Select, 
+    Typography
 } from '@mui/material';
 
 function NewLeadEnquiryList({ isDrawerOpen }) {
@@ -143,46 +145,40 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
             enquiryDate: new Date(currentEnquiry.enquiryDate).toISOString(),
             updatedDate: new Date().toISOString(),
             isActive: currentEnquiry.isActive === true,
-            fileName: file.name, 
+            fileName: file.name,
         };
 
         try {
             let newLeadEnquiryId;
             if (currentEnquiry.id) {
-                // Update existing enquiry
                 await axios.put(`http://localhost:5054/api/NewLeadEnquiry/${currentEnquiry.id}`, enquiryToSend);
                 newLeadEnquiryId = currentEnquiry.id; // Set the existing ID
             } else {
-                // Create new enquiry
                 const response = await axios.post('http://localhost:5054/api/NewLeadEnquiry', enquiryToSend);
                 newLeadEnquiryId = response.data.id; // Get the newly created ID
             }
-    
-            // Save technology data
+
             await Promise.all(currentEnquiry.technology.map(technologyId =>
                 axios.post('http://localhost:5054/api/NewLeadEnquiryTechnology', {
-                    newLeadEnquiryId, // Use the newLeadEnquiryId variable
+                    newLeadEnquiryId, 
                     technologyId,
                 })
             ));
 
             const formData = new FormData();
             formData.append('fileName', file);
-            formData.append('NewLeadEnquiryId', currentEnquiry.id); // Assuming enquiry ID is needed in NewLeadEnquiryDocuments
+            formData.append('NewLeadEnquiryId', currentEnquiry.id);
 
-
-            const response = await fetch('http://localhost:5054/api/NewLeadEnquiryDocuments', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            });
+            const response = await fetch('http://localhost:5054/api/NewLeadEnquiryDocuments', {
+                method: 'POST',
+                body: formData,
+            });            
 
             if (!response.ok) {
                 throw new Error('Failed to upload file');
             }
 
             setOpen(false);
-            // Fetch updated enquiries
             const enquiryResponse = await axios.get('http://localhost:5054/api/NewLeadEnquiry');
             setNewLeadEnquiries(enquiryResponse.data);
         } catch (error) {
@@ -193,19 +189,17 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
 
     const handleChange = (event) => {
         const { name, value, files } = event.target;
-    
+
         if (name === 'fileName') {
-            // Handle file input
             const selectedFile = files[0];
             setFile(selectedFile);
-    
+
             if (!selectedFile) {
                 setErrors((prevErrors) => ({ ...prevErrors, fileName: 'File is required' }));
             } else {
                 setErrors((prevErrors) => ({ ...prevErrors, fileName: '' }));
             }
         } else {
-            // Handle other inputs
             setCurrentEnquiry((prev) => ({
                 ...prev,
                 [name]: value,
@@ -215,7 +209,7 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
 
     const handleDelete = async (id) => {
         try {
-            await axios.delete(`http://localhost:5054/api/NewLeadEnquiry/${id}`);
+            await axios.patch(`http://localhost:5054/api/NewLeadEnquiry/${id}`);
             const enquiryResponse = await axios.get('http://localhost:5054/api/NewLeadEnquiry');
             setNewLeadEnquiries(enquiryResponse.data);
         } catch (error) {
@@ -224,25 +218,36 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
         }
     };
 
-    const handleReactivate = async (id) => {
+    const handleReactivate = async (id, currentState) => {
         try {
             const enquiryToUpdate = newLeadEnquiries.find(enquiry => enquiry.id === id);
-            const updatedEnquiry = { ...enquiryToUpdate, isActive: true };
-
-            // Send the update request to the server
-            await axios.put(`http://localhost:5054/api/NewLeadEnquiry/${id}`, updatedEnquiry);
-
-            // Update the local state to reflect the change
+            if (!enquiryToUpdate) {
+                throw new Error("Enquiry not found with the provided ID");
+            }
+    
+            const updatedEnquiry = {
+                ...enquiryToUpdate,
+                isActive: !currentState,
+                fileName: enquiryToUpdate.fileName || '',  
+                technology: enquiryToUpdate.technology || [], 
+            };
+    
+            await axios.put(`http://localhost:5054/api/NewLeadEnquiry/${id}`, updatedEnquiry, {
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+    
             setNewLeadEnquiries((prevEnquiries) =>
                 prevEnquiries.map((enquiry) =>
-                    enquiry.id === id ? { ...enquiry, isActive: true } : enquiry
+                    enquiry.id === id ? { ...enquiry, isActive: !currentState } : enquiry
                 )
             );
         } catch (error) {
-            console.error("Error reactivating enquiry:", error);
+            console.error("Error reactivating enquiry:", error.response?.data || error.message);
             setError(error.response?.data || error.message);
         }
-    };
+    };       
 
     const handlePageChange = (event, newPage) => {
         setPage(newPage);
@@ -286,7 +291,7 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
                                 </InputAdornment>
                             ),
                         }}
-                        style={{ marginRight: '10px', width: '300px' }}
+                        style={{ marginRight: '10px', width: '1000px' }}
                     />
                     <Button variant="contained" onClick={handleAdd}>
                         Add New Enquiry
@@ -332,21 +337,21 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
                                     <TableCell>{enquiry.updatedBy}</TableCell>
                                     <TableCell>{new Date(enquiry.updatedDate).toLocaleDateString()}</TableCell>
                                     <TableCell>
-                                    {enquiry.isActive ? (
-                                        <>
-                                            <IconButton onClick={() => handleUpdate(enquiry)}>
-                                                <EditIcon color="primary" />
+                                        {enquiry.isActive ? (
+                                            <>
+                                                <IconButton onClick={() => handleUpdate(enquiry)}>
+                                                    <EditIcon color="primary" />
+                                                </IconButton>
+                                                <IconButton onClick={() => handleDelete(enquiry.id)}>
+                                                    <DeleteIcon color="error" />
+                                                </IconButton>
+                                            </>
+                                        ) : (
+                                            <IconButton onClick={() => handleReactivate(enquiry.id, enquiry.isActive)}>                                                
+                                                <UndoIcon color="action" />
                                             </IconButton>
-                                            <IconButton onClick={() => handleDelete(enquiry.id)}>
-                                                <DeleteIcon color="error" />
-                                            </IconButton>
-                                        </>
-                                    ) : (
-                                        <IconButton onClick={() => handleReactivate(enquiry)}>
-                                            <UndoIcon color="action" />
-                                        </IconButton>
-                                    )}
-                                </TableCell>
+                                        )}
+                                    </TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>
@@ -361,12 +366,11 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
                     onRowsPerPageChange={handleRowsPerPageChange}
                 />
 
-                {/* Dialog for Add/Edit Enquiry */}
                 <Dialog open={open} onClose={() => setOpen(false)}>
                     <DialogTitle>{currentEnquiry.id ? 'Edit Enquiry' : 'Add New Enquiry'}</DialogTitle>
                     <DialogContent>
+                        <InputLabel>CompanyName</InputLabel>
                         <TextField
-                            label="Company Name"
                             fullWidth
                             margin="normal"
                             name="companyName"
@@ -375,8 +379,9 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
                             error={Boolean(errors.companyName)}
                             helperText={errors.companyName}
                         />
+
+                        <InputLabel>CompanyRepresentative</InputLabel>
                         <TextField
-                            label="Company Representative"
                             fullWidth
                             margin="normal"
                             name="companyRepresentative"
@@ -385,8 +390,9 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
                             error={Boolean(errors.companyRepresentative)}
                             helperText={errors.companyRepresentative}
                         />
+
+                        <InputLabel>RepresentativeDesignation</InputLabel>
                         <TextField
-                            label="Representative Designation"
                             fullWidth
                             margin="normal"
                             name="representativeDesignation"
@@ -395,8 +401,9 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
                             error={Boolean(errors.representativeDesignation)}
                             helperText={errors.representativeDesignation}
                         />
+
+                        <InputLabel>Requirement</InputLabel>
                         <TextField
-                            label="Requirement"
                             fullWidth
                             margin="normal"
                             name="requirement"
@@ -405,8 +412,9 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
                             error={Boolean(errors.requirement)}
                             helperText={errors.requirement}
                         />
+                        
+                        <InputLabel>EnquiryDate</InputLabel>
                         <TextField
-                            label="Enquiry Date"
                             fullWidth
                             margin="normal"
                             type="date"
@@ -417,43 +425,42 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
                             helperText={errors.enquiryDate}
                         />
 
-                        <TextField
-                            select
-                            label="EmployeeID"
+                        <InputLabel>EmployeeID</InputLabel>
+                        <Select
                             fullWidth
                             margin="normal"
                             name="employeeID"
                             value={currentEnquiry.employeeID}
                             onChange={handleChange}
                             error={Boolean(errors.employeeID)}
-                            helperText={errors.employeeID}
                         >
                             {employees.map((employee) => (
                                 <MenuItem key={employee.id} value={employee.id}>
                                     {employee.name}
                                 </MenuItem>
                             ))}
-                        </TextField>
+                        </Select>
+                        {errors.employeeID && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.employeeID}</Typography>}
 
-                        <TextField
-                            select
-                            label="Assign To"
+                        <InputLabel>AssignTo</InputLabel>
+                        <Select
                             fullWidth
                             margin="normal"
                             name="assignTo"
                             value={currentEnquiry.assignTo}
                             onChange={handleChange}
                             error={Boolean(errors.assignTo)}
-                            helperText={errors.assignTo}
                         >
                             {employees.map((employee) => (
                                 <MenuItem key={employee.id} value={employee.id}>
                                     {employee.name}
                                 </MenuItem>
                             ))}
-                        </TextField>
+                        </Select>
+                        {errors.assignTo && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.assignTo}</Typography>}
+
+                        <InputLabel>Status</InputLabel>
                         <TextField
-                            label="Status"
                             fullWidth
                             margin="normal"
                             name="status"
@@ -462,8 +469,9 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
                             error={Boolean(errors.status)}
                             helperText={errors.status}
                         />
+
+                        <InputLabel>Comments</InputLabel>
                         <TextField
-                            label="Comments"
                             fullWidth
                             margin="normal"
                             name="comments"
@@ -472,21 +480,19 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
                             error={Boolean(errors.comments)}
                             helperText={errors.comments}
                         />
-
-                        {/* Technology Multi-Select with Checkboxes */}
-                        <FormControl fullWidth>
                             <InputLabel id="demo-simple-select-label">Technology</InputLabel>
+                            <FormControl fullWidth>
                             <Autocomplete
                                 multiple
                                 id="technologies-autocomplete"
-                                options={technologies.map((tech) => ({ id: tech.id, name: tech.name }))} // Assuming tech has id and name
-                                getOptionLabel={(option) => option.name} // Displaying the name
-                                value={currentEnquiry.technology.map(id => technologies.find(tech => tech.id === id) || { name: '' })} // Match selected IDs with technology names
+                                options={technologies.map((tech) => ({ id: tech.id, name: tech.name }))} 
+                                getOptionLabel={(option) => option.name} 
+                                value={currentEnquiry.technology.map(id => technologies.find(tech => tech.id === id) || { name: '' })} 
                                 onChange={(event, newValue) => {
                                     handleChange({
                                         target: {
                                             name: 'technology',
-                                            value: newValue.map(tech => tech.id), // Store selected technology IDs
+                                            value: newValue.map(tech => tech.id), 
                                         },
                                     });
                                 }}
@@ -524,7 +530,6 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
                                 accept: ".pdf, .doc, .docx"
                             }}
                         />
-
 
                     </DialogContent>
                     <DialogActions>
