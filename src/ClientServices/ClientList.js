@@ -148,7 +148,7 @@ function ClientList({ isDrawerOpen }) {
         setOpen(true);
 
     };
-
+   
     // Handle the deactivation of a client (soft delete)
     const handleDelete = () => {
         if (selectedClientId) {
@@ -204,7 +204,6 @@ function ClientList({ isDrawerOpen }) {
         if (!currentClient.lineofBusiness) {
             validationErrors.lineofBusiness = "LineofBusiness is required";
         } else if (currentClient.lineofBusiness.length < 3) {
-        } else if (currentClient.lineofBusiness.length < 3) {
             validationErrors.lineofBusiness = "LineofBusiness must be atleast 3 characters";
         }
         if (!currentClient.salesEmployee) {
@@ -213,15 +212,18 @@ function ClientList({ isDrawerOpen }) {
         if (!currentClient.country) {
             validationErrors.country = "Country is required";
         } else if (currentClient.country.length < 3) {
+        } else if (currentClient.country.length < 3) {
             validationErrors.country = "Country must be atleast 3 characters";
         }
         if (!currentClient.city) {
             validationErrors.city = "City is required";
         } else if (currentClient.city.length < 3) {
+        } else if (currentClient.city.length < 3) {
             validationErrors.city = "City must be atleast 3 characters";
         }
         if (!currentClient.state) {
             validationErrors.state = "State is required";
+        } else if (currentClient.state.length < 3) {
         } else if (currentClient.state.length < 3) {
             validationErrors.state = "State must be atleast 3 characters";
         }

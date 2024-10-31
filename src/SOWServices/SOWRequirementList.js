@@ -197,11 +197,11 @@ function SOWRequirementList({ isDrawerOpen }) {
 
 
         if (currentSOWRequirement.id) {
-            const response = await axios.put(`http://172.17.31.61:5041/api/sowRequirement/${currentSOWRequirement.id}`, SOWRequirementToSave);
+            const response = await axios.put(`http://172.17.31.61:5041/api/sowRequirement/${currentSOWRequirement.id}`, sowReqToSave);
             setSOWRequirements(SOWRequirements.map(tech => tech.id === currentSOWRequirement.id ? response.data : tech));
 
         } else {
-            const response = axios.post('http://172.17.31.61:5041/api/sowRequirement', SOWRequirementToSave);
+            const response = axios.post('http://172.17.31.61:5041/api/sowRequirement', sowReqToSave);
             // setSOWRequirements([...SOWRequirements, response.data]);
             const res = await axios.get('http://172.17.31.61:5041/api/sowRequirement');
             setSOWRequirements(res.data);

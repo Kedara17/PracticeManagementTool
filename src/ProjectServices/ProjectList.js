@@ -226,6 +226,7 @@ function ProjectList({isDrawerOpen}) {
 
     };
 
+    // const handleSave = async () => {
     const handleSave = async () => {
         setFormSubmitted(true);
         let validationErrors = {};
@@ -303,8 +304,8 @@ function ProjectList({isDrawerOpen}) {
             axios.put(`http://172.17.31.61:5151/api/project/${currentProject.id}`, projectToSave)
             const res = await axios.get('http://172.17.31.61:5151/api/project');
             setClients(res.data);
-            } else {
-            axios.post('http://localhost:5551/api/Project', projectToSave)
+        } else {
+            axios.post('http://172.17.31.61:5151/api/project', projectToSave)
             const res = await axios.get('http://172.17.31.61:5151/api/project');
             setClients(res.data);
         }
@@ -854,7 +855,6 @@ function ProjectList({isDrawerOpen}) {
                     </Button>
                 </DialogActions>
             </Dialog>
-
             {/* Access Denied Dialog for Non-Admins */}
             <Dialog open={accessDeniedDialogOpen} onClose={() => setAccessDeniedDialogOpen(false)}>
                 <DialogTitle>Access Denied</DialogTitle>

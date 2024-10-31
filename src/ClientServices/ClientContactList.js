@@ -183,13 +183,13 @@ function ClientContactList({ isDrawerOpen }) {
         };
 
         if (currentClientContact.id) {
-            axios.put(`http://172.17.31.61:5142/api/clientContact/${currentClientContact.id}`, clientContactToSave)
+            axios.put(`http://172.17.31.61:5142/api/clientContact/${currentClientContact.id}`, ClientContactToSave)
             const response = await axios.get('http://172.17.31.61:5142/api/clientContact');   
-            setClientContact(response.data);            
+            setClientContact(response.data);                       
         } else {
-            axios.post('http://172.17.31.61:5142/api/clientContact', clientContactToSave)
+            axios.post('http://172.17.31.61:5142/api/clientContact', ClientContactToSave)
             const response = await axios.get('http://172.17.31.61:5142/api/clientContact');    
-            setClientContact(response.data);           
+            setClientContact(response.data);                    
         }
         setOpen(false);
     };

@@ -26,7 +26,6 @@ function EmployeeList({ isDrawerOpen }) {
     const [confirmAction, setConfirmAction] = useState(null); // 'delete' or 'activate'
     const [accessDeniedDialogOpen, setAccessDeniedDialogOpen] = useState(false); // New dialog for non-admins
     const [selectedEmployeeId, setSelectedEmployeeId] = useState(null);
-    const [deleteTechId, setDeleteTechId] = useState(null);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [currentEmployee, setCurrentEmployee] = useState({
@@ -303,7 +302,7 @@ function EmployeeList({ isDrawerOpen }) {
         }
         if (!currentEmployee.emailId) {
             validationErrors.emailId = "Email is required";
-        }        
+        }               
         if (!currentEmployee.department) {
             validationErrors.department = "Department is required";
         }
@@ -316,6 +315,7 @@ function EmployeeList({ isDrawerOpen }) {
         if (!currentEmployee.phoneNo) {
             validationErrors.phoneNo = "PhoneNo is required";
         }
+        
         
         if (Object.keys(validationErrors).length > 0) {
             setErrors(validationErrors);
@@ -373,9 +373,8 @@ function EmployeeList({ isDrawerOpen }) {
         } catch (error) {
             console.error('There was an error saving the Employee!', error);
             setError(error);
-        }
+        } 
     };
-
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -451,12 +450,7 @@ function EmployeeList({ isDrawerOpen }) {
                     }));
                 }
             }
-        }       
-        // if (name === "role") {
-        //     if (value) {
-        //         setErrors((prevErrors) => ({ ...prevErrors, role: "" }));
-        //     }
-        // }
+        }  
         if (name === "technology") {
             if (value) {
                 setErrors((prevErrors) => ({ ...prevErrors, technology: "" }));

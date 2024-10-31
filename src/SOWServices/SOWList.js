@@ -196,6 +196,7 @@ const openConfirmationDialog = (action, SowId) => {
         setDialogOpen(true); // Open confirmation dialog for admins
     }
 };
+ 
 
   // Handle Confirm in Dialog
   const handleConfirmDialog = () => {
@@ -211,9 +212,6 @@ const openConfirmationDialog = (action, SowId) => {
 
     const handleSave = async () => {
         let validationErrors = {};
-        // if (!currentSOW.client.trim()) {
-        //     validationErrors.client = "Please select a Project";
-        // }
         if (!currentSOW.title) {
             validationErrors.title = "Title is required";
 
@@ -251,8 +249,8 @@ const openConfirmationDialog = (action, SowId) => {
         // Clear any previous errors if validation passes
         setErrors({});
 
-        const selectedClientt = Clients.find(c => c.name === currentSOW.client);
-        const clientId = selectedClientt ? selectedClientt.id : null;
+        const selectedClient = Clients.find(c => c.name === currentSOW.client);
+        const clientId = selectedClient ? selectedClient.id : null;
         
         const selectedProject = Projects.find(p => p.projectName === currentSOW.project);
         const projectId = selectedProject ? selectedProject.id : null;
@@ -270,7 +268,7 @@ const openConfirmationDialog = (action, SowId) => {
         if (currentSOW.id) {
             axios.put(`http://172.17.31.61:5041/api/sow/${currentSOW.id}`, sowToSave)
             const res = await axios.get('http://172.17.31.61:5041/api/sow');
-            setSOWs(res.data);           
+            setSOWs(res.data);                     
         } else {
             axios.post('http://172.17.31.61:5041/api/sow', sowToSave)
             const res = await axios.get('http://172.17.31.61:5041/api/sow');
