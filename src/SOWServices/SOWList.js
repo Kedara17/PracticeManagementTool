@@ -266,11 +266,11 @@ const openConfirmationDialog = (action, SowId) => {
         };
 
         if (currentSOW.id) {
-            axios.put(`http://172.17.31.61:5041/api/sow/${currentSOW.id}`, sowToSave)
+            axios.put(`http://172.17.31.61:5041/api/sow/${currentSOW.id}`, SOWToSave)
             const res = await axios.get('http://172.17.31.61:5041/api/sow');
             setSOWs(res.data);                     
         } else {
-            axios.post('http://172.17.31.61:5041/api/sow', sowToSave)
+            axios.post('http://172.17.31.61:5041/api/sow', SOWToSave)
             const res = await axios.get('http://172.17.31.61:5041/api/sow');
             setSOWs(res.data);
         }
