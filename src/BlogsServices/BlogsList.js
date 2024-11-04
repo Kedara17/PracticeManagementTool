@@ -190,21 +190,21 @@ function BlogsList({ isDrawerOpen }) {
         }else if(currentBlogs.title.length < 3) {
             validationErrors.title = "Title must be atleast 3 characters";
         }
-        if (!currentBlogs.author) {
-            validationErrors.author = "Author is required";
-        }
-        if (!currentBlogs.status) {
-            validationErrors.status = "Status is required";
-        }
-        if (!currentBlogs.targetDate) {
-            validationErrors.targetDate = "TargetDate is required";
-        }
-        if (!currentBlogs.completedDate) {
-            validationErrors.completedDate = "CompletedDate is required";
-        }
-        if (!currentBlogs.publishedDate) {
-            validationErrors.publishedDate = "PublishedDate is required";
-        }
+        // if (!currentBlogs.author) {
+        //     validationErrors.author = "Author is required";
+        // }
+        // if (!currentBlogs.status) {
+        //     validationErrors.status = "Status is required";
+        // }
+        // if (!currentBlogs.targetDate) {
+        //     validationErrors.targetDate = "TargetDate is required";
+        // }
+        // if (!currentBlogs.completedDate) {
+        //     validationErrors.completedDate = "CompletedDate is required";
+        // }
+        // if (!currentBlogs.publishedDate) {
+        //     validationErrors.publishedDate = "PublishedDate is required";
+        // }
 
         // If there are validation errors, update the state and prevent save
         if (Object.keys(validationErrors).length > 0) {

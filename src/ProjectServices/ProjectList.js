@@ -193,27 +193,27 @@ function ProjectList({isDrawerOpen}) {
         if (!currentProject.client) {
             validationErrors.client = "Client is required";
         }
-        if (!currentProject.technicalProjectManager) {
-            validationErrors.technicalProjectManager = "TechnicalProjectManager is required";
-        }
-        if (!currentProject.salesContact) {
-            validationErrors.salesContact = "SalesContact is required";
-        }
-        if (!currentProject.pmo) {
-            validationErrors.pmo = "Pmo is required";
-        }
-        if (!currentProject.sowSubmittedDate) {
-            validationErrors.sowSubmittedDate = "SowSubmittedDate is required";
-        }
-        if (!currentProject.sowSignedDate) {
-            validationErrors.sowSignedDate = "SowSignedDate is required";
-        }
-        if (!currentProject.sowValidTill) {
-            validationErrors.sowValidTill = "SowValidTill is required";
-        }
-        if (!currentProject.sowLastExtendedDate) {
-            validationErrors.sowLastExtendedDate = "SowLastExtendedDate is required";
-        }
+        // if (!currentProject.technicalProjectManager) {
+        //     validationErrors.technicalProjectManager = "TechnicalProjectManager is required";
+        // }
+        // if (!currentProject.salesContact) {
+        //     validationErrors.salesContact = "SalesContact is required";
+        // }
+        // if (!currentProject.pmo) {
+        //     validationErrors.pmo = "Pmo is required";
+        // }
+        // if (!currentProject.sowSubmittedDate) {
+        //     validationErrors.sowSubmittedDate = "SowSubmittedDate is required";
+        // }
+        // if (!currentProject.sowSignedDate) {
+        //     validationErrors.sowSignedDate = "SowSignedDate is required";
+        // }
+        // if (!currentProject.sowValidTill) {
+        //     validationErrors.sowValidTill = "SowValidTill is required";
+        // }
+        // if (!currentProject.sowLastExtendedDate) {
+        //     validationErrors.sowLastExtendedDate = "SowLastExtendedDate is required";
+        // }
         if (!currentProject.technology || currentProject.technology.length === 0) {
             validationErrors.technology = "Technology is required";                  
              }
@@ -654,7 +654,39 @@ function ProjectList({isDrawerOpen}) {
                         helperText={errors.projectName}
                     />
                    <InputLabel id="demo-simple-select-label">Technology</InputLabel>
-                    <Autocomplete
+                   <Autocomplete
+                        multiple
+                        id="technologies-autocomplete"
+                        options={(Technologies && Technologies.length > 0) ? Technologies.map((tech) => tech.name) : []} 
+                        value={currentProject.technology || []}  
+                        onChange={(event, newValue) => {
+                            handleChange({
+                                target: {
+                                    name: 'technology',
+                                    value: newValue || [],  
+                                },
+                            });
+                        }}
+                        renderInput={(params) => (
+                            <TextField
+                                {...params}
+                                variant="outlined"
+                                placeholder="Select technologies"
+                                fullWidth
+                                error={!!errors.technology}
+                            />
+                        )}
+                        renderOption={(props, option, { selected }) => (
+                            <li {...props}>
+                                <Checkbox
+                                    style={{ marginRight: 8 }}
+                                    checked={selected}
+                                />
+                                <ListItemText primary={option} />
+                            </li>
+                        )}
+                    />
+                    {/* <Autocomplete
                         multiple
                         id="technologies-autocomplete"
                         options={Technologies.map((tech) => tech.name)} 
@@ -685,7 +717,7 @@ function ProjectList({isDrawerOpen}) {
                                 <ListItemText primary={option} />
                             </li>
                         )}
-                    />                   
+                    />                    */}
                     {errors.technology && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.technology}</Typography>}
                     <InputLabel>SalesContact</InputLabel>
                     <Select

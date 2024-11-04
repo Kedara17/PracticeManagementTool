@@ -140,18 +140,18 @@ function ProjectEmployeeList({ isDrawerOpen }) {
         let validationErrors = {};
 
         // Name field validation
-        if (!currentProjectEmployee.project.trim()) {
-            validationErrors.project = "Project is required";
-        }
-        if (!currentProjectEmployee.employee) {
-            validationErrors.employee = "Employee is required";
-        }
-        if (!currentProjectEmployee.startDate) {
-            validationErrors.startDate = "StartDate is required";
-        }
-        if (!currentProjectEmployee.endDate) {
-            validationErrors.endDate = "EndDate is required";
-        }
+        // if (!currentProjectEmployee.project.trim()) {
+        //     validationErrors.project = "Project is required";
+        // }
+        // if (!currentProjectEmployee.employee) {
+        //     validationErrors.employee = "Employee is required";
+        // }
+        // if (!currentProjectEmployee.startDate) {
+        //     validationErrors.startDate = "StartDate is required";
+        // }
+        // if (!currentProjectEmployee.endDate) {
+        //     validationErrors.endDate = "EndDate is required";
+        // }
 
         // If there are validation errors, update the state and prevent save
         if (Object.keys(validationErrors).length > 0) {

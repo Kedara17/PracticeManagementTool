@@ -150,18 +150,18 @@ function SOWRequirementList({ isDrawerOpen }) {
         let validationErrors = {};
 
         // Name field validation
-        if (!currentSOWRequirement.sow.trim()) {
-            validationErrors.sow = "Sow is required";
-        }
-        if (!currentSOWRequirement.designation) {
-            validationErrors.designation = "Designation is required";
-        }
+        // if (!currentSOWRequirement.sow.trim()) {
+        //     validationErrors.sow = "Sow is required";
+        // }
+        // if (!currentSOWRequirement.designation) {
+        //     validationErrors.designation = "Designation is required";
+        // }
         if (!currentSOWRequirement.technology || currentSOWRequirement.technology.length === 0) {
             validationErrors.technology = "Technology is required";
         }
-        if (!currentSOWRequirement.teamSize) {
-            validationErrors.teamSize = "TeamSize is required";
-        }
+        // if (!currentSOWRequirement.teamSize) {
+        //     validationErrors.teamSize = "TeamSize is required";
+        // }
 
         // If there are validation errors, update the state and prevent save
         if (Object.keys(validationErrors).length > 0) {

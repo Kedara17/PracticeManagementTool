@@ -171,21 +171,21 @@ function SOWList({ isDrawerOpen }) {
         }else if(currentSOW.title.length < 3) {      
             validationErrors.title = "Title must be atleast 3 characters";
         }
-        if (!currentSOW.client) {
-            validationErrors.client = "Client is required";
-        }
-        if (!currentSOW.project) {
-            validationErrors.project = "Project is required";
-        }
-        if (!currentSOW.preparedDate) {
-            validationErrors.preparedDate = "PreparedDate is required";
-        }
-        if (!currentSOW.submittedDate) {
-            validationErrors.submittedDate = "SubmittedDate is required";
-        }
-        if (!currentSOW.status) {
-            validationErrors.status = "Status is required";
-        }
+        // if (!currentSOW.client) {
+        //     validationErrors.client = "Client is required";
+        // }
+        // if (!currentSOW.project) {
+        //     validationErrors.project = "Project is required";
+        // }
+        // if (!currentSOW.preparedDate) {
+        //     validationErrors.preparedDate = "PreparedDate is required";
+        // }
+        // if (!currentSOW.submittedDate) {
+        //     validationErrors.submittedDate = "SubmittedDate is required";
+        // }
+        // if (!currentSOW.status) {
+        //     validationErrors.status = "Status is required";
+        // }
         if (!currentSOW.comments) {
             validationErrors.comments = "Comments is required";
 
