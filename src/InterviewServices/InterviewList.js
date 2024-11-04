@@ -213,30 +213,30 @@ function InterviewList({ isDrawerOpen }) {
         let validationErrors = {};
 
         // Name field validation
-        if (!currentInterview.sowRequirement) {
-            validationErrors.sowRequirement = "SowRequirement is required";
-        }
+        // if (!currentInterview.sowRequirement) {
+        //     validationErrors.sowRequirement = "SowRequirement is required";
+        // }
         if (!currentInterview.name) {
             validationErrors.name = "Name is required";
 
         } else if (currentInterview.name.length < 3) {
             validationErrors.name = "Name must be atleast 3 characters";
         }
-        if (!currentInterview.interviewDate) {
-            validationErrors.interviewDate = "InterviewDate is required";
-        }
-        if (!currentInterview.yearsOfExperience) {
-            validationErrors.yearsOfExperience = "YearsOfExperience is required";
-        }
-        if (!currentInterview.status) {
-            validationErrors.status = "Status is required";
-        }
+        // if (!currentInterview.interviewDate) {
+        //     validationErrors.interviewDate = "InterviewDate is required";
+        // }
+        // if (!currentInterview.yearsOfExperience) {
+        //     validationErrors.yearsOfExperience = "YearsOfExperience is required";
+        // }
+        // if (!currentInterview.status) {
+        //     validationErrors.status = "Status is required";
+        // }
         if (!currentInterview.on_Boarding) {
             validationErrors.on_Boarding = "On_Boarding is required";
         }
-        if (!currentInterview.recruiter) {
-            validationErrors.recruiter = "Recruiter is required";
-        }
+        // if (!currentInterview.recruiter) {
+        //     validationErrors.recruiter = "Recruiter is required";
+        // }
 
         // If there are validation errors, update the state and prevent save
         if (Object.keys(validationErrors).length > 0) {

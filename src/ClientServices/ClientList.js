@@ -201,14 +201,14 @@ function ClientList({ isDrawerOpen }) {
         else if (Clients.some(cli => cli.name.toLowerCase() === currentClient.name.toLowerCase() && cli.id !== currentClient.id)) {
             validationErrors.name = "Name must be unique";
         }
-        if (!currentClient.lineofBusiness) {
-            validationErrors.lineofBusiness = "LineofBusiness is required";
-        } else if (currentClient.lineofBusiness.length < 3) {
-            validationErrors.lineofBusiness = "LineofBusiness must be atleast 3 characters";
-        }
-        if (!currentClient.salesEmployee) {
-            validationErrors.salesEmployee = "SalesEmployee is required";
-        }
+        // if (!currentClient.lineofBusiness) {
+        //     validationErrors.lineofBusiness = "LineofBusiness is required";
+        // } else if (currentClient.lineofBusiness.length < 3) {
+        //     validationErrors.lineofBusiness = "LineofBusiness must be atleast 3 characters";
+        // }
+        // if (!currentClient.salesEmployee) {
+        //     validationErrors.salesEmployee = "SalesEmployee is required";
+        // }
         if (!currentClient.country) {
             validationErrors.country = "Country is required";
         } else if (currentClient.country.length < 3) {

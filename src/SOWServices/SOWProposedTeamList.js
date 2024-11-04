@@ -135,12 +135,12 @@ function SOWProposedTeamList({ isDrawerOpen }) {
         let validationErrors = {};
 
         // Name field validation
-        if (!currentSOWProposedTeam.sowRequirement) {
-            validationErrors.sowRequirement = "SowRequirement is required";
-        }
-        if (!currentSOWProposedTeam.employee) {
-            validationErrors.employee = "Employee is required";
-        }
+        // if (!currentSOWProposedTeam.sowRequirement) {
+        //     validationErrors.sowRequirement = "SowRequirement is required";
+        // }
+        // if (!currentSOWProposedTeam.employee) {
+        //     validationErrors.employee = "Employee is required";
+        // }
 
         // If there are validation errors, update the state and prevent save
         if (Object.keys(validationErrors).length > 0) {

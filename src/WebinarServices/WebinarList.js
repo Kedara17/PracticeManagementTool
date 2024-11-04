@@ -192,18 +192,18 @@ function WebinarList({ isDrawerOpen }) {
             validationErrors.title = "Title must be unique";
         }
 
-        if (!currentWebinar.speaker) {
-            validationErrors.speaker = "Speaker is required";
-        }
-        if (!currentWebinar.status) {
-            validationErrors.status = "Status is required";
-        }
-        if (!currentWebinar.webinarDate) {
-            validationErrors.WebinarDate = "WebinarDate is required";
-        }
-        if (!currentWebinar.numberOfAudience) {
-            validationErrors.numberOfAudience = "NumberOfAudience is required";
-        }
+        // if (!currentWebinar.speaker) {
+        //     validationErrors.speaker = "Speaker is required";
+        // }
+        // if (!currentWebinar.status) {
+        //     validationErrors.status = "Status is required";
+        // }
+        // if (!currentWebinar.webinarDate) {
+        //     validationErrors.WebinarDate = "WebinarDate is required";
+        // }
+        // if (!currentWebinar.numberOfAudience) {
+        //     validationErrors.numberOfAudience = "NumberOfAudience is required";
+        // }
 
         if (Object.keys(validationErrors).length > 0) {
             setErrors(validationErrors);
