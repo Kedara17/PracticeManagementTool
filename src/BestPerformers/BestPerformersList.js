@@ -30,7 +30,6 @@ function BestPerformersList({ isDrawerOpen }) {
     const [deleteTechId, setDeleteTechId] = useState(null);
     const [confirmOpen, setConfirmOpen] = useState(false);
     const options = ['Monthly', 'Quarterly', 'Yearly'];
-
     const [isAdmin, setIsAdmin] = useState(true); // Assume isAdmin is determined by login/auth
     const [searchQuery, setSearchQuery] = useState(''); // State for search query
     const [unauthorizedOpen, setUnauthorizedOpen] = useState(false); // State for unauthorized access dialog
@@ -49,7 +48,6 @@ function BestPerformersList({ isDrawerOpen }) {
             }
             setLoading(false);
         };
-
         const fetchEmployees = async () => {
             try {
                 const employeesResponse = await axios.get('http://172.17.31.61:5033/api/employee');
@@ -61,14 +59,13 @@ function BestPerformersList({ isDrawerOpen }) {
         };
         const fetchClients = async () => {
             try {
-                const employeesResponse = await axios.get('http://172.17.31.61:5142/api/client');
-                setClients(employeesResponse.data);
+                const clientResponse = await axios.get('http://172.17.31.61:5142/api/client');
+                setClients(clientResponse.data);
             } catch (error) {
                 console.error('There was an error fetching the Client!', error);
                 setError(error);
             }
         };
-
         const fetchProjects = async () => {
             try {
                 const projectResponse = await axios.get('http://172.17.31.61:5151/api/project');
@@ -183,7 +180,6 @@ function BestPerformersList({ isDrawerOpen }) {
             });
         setConfirmOpen(false); // Close the confirmation dialog
     };
-
 
     const handleSave = () => {
         if (currentBestperformers.id) {
@@ -510,7 +506,7 @@ function BestPerformersList({ isDrawerOpen }) {
                             <TextField {...params} margin="dense" fullWidth />
                         )}
                     />
-                    
+
                     <InputLabel>Client</InputLabel>
                     <Autocomplete
                         options={Clients}
@@ -523,6 +519,21 @@ function BestPerformersList({ isDrawerOpen }) {
                             <TextField {...params} margin="dense" fullWidth />
                         )}
                     />
+                    <InputLabel>Project</InputLabel>
+                    <Select
+                        margin="dense"
+                        name="projectID"
+                        value={currentBestperformers.projectID}
+                        onChange={handleChange}
+                        fullWidth
+                        inputProps={{ maxLength: 200 }}
+                    >
+                        {Projects.map((project) => (
+                            <MenuItem key={project.id} value={project.projectName}>
+                                {project.projectName}
+                            </MenuItem>
+                        ))}
+                    </Select>
 
                 </DialogContent>
                 <DialogActions>
