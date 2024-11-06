@@ -131,7 +131,7 @@ function ClientContactList({ isDrawerOpen }) {
         setConfirmOpen(false);
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         let validationErrors = {};
 
         // Name field validation
@@ -141,18 +141,19 @@ function ClientContactList({ isDrawerOpen }) {
         } else if(currentClientContact.contactValue.length < 3 ) {       
             validationErrors.contactValue = "ContactValue must be at least 3 characters";
         }
-        else if (ClientContact.some(conval => conval.contactValue.toLowerCase() === currentClientContact.contactValue.toLowerCase() && conval.id !== currentClientContact.id)) {
-            validationErrors.contactValue = "ContactValue must be unique";
-        }
+        // else if (ClientContact.some(conval => conval.contactValue.toLowerCase() === currentClientContact.contactValue.toLowerCase() && conval.id !== currentClientContact.id)) {
+        //     validationErrors.contactValue = "ContactValue must be unique";
+        // }
         else {
             setErrors('');
         }
 
         if (!currentClientContact.contactType) {
             validationErrors.contactType = "contactType is required";
-        } else if (ClientContact.some(conval => conval.contactType === currentClientContact.contactType && conval.id !== currentClientContact.id)) {
-            validationErrors.contactType = "contactType must be unique";
-        }
+        } 
+        // else if (ClientContact.some(conval => conval.contactType === currentClientContact.contactType && conval.id !== currentClientContact.id)) {
+        //     validationErrors.contactType = "contactType must be unique";
+        // }
         else {
             setErrors('');
         }
@@ -170,31 +171,27 @@ function ClientContactList({ isDrawerOpen }) {
         // Clear any previous errors if validation passes
         setErrors({});
 
-        if (currentClientContact.id) {
-            axios.put(`http://172.17.31.61:5142/api/clientContact/${currentClientContact.id}`, currentClientContact)
-                .then(response => {
-                    console.log(response)
-                    //setClientContact([...ClientContact, response.data]);
-                    // setClientContact(response.data);
-                    setClientContact(ClientContact.map(tech => tech.id === currentClientContact.id ? response.data : tech));
-                })
-                .catch(error => {
-                    console.error('There was an error updating the ClientContact!', error);
-                    setError(error);
-                });
+        const selectedClient = Clients.find(c => c.name === currentClientContact.client);
+        const clientId = selectedClient ? selectedClient.id : null; 
+        const selectedContactType = ContactType.find(ct => ct.typeName === currentClientContact.contactType);
+        const contactTypeId = selectedContactType ? selectedContactType.id : null; 
+    
+        const ClientContactToSave = {
+            ...currentClientContact,
+            client: clientId,
+            contactType: contactTypeId,
+        };
 
+        if (currentClientContact.id) {
+            axios.put(`http://172.17.31.61:5142/api/clientContact/${currentClientContact.id}`, ClientContactToSave)
+            const response = await axios.get('http://172.17.31.61:5142/api/clientContact');   
+            setClientContact(response.data);                       
         } else {
-            axios.post('http://172.17.31.61:5142/api/clientContact', currentClientContact)
-                .then(response => {
-                    setClientContact([...ClientContact, response.data]);
-                })
-                .catch(error => {
-                    console.error('There was an error adding the ClientContact!', error);
-                    setError(error);
-                });
+            axios.post('http://172.17.31.61:5142/api/clientContact', ClientContactToSave)
+            const response = await axios.get('http://172.17.31.61:5142/api/clientContact');    
+            setClientContact(response.data);                    
         }
         setOpen(false);
-
     };
 
     const handleChange = (e) => {

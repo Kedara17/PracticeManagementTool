@@ -150,18 +150,18 @@ function SOWRequirementList({ isDrawerOpen }) {
         let validationErrors = {};
 
         // Name field validation
-        if (!currentSOWRequirement.sow.trim()) {
-            validationErrors.sow = "Sow is required";
-        }
-        if (!currentSOWRequirement.designation) {
-            validationErrors.designation = "Designation is required";
-        }
+        // if (!currentSOWRequirement.sow.trim()) {
+        //     validationErrors.sow = "Sow is required";
+        // }
+        // if (!currentSOWRequirement.designation) {
+        //     validationErrors.designation = "Designation is required";
+        // }
         if (!currentSOWRequirement.technology || currentSOWRequirement.technology.length === 0) {
             validationErrors.technology = "Technology is required";
         }
-        if (!currentSOWRequirement.teamSize) {
-            validationErrors.teamSize = "TeamSize is required";
-        }
+        // if (!currentSOWRequirement.teamSize) {
+        //     validationErrors.teamSize = "TeamSize is required";
+        // }
 
         // If there are validation errors, update the state and prevent save
         if (Object.keys(validationErrors).length > 0) {
@@ -172,13 +172,29 @@ function SOWRequirementList({ isDrawerOpen }) {
         // Clear any previous errors if validation passes
         setErrors({});
 
+        // const sowReqToSave = {
+        //     ...currentSOWRequirement,
+        //     technology: currentSOWRequirement.technology.map(tech => {
+        //         const selectedTech = technologies.find(t => t.name === tech);
+        //         return selectedTech ? selectedTech.id : null;
+        //     }).filter(id => id !== null) // Convert technology names to IDs
+        // };
+
+        const technologyIds = currentSOWRequirement.technology.map(tech => {
+            const selectedTech = technologies.find(t => t.name === tech);
+            return selectedTech ? selectedTech.id : null;
+        }).filter(id => id !== null);
+
+        const sowId = SOWs.find(s => s.title === currentSOWRequirement.sow)?.id || null;
+        const designationId = Designations.find(d => d.name === currentSOWRequirement.designation)?.id || null;
+        
         const sowReqToSave = {
             ...currentSOWRequirement,
-            technology: currentSOWRequirement.technology.map(tech => {
-                const selectedTech = technologies.find(t => t.name === tech);
-                return selectedTech ? selectedTech.id : null;
-            }).filter(id => id !== null) // Convert technology names to IDs
+            sow: sowId,
+            designation: designationId,            
+            technology: technologyIds,               
         };
+
 
         if (currentSOWRequirement.id) {
             const response = await axios.put(`http://172.17.31.61:5041/api/sowRequirement/${currentSOWRequirement.id}`, sowReqToSave);
@@ -186,7 +202,9 @@ function SOWRequirementList({ isDrawerOpen }) {
 
         } else {
             const response = axios.post('http://172.17.31.61:5041/api/sowRequirement', sowReqToSave);
-            setSOWRequirements([...SOWRequirements, response.data]);
+            // setSOWRequirements([...SOWRequirements, response.data]);
+            const res = await axios.get('http://172.17.31.61:5041/api/sowRequirement');
+            setSOWRequirements(res.data);
         }
         setOpen(false);
 

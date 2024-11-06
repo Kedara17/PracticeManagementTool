@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Autocomplete,TablePagination, ListItemText, Checkbox, Select, MenuItem, Table, InputLabel, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
+import {Switch, Autocomplete,TablePagination, ListItemText, Checkbox, Select, MenuItem, Table, InputLabel, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
+import ActivateIcon from '@mui/icons-material/Undo';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -18,8 +19,10 @@ function ProjectList({isDrawerOpen}) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [open, setOpen] = useState(false);
-    const [confirmOpen, setConfirmOpen] = useState(false);
-    const [deleteTechId, setDeleteTechId] = useState(null);
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [confirmAction, setConfirmAction] = useState(null); // 'delete' or 'activate'
+    const [accessDeniedDialogOpen, setAccessDeniedDialogOpen] = useState(false); // New dialog for non-admins
+    const [selectedProjectId, setSelectedProjectId] = useState(null);
     const [page, setPage] = useState(0);
     const [formSubmitted, setFormSubmitted] = useState(false);
     const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -36,6 +39,7 @@ function ProjectList({isDrawerOpen}) {
         technology: []
     });
 
+    const userRole = localStorage.getItem('userRole'); // Retrieve user role from localStorage
     const [order, setOrder] = useState('desc'); // Order of sorting: 'asc' or 'desc'
     const [orderBy, setOrderBy] = useState('createdDate'); // Column to sort by
     const [searchQuery, setSearchQuery] = useState(''); // State for search query
@@ -106,6 +110,63 @@ function ProjectList({isDrawerOpen}) {
         setOrderBy(property);
     };
 
+    // Toggle the active status of a project after confirmation (Only admin has permission)
+    const handleToggleActive = (id, currentStatus) => {
+        if (userRole === 'Admin') {
+            const action = currentStatus ? 'deactivate' : 'activate';
+            axios.patch(`http://172.17.31.61:5151/api/project/${id}/${action}`)
+                .then(() => {
+                    setProjects(Projects.map(project => project.id === id ? { ...project, isActive: !currentStatus } : project));
+                    setDialogOpen(false);
+                })
+                .catch(error => {
+                    console.error(`Error ${action} project:`, error);
+                    setError(error);
+                });
+        } else {
+            alert("Only admins can activate records.");
+        }
+    };
+     
+    // Handle the deactivation of a project (soft delete)
+    const handleDelete = () => {
+        if (selectedProjectId) {
+            axios.patch(`http://172.17.31.61:5151/api/project/${selectedProjectId}`)
+                .then(() => {
+                    setProjects(Projects.map(project => project.id === selectedProjectId ? { ...project, isActive: false } : project));
+                    setDialogOpen(false);
+                })
+                .catch(error => {
+                    console.error('Error deactivating project:', error);
+                    setError(error);
+                });
+        }
+    };
+
+    // Open dialog for delete or activate confirmation for admin, or access denied dialog for non-admin
+    const openConfirmationDialog = (action, projectId) => {
+        setConfirmAction(action);
+        setSelectedProjectId(projectId);
+        
+        if (action === 'activate' && userRole !== 'Admin') {
+            setAccessDeniedDialogOpen(true); // Open access denied dialog for non-admins
+        } else {
+            setDialogOpen(true); // Open confirmation dialog for admins
+        }
+    };
+
+      // Handle Confirm in Dialog
+      const handleConfirmDialog = () => {
+        if (confirmAction === 'delete') {
+            handleDelete();
+        } else if (confirmAction === 'activate') {
+            if (userRole === 'Admin') {
+                handleToggleActive(selectedProjectId, false); // Admin can activate
+            }
+        }
+        setDialogOpen(false);
+    };
+
     const sortedProjects = [...Projects].sort((a, b) => {
         const valueA = a[orderBy] || '';
         const valueB = b[orderBy] || '';
@@ -165,19 +226,8 @@ function ProjectList({isDrawerOpen}) {
 
     };
 
-    const handleDelete = (id) => {
-        axios.delete(`http://172.17.31.61:5151/api/project/${id}`)
-            .then(response => {
-                setProjects(Projects.filter(tech => tech.id !== id));
-            })
-            .catch(error => {
-                console.error('There was an error deleting the Project!', error);
-                setError(error);
-            });
-        setConfirmOpen(false);
-    };
-
-    const handleSave = () => {
+    // const handleSave = async () => {
+    const handleSave = async () => {
         setFormSubmitted(true);
         let validationErrors = {};
 
@@ -193,30 +243,30 @@ function ProjectList({isDrawerOpen}) {
         if (!currentProject.client) {
             validationErrors.client = "Client is required";
         }
-        if (!currentProject.technicalProjectManager) {
-            validationErrors.technicalProjectManager = "TechnicalProjectManager is required";
-        }
-        if (!currentProject.salesContact) {
-            validationErrors.salesContact = "SalesContact is required";
-        }
-        if (!currentProject.pmo) {
-            validationErrors.pmo = "Pmo is required";
-        }
-        if (!currentProject.sowSubmittedDate) {
-            validationErrors.sowSubmittedDate = "SowSubmittedDate is required";
-        }
-        if (!currentProject.sowSignedDate) {
-            validationErrors.sowSignedDate = "SowSignedDate is required";
-        }
-        if (!currentProject.sowValidTill) {
-            validationErrors.sowValidTill = "SowValidTill is required";
-        }
-        if (!currentProject.sowLastExtendedDate) {
-            validationErrors.sowLastExtendedDate = "SowLastExtendedDate is required";
-        }
+        // if (!currentProject.technicalProjectManager) {
+        //     validationErrors.technicalProjectManager = "TechnicalProjectManager is required";
+        // }
+        // if (!currentProject.salesContact) {
+        //     validationErrors.salesContact = "SalesContact is required";
+        // }
+        // if (!currentProject.pmo) {
+        //     validationErrors.pmo = "Pmo is required";
+        // }
+        // if (!currentProject.sowSubmittedDate) {
+        //     validationErrors.sowSubmittedDate = "SowSubmittedDate is required";
+        // }
+        // if (!currentProject.sowSignedDate) {
+        //     validationErrors.sowSignedDate = "SowSignedDate is required";
+        // }
+        // if (!currentProject.sowValidTill) {
+        //     validationErrors.sowValidTill = "SowValidTill is required";
+        // }
+        // if (!currentProject.sowLastExtendedDate) {
+        //     validationErrors.sowLastExtendedDate = "SowLastExtendedDate is required";
+        // }
         if (!currentProject.technology || currentProject.technology.length === 0) {
             validationErrors.technology = "Technology is required";                  
-             }
+        }
 
         // If there are validation errors, update the state and prevent save
         if (Object.keys(validationErrors).length > 0) {
@@ -226,34 +276,38 @@ function ProjectList({isDrawerOpen}) {
 
         // Clear any previous errors if validation passes
         setErrors({});
+        const technologyIds = currentProject.technology.map(tech => {
+            const selectedTech = Technologies.find(t => t.name === tech);
+            return selectedTech ? selectedTech.id : null;
+        }).filter(id => id !== null);
+
+        const clientId = Clients.find(c => c.name === currentProject.client)?.id || null;
+        const salesContactId = Employees.find(sc => sc.name === currentProject.salesContact)?.id || null;
+        const pmoId = Employees.find(pmo => pmo.name === currentProject.pmo)?.id || null;
+        const technicalProjectManagerId = Employees.find(tpm => tpm.name === currentProject.technicalProjectManager)?.id || null;
 
         const projectToSave = {
             ...currentProject,
-            technology: currentProject.technology.map(tech => {
-                const selectedTech = Technologies.find(t => t.name === tech);
-                return selectedTech ? selectedTech.id : null;
-            }).filter(id => id !== null) // Convert technology names to IDs
+            client: clientId,
+            salesContact: salesContactId,
+            pmo: pmoId,
+            technicalProjectManager: technicalProjectManagerId,
+            technology: technologyIds,               
+            client: clientId,
+            salesContact: salesContactId,           
+            technicalProjectManager: technicalProjectManagerId,
+            pmo: pmoId,
+            technology: technologyIds,
         };
 
         if (currentProject.id) {
             axios.put(`http://172.17.31.61:5151/api/project/${currentProject.id}`, projectToSave)
-                .then(response => {
-                    setProjects(Projects.map(tech => tech.id === currentProject.id ? response.data : tech));
-                })
-                .catch(error => {
-                    console.error('There was an error updating the Project!', error);
-                    setError(error);
-                });
-
+            const res = await axios.get('http://172.17.31.61:5151/api/project');
+            setClients(res.data);
         } else {
             axios.post('http://172.17.31.61:5151/api/project', projectToSave)
-                .then(response => {
-                    setProjects([...Projects, response.data]);
-                })
-                .catch(error => {
-                    console.error('There was an error adding the Project!', error);
-                    setError(error);
-                });
+            const res = await axios.get('http://172.17.31.61:5151/api/project');
+            setClients(res.data);
         }
         setOpen(false);
     };
@@ -341,19 +395,6 @@ function ProjectList({isDrawerOpen}) {
     const handleRowsPerPageChange = (event) => {
         setRowsPerPage(parseInt(event.target.value, 10));
         setPage(0);
-    };
-
-    const confirmDelete = (id) => {
-        setDeleteTechId(id);
-        setConfirmOpen(true);
-    };
-
-    const handleConfirmClose = () => {
-        setConfirmOpen(false);
-    };
-
-    const handleConfirmYes = () => {
-        handleDelete(deleteTechId);
     };
 
     const handleSowSubmittedDateChange = (newDate) => {
@@ -574,19 +615,36 @@ function ProjectList({isDrawerOpen}) {
                                 <TableCell>{Project.sowSignedDate}</TableCell>
                                 <TableCell>{Project.sowValidTill}</TableCell>
                                 <TableCell>{Project.sowLastExtendedDate}</TableCell>
-                                <TableCell>{Project.isActive ? 'Active' : 'Inactive'}</TableCell>
+                                <TableCell>
+                                    <Switch
+                                        checked={Project.isActive}
+                                        onChange={() => {
+                                            openConfirmationDialog('activate', Project.id); // Opens dialog based on role
+                                        }}
+                                        color="primary"
+                                        disabled={userRole !== 'Admin'}
+                                    />
+                                </TableCell>
                                 <TableCell>{Project.createdBy}</TableCell>
                                 <TableCell>{new Date(Project.createdDate).toLocaleString()}</TableCell>
                                 <TableCell>{Project.updatedBy || 'N/A'}</TableCell>
                                 <TableCell>{new Date(Project.updatedDate).toLocaleString() || 'N/A'}</TableCell>
-                                <TableCell >
-                                    <IconButton onClick={() => handleUpdate(Project)}>
-                                        <EditIcon color="primary" />
+                                <TableCell>
+                                    {Project.isActive ? (
+                                        <>
+                                         <IconButton onClick={() => handleUpdate(Project)}>
+                                             <EditIcon color="primary" />
+                                         </IconButton>
+                                         <IconButton onClick={() => openConfirmationDialog('delete', Project.id)}>
+                                            <DeleteIcon color="error" />
+                                         </IconButton>
+                                         </>
+                                    ) : (
+                                    <IconButton onClick={() => openConfirmationDialog('activate', Project.id)}>
+                                        <ActivateIcon color="primary" />
                                     </IconButton>
-                                    <IconButton onClick={() => confirmDelete(Project.id)}>
-                                        <DeleteIcon color="error" />
-                                    </IconButton>
-                                </TableCell>
+                                )}
+                            </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
@@ -635,7 +693,39 @@ function ProjectList({isDrawerOpen}) {
                         helperText={errors.projectName}
                     />
                    <InputLabel id="demo-simple-select-label">Technology</InputLabel>
-                    <Autocomplete
+                   <Autocomplete
+                        multiple
+                        id="technologies-autocomplete"
+                        options={(Technologies && Technologies.length > 0) ? Technologies.map((tech) => tech.name) : []} 
+                        value={currentProject.technology || []}  
+                        onChange={(event, newValue) => {
+                            handleChange({
+                                target: {
+                                    name: 'technology',
+                                    value: newValue || [],  
+                                },
+                            });
+                        }}
+                        renderInput={(params) => (
+                            <TextField
+                                {...params}
+                                variant="outlined"
+                                placeholder="Select technologies"
+                                fullWidth
+                                error={!!errors.technology}
+                            />
+                        )}
+                        renderOption={(props, option, { selected }) => (
+                            <li {...props}>
+                                <Checkbox
+                                    style={{ marginRight: 8 }}
+                                    checked={selected}
+                                />
+                                <ListItemText primary={option} />
+                            </li>
+                        )}
+                    />
+                    {/* <Autocomplete
                         multiple
                         id="technologies-autocomplete"
                         options={Technologies.map((tech) => tech.name)} 
@@ -666,7 +756,7 @@ function ProjectList({isDrawerOpen}) {
                                 <ListItemText primary={option} />
                             </li>
                         )}
-                    />                   
+                    />                    */}
                     {errors.technology && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.technology}</Typography>}
                     <InputLabel>SalesContact</InputLabel>
                     <Select
@@ -777,14 +867,36 @@ function ProjectList({isDrawerOpen}) {
                 </DialogActions>
             </Dialog>
 
-            <Dialog open={confirmOpen} onClose={handleConfirmClose}>
-                <DialogTitle>Confirm Delete</DialogTitle>
+            {/* Confirmation Dialog for Admins */}
+            <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
+                <DialogTitle>Confirm Action</DialogTitle>
                 <DialogContent>
-                    <Typography>Are you sure you want to delete this technology?</Typography>
+                    <Typography>
+                        {confirmAction === 'delete'
+                            ? "Are you sure you want to deactivate this Project?"
+                            : "Are you sure you want to activate this Project?"}
+                    </Typography>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleConfirmClose}>No</Button>
-                    <Button onClick={handleConfirmYes} color="error">Yes</Button>
+                    <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
+                    <Button
+                        onClick={handleConfirmDialog}
+                        color="primary"
+                    >
+                        Confirm
+                    </Button>
+                </DialogActions>
+            </Dialog>
+            {/* Access Denied Dialog for Non-Admins */}
+            <Dialog open={accessDeniedDialogOpen} onClose={() => setAccessDeniedDialogOpen(false)}>
+                <DialogTitle>Access Denied</DialogTitle>
+                <DialogContent>
+                    <Typography>Only Admins have access to activate this record.</Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setAccessDeniedDialogOpen(false)} color="primary">
+                        OK
+                    </Button>
                 </DialogActions>
             </Dialog>
         </div>

@@ -131,16 +131,16 @@ function SOWProposedTeamList({ isDrawerOpen }) {
         setConfirmOpen(false);
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         let validationErrors = {};
 
         // Name field validation
-        if (!currentSOWProposedTeam.sowRequirement.trim()) {
-            validationErrors.sowRequirement = "SowRequirement is required";
-        }
-        if (!currentSOWProposedTeam.employee) {
-            validationErrors.employee = "Employee is required";
-        }
+        // if (!currentSOWProposedTeam.sowRequirement) {
+        //     validationErrors.sowRequirement = "SowRequirement is required";
+        // }
+        // if (!currentSOWProposedTeam.employee) {
+        //     validationErrors.employee = "Employee is required";
+        // }
 
         // If there are validation errors, update the state and prevent save
         if (Object.keys(validationErrors).length > 0) {
@@ -151,25 +151,25 @@ function SOWProposedTeamList({ isDrawerOpen }) {
         // Clear any previous errors if validation passes
         setErrors({});
 
-        if (currentSOWProposedTeam.id) {
-            axios.put(`http://172.17.31.61:5041/api/sowProposedTeam/${currentSOWProposedTeam.id}`, currentSOWProposedTeam)
-                .then(response => {
-                    setSOWProposedTeams(SOWProposedTeams.map(tech => tech.id === currentSOWProposedTeam.id ? response.data : tech));
-                })
-                .catch(error => {
-                    console.error('There was an error updating the SOWProposedTeam!', error);
-                    setError(error);
-                });
+        const selectedSowRequirement = SOWRequirements.find(sr => sr.teamSize === currentSOWProposedTeam.sowRequirement);
+        const sowRequirementId = selectedSowRequirement ? selectedSowRequirement.id : null;
+        const selectedEmployee = Employees.find(e => e.name === currentSOWProposedTeam.employee);
+        const employeeId = selectedEmployee ? selectedEmployee.id : null;
 
+        const sowProposedTeamToSave = {
+            ...currentSOWProposedTeam,
+            sowRequirement : sowRequirementId,
+            employee : employeeId,
+        }
+
+        if (currentSOWProposedTeam.id) {
+            axios.put(`http://172.17.31.61:5041/api/sowProposedTeam/${currentSOWProposedTeam.id}`, sowProposedTeamToSave)
+                const res = await axios.get('http://172.17.31.61:5041/api/sowProposedTeam');
+                setSOWProposedTeams(res.data);
         } else {
-            axios.post('http://172.17.31.61:5041/api/sowProposedTeam', currentSOWProposedTeam)
-                .then(response => {
-                    setSOWProposedTeams([...SOWProposedTeams, response.data]);
-                })
-                .catch(error => {
-                    console.error('There was an error adding the SOWProposedTeam!', error);
-                    setError(error);
-                });
+            axios.post('http://172.17.31.61:5041/api/sowProposedTeam', sowProposedTeamToSave)
+                const res = await axios.get('http://172.17.31.61:5041/api/sowProposedTeam');
+                setSOWProposedTeams(res.data);
         }
         setOpen(false);
 

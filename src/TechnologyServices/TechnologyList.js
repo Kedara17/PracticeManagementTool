@@ -15,7 +15,6 @@ function TechnologyList({isDrawerOpen}) {
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [confirmAction, setConfirmAction] = useState(null); // Store the action to be confirmed (delete/undo)
     const [targetTechnology, setTargetTechnology] = useState(null);
-    const [deleteTechId, setDeleteTechId] = useState(null);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [currentTechnology, setCurrentTechnology] = useState({
@@ -170,12 +169,20 @@ function TechnologyList({isDrawerOpen}) {
         // Clear any previous errors if validation passes
         setErrors({});
 
+        const selectedDepartment = departments.find(d => d.name === currentTechnology.department);
+        const departmentId = selectedDepartment ? selectedDepartment.id : null; 
+    
+        const technologyToSave = {
+            ...currentTechnology,
+            department: departmentId,
+        };
+
         if (currentTechnology.id) {
-            await axios.put(`http://172.17.31.61:5274/api/technology/${currentTechnology.id}`, currentTechnology)
+            await axios.put(`http://172.17.31.61:5274/api/technology/${currentTechnology.id}`, technologyToSave)
             const response = await axios.get('http://172.17.31.61:5274/api/technology');
             setTechnologies(response.data);
         } else {
-            await axios.post('http://172.17.31.61:5274/api/technology', currentTechnology)
+            await axios.post('http://172.17.31.61:5274/api/technology', technologyToSave)
             const response = await axios.get('http://172.17.31.61:5274/api/technology');
             setTechnologies(response.data);
         }

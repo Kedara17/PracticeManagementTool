@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Select, TablePagination, MenuItem, Table, InputLabel, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
+import { Switch, Select, TablePagination, MenuItem, Table, InputLabel, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
+import ActivateIcon from '@mui/icons-material/Undo';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -18,8 +19,10 @@ function InterviewList({ isDrawerOpen }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [open, setOpen] = useState(false);
-    const [confirmOpen, setConfirmOpen] = useState(false);
-    const [deleteTechId, setDeleteTechId] = useState(null);
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [confirmAction, setConfirmAction] = useState(null); // 'delete' or 'activate'
+    const [accessDeniedDialogOpen, setAccessDeniedDialogOpen] = useState(false); // New dialog for non-admins
+    const [selectedInterviewId, setSelectedInterviewId] = useState(null);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [currentInterview, setCurrentInterview] = useState({
@@ -32,6 +35,7 @@ function InterviewList({ isDrawerOpen }) {
         recruiter: ''
     });
 
+    const userRole = localStorage.getItem('userRole'); // Fetch role from localStorage
     const [order, setOrder] = useState('desc'); // Order of sorting: 'asc' or 'desc'
     const [orderBy, setOrderBy] = useState('createdDate'); // Column to sort by
     const [searchQuery, setSearchQuery] = useState(''); // State for search query
@@ -148,46 +152,91 @@ function InterviewList({ isDrawerOpen }) {
 
     };
 
-    const handleDelete = (id) => {
-        axios.patch(`http://172.17.31.61:5200/api/interview/${id}`)
-            .then(response => {
-                setInterviews(Interviews.filter(tech => tech.id !== id));
-            })
-            .catch(error => {
-                console.error('There was an error deleting the Interview!', error);
-                setError(error);
-            });
-        setConfirmOpen(false);
+     // Toggle the active status of a Interview after confirmation (Only admin has permission)
+     const handleToggleActive = (id, currentStatus) => {
+        if (userRole === 'Admin') {
+            const action = currentStatus ? 'deactivate' : 'activate';
+            axios.patch(`http://172.17.31.61:5200/api/interview/${id}/${action}`)
+                .then(() => {
+                    setInterviews(Interviews.map(interview => interview.id === id ? { ...interview, isActive: !currentStatus } : interview));
+                    setDialogOpen(false);
+                })
+                .catch(error => {
+                    console.error(`Error ${action} interview:`, error);
+                    setError(error);
+                });
+        } else {
+            alert("Only admins can activate records.");
+        }
     };
 
-    const handleSave = () => {
+    // Handle the deactivation of a interview (soft delete)
+    const handleDelete = () => {
+        if (selectedInterviewId) {
+            axios.patch(`http://172.17.31.61:5200/api/interview/${selectedInterviewId}`)
+                .then(() => {
+                    setInterviews(Interviews.map(interview => interview.id === selectedInterviewId ? { ...interview, isActive: false } : interview));
+                    setDialogOpen(false);
+                })
+                .catch(error => {
+                    console.error('Error deactivating interview:', error);
+                    setError(error);
+                });
+        }
+    };
+
+    // Open dialog for delete or activate confirmation for admin, or access denied dialog for non-admin
+    const openConfirmationDialog = (action, interviewId) => {
+        setConfirmAction(action);
+        setSelectedInterviewId(interviewId);
+        
+        if (action === 'activate' && userRole !== 'Admin') {
+            setAccessDeniedDialogOpen(true); // Open access denied dialog for non-admins
+        } else {
+            setDialogOpen(true); // Open confirmation dialog for admins
+        }
+    };
+
+      // Handle Confirm in Dialog
+      const handleConfirmDialog = () => {
+        if (confirmAction === 'delete') {
+            handleDelete();
+        } else if (confirmAction === 'activate') {
+            if (userRole === 'Admin') {
+                handleToggleActive(selectedInterviewId, false); // Admin can activate
+            }
+        }
+        setDialogOpen(false);
+    };
+
+    const handleSave = async () => {
         let validationErrors = {};
 
         // Name field validation
-        if (!currentInterview.sowRequirement.trim()) {
-            validationErrors.sowRequirement = "SowRequirement is required";
-        }
+        // if (!currentInterview.sowRequirement) {
+        //     validationErrors.sowRequirement = "SowRequirement is required";
+        // }
         if (!currentInterview.name) {
             validationErrors.name = "Name is required";
 
-        }else if(currentInterview.name.length < 3) {
+        } else if (currentInterview.name.length < 3) {
             validationErrors.name = "Name must be atleast 3 characters";
         }
-        if (!currentInterview.interviewDate) {
-            validationErrors.interviewDate = "InterviewDate is required";
-        }
-        if (!currentInterview.yearsOfExperience) {
-            validationErrors.yearsOfExperience = "YearsOfExperience is required";
-        }
-        if (!currentInterview.status) {
-            validationErrors.status = "Status is required";
-        }
+        // if (!currentInterview.interviewDate) {
+        //     validationErrors.interviewDate = "InterviewDate is required";
+        // }
+        // if (!currentInterview.yearsOfExperience) {
+        //     validationErrors.yearsOfExperience = "YearsOfExperience is required";
+        // }
+        // if (!currentInterview.status) {
+        //     validationErrors.status = "Status is required";
+        // }
         if (!currentInterview.on_Boarding) {
             validationErrors.on_Boarding = "On_Boarding is required";
         }
-        if (!currentInterview.recruiter) {
-            validationErrors.recruiter = "Recruiter is required";
-        }
+        // if (!currentInterview.recruiter) {
+        //     validationErrors.recruiter = "Recruiter is required";
+        // }
 
         // If there are validation errors, update the state and prevent save
         if (Object.keys(validationErrors).length > 0) {
@@ -198,25 +247,30 @@ function InterviewList({ isDrawerOpen }) {
         // Clear any previous errors if validation passes
         setErrors({});
 
-        if (currentInterview.id) {
-            axios.put(`http://172.17.31.61:5200/api/interview/${currentInterview.id}`, currentInterview)
-                .then(response => {
-                    setInterviews(Interviews.map(tech => tech.id === currentInterview.id ? response.data : tech));
-                })
-                .catch(error => {
-                    console.error('There was an error updating the Interview!', error);
-                    setError(error);
-                });
+        const selectedSOWRequirement = SOWRequirement.find(sr => sr.teamSize === currentInterview.sowRequirement);
+        const SOWRequirementId = selectedSOWRequirement ? selectedSOWRequirement.id : null;
 
+        const selectedStatus = InterviewStatus.find(s => s.status === currentInterview.status);
+        const statusId = selectedStatus ? selectedStatus.id : null;
+
+        const selectedRecruiter = Employee.find(e => e.name === currentInterview.recruiter);
+        const RecruiterId = selectedRecruiter ? selectedRecruiter.id : null;
+
+        const InterviewToSave = {
+            ...currentInterview,
+            sowRequirement: SOWRequirementId,
+            status: statusId,
+            recruiter: RecruiterId,
+        }
+
+        if (currentInterview.id) {
+            axios.put(`http://172.17.31.61:5200/api/interview/${currentInterview.id}`, InterviewToSave)
+            const res = await axios.get('http://172.17.31.61:5200/api/interview');
+            setInterviews(res.data);              
         } else {
-            axios.post('http://172.17.31.61:5200/api/interview', currentInterview)
-                .then(response => {
-                    setInterviews([...Interviews, response.data]);
-                })
-                .catch(error => {
-                    console.error('There was an error adding the Interview!', error);
-                    setError(error);
-                });
+            axios.post('http://localhost:5500/api/Interview', InterviewToSave)
+            const res = await axios.get('http://172.17.31.61:5200/api/interview');
+            setInterviews(res.data);
         }
         setOpen(false);
 
@@ -277,19 +331,6 @@ function InterviewList({ isDrawerOpen }) {
     const handleRowsPerPageChange = (event) => {
         setRowsPerPage(parseInt(event.target.value, 10));
         setPage(0);
-    };
-
-    const confirmDelete = (id) => {
-        setDeleteTechId(id);
-        setConfirmOpen(true);
-    };
-
-    const handleConfirmClose = () => {
-        setConfirmOpen(false);
-    };
-
-    const handleConfirmYes = () => {
-        handleDelete(deleteTechId);
     };
 
     const handleInterviewDateChange = (newDate) => {
@@ -472,19 +513,36 @@ function InterviewList({ isDrawerOpen }) {
                                 <TableCell>{Interview.status}</TableCell>
                                 <TableCell>{Interview.on_Boarding}</TableCell>
                                 <TableCell>{Interview.recruiter}</TableCell>
-                                <TableCell>{Interview.isActive ? 'Active' : 'Inactive'}</TableCell>
+                                <TableCell>
+                                    <Switch
+                                        checked={Interview.isActive}
+                                        onChange={() => {
+                                            openConfirmationDialog('activate', Interview.id); // Opens dialog based on role
+                                        }}
+                                        color="primary"
+                                        disabled={userRole !== 'Admin'}
+                                    />
+                                </TableCell>
                                 <TableCell>{Interview.createdBy}</TableCell>
                                 <TableCell>{Interview.createdDate}</TableCell>
                                 <TableCell>{Interview.updatedBy || 'N/A'}</TableCell>
                                 <TableCell>{Interview.updatedDate || 'N/A'}</TableCell>
-                                <TableCell >
-                                    <IconButton onClick={() => handleUpdate(Interview)}>
-                                        <EditIcon color="primary" />
+                                <TableCell>
+                                    {Interview.isActive ? (
+                                        <>
+                                         <IconButton onClick={() => handleUpdate(Interview)}>
+                                             <EditIcon color="primary" />
+                                         </IconButton>
+                                         <IconButton onClick={() => openConfirmationDialog('delete', Interview.id)}>
+                                            <DeleteIcon color="error" />
+                                         </IconButton>
+                                         </>
+                                    ) : (
+                                    <IconButton onClick={() => openConfirmationDialog('activate', Interview.id)}>
+                                        <ActivateIcon color="primary" />
                                     </IconButton>
-                                    <IconButton onClick={() => confirmDelete(Interview.id)}>
-                                        <DeleteIcon color="error" />
-                                    </IconButton>
-                                </TableCell>
+                                )}
+                            </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
@@ -614,14 +672,37 @@ function InterviewList({ isDrawerOpen }) {
                 </DialogActions>
             </Dialog>
 
-            <Dialog open={confirmOpen} onClose={handleConfirmClose}>
-                <DialogTitle>Confirm Delete</DialogTitle>
+             {/* Confirmation Dialog for Admins */}
+             <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
+                <DialogTitle>Confirm Action</DialogTitle>
                 <DialogContent>
-                    <Typography>Are you sure you want to delete this Interview?</Typography>
+                    <Typography>
+                        {confirmAction === 'delete'
+                            ? "Are you sure you want to deactivate this Interview?"
+                            : "Are you sure you want to activate this Interview?"}
+                    </Typography>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleConfirmClose}>Cancel</Button>
-                    <Button onClick={handleConfirmYes} color="error">Ok</Button>
+                    <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
+                    <Button
+                        onClick={handleConfirmDialog}
+                        color="primary"
+                    >
+                        Confirm
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Access Denied Dialog for Non-Admins */}
+            <Dialog open={accessDeniedDialogOpen} onClose={() => setAccessDeniedDialogOpen(false)}>
+                <DialogTitle>Access Denied</DialogTitle>
+                <DialogContent>
+                    <Typography>Only Admins have access to activate this record.</Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setAccessDeniedDialogOpen(false)} color="primary">
+                        OK
+                    </Button>
                 </DialogActions>
             </Dialog>
         </div>

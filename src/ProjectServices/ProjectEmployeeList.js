@@ -136,22 +136,22 @@ function ProjectEmployeeList({ isDrawerOpen }) {
         setConfirmOpen(false);
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         let validationErrors = {};
 
         // Name field validation
-        if (!currentProjectEmployee.project.trim()) {
-            validationErrors.project = "Project is required";
-        }
-        if (!currentProjectEmployee.employee) {
-            validationErrors.employee = "Employee is required";
-        }
-        if (!currentProjectEmployee.startDate) {
-            validationErrors.startDate = "StartDate is required";
-        }
-        if (!currentProjectEmployee.endDate) {
-            validationErrors.endDate = "EndDate is required";
-        }
+        // if (!currentProjectEmployee.project.trim()) {
+        //     validationErrors.project = "Project is required";
+        // }
+        // if (!currentProjectEmployee.employee) {
+        //     validationErrors.employee = "Employee is required";
+        // }
+        // if (!currentProjectEmployee.startDate) {
+        //     validationErrors.startDate = "StartDate is required";
+        // }
+        // if (!currentProjectEmployee.endDate) {
+        //     validationErrors.endDate = "EndDate is required";
+        // }
 
         // If there are validation errors, update the state and prevent save
         if (Object.keys(validationErrors).length > 0) {
@@ -162,25 +162,27 @@ function ProjectEmployeeList({ isDrawerOpen }) {
         // Clear any previous errors if validation passes
         setErrors({});
 
-        if (currentProjectEmployee.id) {
-            axios.put(`http://172.17.31.61:5151/api/projectEmployee/${currentProjectEmployee.id}`, currentProjectEmployee)
-                .then(response => {
-                    setProjectEmployees(ProjectEmployees.map(tech => tech.id === currentProjectEmployee.id ? response.data : tech));
-                })
-                .catch(error => {
-                    console.error('There was an error updating the ProjectEmployee!', error);
-                    setError(error);
-                });
+        const selectedProject = Projects.find(p => p.projectName === currentProjectEmployee.project);
+        const projectId = selectedProject ? selectedProject.id : null; 
 
+        const selectedEmployee = Employees.find(e => e.name === currentProjectEmployee.employee);
+        const employeeId = selectedEmployee ? selectedEmployee.id : null; 
+    
+        const projectEmployeeToSave = {
+            ...currentProjectEmployee,
+            project: projectId,
+            employee: employeeId
+        };
+
+
+        if (currentProjectEmployee.id) {
+            axios.put(`http://172.17.31.61:5151/api/projectEmployee/${currentProjectEmployee.id}`, projectEmployeeToSave)
+            const response = await axios.get('http://172.17.31.61:5151/api/projectEmployee');
+            setProjectEmployees(response.data);          
         } else {
-            axios.post('http://172.17.31.61:5151/api/projectEmployee', currentProjectEmployee)
-                .then(response => {
-                    setProjectEmployees([...ProjectEmployees, response.data]);
-                })
-                .catch(error => {
-                    console.error('There was an error adding the ProjectEmployee!', error);
-                    setError(error);
-                });
+            axios.post('http://172.17.31.61:5151/api/projectEmployee', projectEmployeeToSave)
+            const response = await axios.get('http://172.17.31.61:5151/api/projectEmployee');
+            setProjectEmployees(response.data);
         }
         setOpen(false);
 
