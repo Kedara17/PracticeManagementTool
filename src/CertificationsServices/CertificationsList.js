@@ -3,13 +3,15 @@
 
 
 //new one
-
+import UndoIcon from '@mui/icons-material/Undo'; // Undo icon for inactive
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { Switch, InputLabel, TablePagination, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
+
 
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Select, MenuItem, Table, InputLabel, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
+import { Select, MenuItem } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
@@ -31,6 +33,8 @@ const CertificationsList = () => {
     const [deleteTechId, setDeleteTechId] = useState(null);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [confirmAction, setConfirmAction] = useState(null); // Store the action to be confirmed (delete/undo)
+    const [targetCertification, setTargetCertification] = useState(null); // Store the target department for confirmation
     // const [CertificateStatus, setCertificateStatus] = useState([]);
     const options = [
         'Completed',
@@ -96,8 +100,8 @@ const CertificationsList = () => {
     }, []);
 
     const handleSort = (property) => {
-        const isAsc = orderBy === property && order === 'asc';
-        setOrder(isAsc ? 'desc' : 'asc');
+        const isDesc  = orderBy === property && order === 'desc';
+        setOrder(isDesc ? 'asc' : 'desc');
         setOrderBy(property);
     };
 
@@ -295,6 +299,12 @@ const CertificationsList = () => {
         setConfirmOpen(true);
     };
 
+    const confirmUndo = (id) => {
+        setConfirmAction('undo');
+        setTargetCertification(id);
+        setConfirmOpen(true);
+    };
+
     const handleConfirmClose = () => {
         setConfirmOpen(false);
     };
@@ -340,6 +350,43 @@ const CertificationsList = () => {
     };
 
 
+    
+    const handleToggleActive = async (id, currentState) => {
+        try {
+            // Find the full department object based on the id
+            const certificateToUpdate = certifications.find(dept => dept.id === id);
+            if (!certificateToUpdate) {
+                console.error('certificate not found');
+                return;
+            }
+    
+            // Create an updated object with the toggled isActive state
+            const updatedCertifications= {
+                ...certificateToUpdate,
+                isActive: !currentState
+            };
+    
+            // Send the full certificate object in the PUT request
+            await axios.put(`http://localhost:5019/api/Certifications/${updatedCertifications.id}`, updatedCertifications);
+  
+    
+            // Update the state with the new certificate data
+            setCertifications(certifications.map(dept => dept.id === id ? { ...dept, isActive: !currentState } : dept));
+        } catch (error) {
+            console.error('Error updating certificate active state:', error);
+        }
+    };
+
+    const handleUndo = async (id) => {
+        try {
+            await handleToggleActive(id, false); // Activate the department
+        } catch (error) {
+            console.error('Error activating the Department!', error);
+            setError(error);
+        }
+        setConfirmOpen(false);
+    };
+
 
     return (
         <div>
@@ -368,6 +415,9 @@ const CertificationsList = () => {
                 />
                 <Button variant="contained" color="primary" onClick={handleAdd}>Add Certification</Button>
             </div>
+
+
+            
 
             <TableContainer component={Paper}>
                 <Table>
@@ -491,23 +541,51 @@ const CertificationsList = () => {
                                 <TableCell>{certification.status}</TableCell>
 
                                 <TableCell>{certification.comments}</TableCell>
-                                <TableCell>{certification.isActive ? 'Active' : 'InActive'}</TableCell>
+                                <TableCell>
+                                    <Switch
+                                        checked={certification.isActive}
+                                        disabled={!certification.isActive} // Disable toggle for inactive records
+                                        onChange={() => handleToggleActive(certification.id, certification.isActive)}
+                                        color="primary"
+                                    />
+                                </TableCell>
                                 <TableCell>{certification.createdBy}</TableCell>
                                 <TableCell>{(certification.createdDate)}</TableCell>
                                 <TableCell>{certification.updatedBy || 'N/A'}</TableCell>
                                 <TableCell>{(certification.updatedDate) || 'N/A'}</TableCell>
                                 <TableCell >
-                                    <IconButton onClick={() => handleUpdate(certification)}>
-                                        <EditIcon color="primary" />
-                                    </IconButton>
-                                    <IconButton onClick={() => confirmDelete(certification.id)}>
-                                        <DeleteIcon color="error" />
-                                    </IconButton>
+
+                                <TableCell>
+                                    {certification.isActive ? (
+                                        <>
+                                            <IconButton onClick={() => handleUpdate(certification)}>
+                                                <EditIcon color="primary" />
+                                            </IconButton>
+                                            <IconButton onClick={() => confirmDelete(certification.id)}>
+                                                <DeleteIcon color="error" />
+                                            </IconButton>
+                                        </>
+                                    ) : (
+                                        <IconButton onClick={() => confirmUndo(certification.id)}>
+                                            <UndoIcon color="secondary" />
+                                        </IconButton>
+                                    )}
                                 </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
+
+                                   
+
+
+
+                 
+                                </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+
+
+
                 </Table>
+                </TableContainer>
                 {/* Pagination Component */}
                 <PaginationComponent
                     count={filteredCertifications.length}
@@ -516,7 +594,6 @@ const CertificationsList = () => {
                     handlePageChange={handlePageChange}
                     handleRowsPerPageChange={handleRowsPerPageChange}
                 />
-            </TableContainer>
 
             {/* Dialogs for adding/editing and confirming delete */}
             <Dialog open={open} onClose={() => setOpen(false)}>
@@ -613,27 +690,26 @@ const CertificationsList = () => {
 
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleClose}>Cancel</Button>
-                    <Button onClick={handleSave} color="primary">
-                        {currentCertifications.id ? 'Update' : 'Save'}
-                        
-                        {/* <ToastContainer position="top-right" autoClose={3000} /> */}
-                    </Button>
-                </DialogActions>
-            </Dialog>
-
-
-
-            <Dialog open={confirmOpen} onClose={handleConfirmClose}>
-                <DialogTitle>Confirm Delete</DialogTitle>
-                <DialogContent>
-                    <Typography>Are you sure you want to delete this certification?</Typography>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleConfirmClose}>No</Button>
-                    <Button onClick={handleConfirmYes} color="error">Yes</Button>
-                </DialogActions>
-            </Dialog>
+                <Button onClick={handleClose}>Cancel</Button>
+<Button onClick={handleSave} color="primary">
+    {currentCertifications.id ? 'Update' : 'Save'}
+</Button>
+</DialogActions>
+</Dialog>
+<Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
+<DialogTitle>{confirmAction === 'delete' ? 'Confirm Delete' : 'Confirm Activation'}</DialogTitle>
+<DialogContent>
+<Typography>
+{confirmAction === 'delete'
+    ? 'Are you sure you want to delete this Department?'
+    : 'Are you sure you want to activate this Department?'}
+</Typography>
+</DialogContent>
+<DialogActions>
+<Button onClick={() => setConfirmOpen(false)}>No</Button>
+<Button onClick={handleConfirmYes} color="primary">Yes</Button>
+</DialogActions>
+</Dialog>
         </div>
 
 
@@ -641,3 +717,5 @@ const CertificationsList = () => {
 }
 
 export default CertificationsList
+
+

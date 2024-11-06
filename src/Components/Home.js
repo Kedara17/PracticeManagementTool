@@ -551,8 +551,8 @@ function Home() {
           <Route path='sow/sowrequirementlist' element={<SOWRequirementList isDrawerOpen={isDrawerOpen} />} />
           <Route path='sow/sowstatuslist' element={<SOWStatusList isDrawerOpen={isDrawerOpen} />} />
           <Route path='poc/poclist' element={<POCList isDrawerOpen={isDrawerOpen} />} />
-          <Route path='certifications/certificationslist' element={<CertificationsList isDrawerOpen={isDrawerOpen} />} />
-          <Route path='successStories/successStoriesList' element={<SuccessStoriesList isDrawerOpen={isDrawerOpen} />} />
+         
+          <Route path='successstories' element={<SuccessStoriesList isDrawerOpen={isDrawerOpen} />} />
           <Route path='poc' element={<POCList isDrawerOpen={isDrawerOpen} />} />
           <Route path='certifications' element={<CertificationsList isDrawerOpen={isDrawerOpen} />} />
           <Route path='newLeadEnquiry' element={<NewLeadEnquiryList isDrawerOpen={isDrawerOpen} />} />
