@@ -4,7 +4,6 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import UndoIcon from '@mui/icons-material/Undo';
 import SearchIcon from '@mui/icons-material/Search';
-import PaginationComponent from '../Components/PaginationComponent';
 import {
     Table,
     TableBody,
@@ -27,8 +26,11 @@ import {
     Autocomplete,
     Checkbox,
     ListItemText,
-    Select, 
-    Typography
+    Select,
+    Typography,
+    Switch,
+    TableSortLabel,
+    TablePagination,
 } from '@mui/material';
 
 function NewLeadEnquiryList({ isDrawerOpen }) {
@@ -38,13 +40,11 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [open, setOpen] = useState(false);
+    const [data, setData] = useState([]);
+    const [confirmOpen, setConfirmOpen] = useState(false); // Dialog for delete confirmation
+    const [deleteEnquiry, setDeleteEnquiry] = useState(null); // Store ID for deletion
     const [currentEnquiry, setCurrentEnquiry] = useState({
         id: '',
-        isActive: true,
-        createdBy: 'SYSTEM',
-        createdDate: new Date().toISOString(),
-        updatedBy: 'SYSTEM',
-        updatedDate: new Date().toISOString(),
         employeeID: '',
         assignTo: '',
         companyName: '',
@@ -60,6 +60,8 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
 
     const [searchQuery, setSearchQuery] = useState('');
     const [page, setPage] = useState(0);
+    const [order, setOrder] = useState('desc'); // Order of sorting: 'asc' or 'desc'
+    const [orderBy, setOrderBy] = useState('createdDate'); // Column to sort by
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [errors, setErrors] = useState({});
     const [file, setFile] = useState(null);
@@ -87,11 +89,6 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
     const handleAdd = () => {
         setCurrentEnquiry({
             id: '',
-            isActive: true,
-            createdBy: 'SYSTEM',
-            createdDate: new Date().toISOString(),
-            updatedBy: 'SYSTEM',
-            updatedDate: new Date().toISOString(),
             employeeID: '',
             assignTo: '',
             companyName: '',
@@ -112,6 +109,7 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
             ...enquiry,
             enquiryDate: new Date(enquiry.enquiryDate).toISOString().split('T')[0],
             technology: enquiry.technology || [], // Set technology to the existing ones
+            fileName: enquiry.fileName || "",      // Set to existing file name if available
             id: enquiry.id,
         });
         setOpen(true);
@@ -121,16 +119,48 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
         let validationErrors = {};
 
         // Validation checks
-        if (!currentEnquiry.companyName) validationErrors.companyName = "Company Name is required";
-        if (!currentEnquiry.companyRepresentative) validationErrors.companyRepresentative = "Company Representative is required";
-        if (!currentEnquiry.representativeDesignation) validationErrors.representativeDesignation = "Representative Designation is required";
-        if (!currentEnquiry.requirement) validationErrors.requirement = "Requirement is required";
-        if (!currentEnquiry.assignTo) validationErrors.assignTo = "Assign To is required";
-        if (!currentEnquiry.enquiryDate) validationErrors.enquiryDate = "Enquiry Date is required";
-        if (!currentEnquiry.status) validationErrors.status = "Status is required";
-        if (!currentEnquiry.comments) validationErrors.comments = "Comments are required";
-        if (currentEnquiry.technology.length === 0) validationErrors.technology = "At least one Technology is required"; // New validation
-        if (!file) validationErrors.fileName = "File is required"; // File validation
+        if (!currentEnquiry.companyName) {
+            validationErrors.companyName = "Company Name is required";
+        } else if (newLeadEnquiries.some(enquiry => enquiry.companyName.toLowerCase() === currentEnquiry.companyName.toLowerCase() && enquiry.id !== currentEnquiry.id)) {
+            validationErrors.companyName = "Company Name must be unique";
+        }
+
+        if (!currentEnquiry.companyRepresentative) {
+            validationErrors.companyRepresentative = "Company Representative is required";
+        } else if (newLeadEnquiries.some(enquiry => enquiry.companyRepresentative.toLowerCase() === currentEnquiry.companyRepresentative.toLowerCase() && enquiry.id !== currentEnquiry.id)) {
+            validationErrors.companyRepresentative = "Company Representative must be unique";
+        }
+
+        if (!currentEnquiry.representativeDesignation) {
+            validationErrors.representativeDesignation = "Representative Designation is required";
+        } else if (newLeadEnquiries.some(enquiry => enquiry.representativeDesignation.toLowerCase() === currentEnquiry.representativeDesignation.toLowerCase() && enquiry.id !== currentEnquiry.id)) {
+            validationErrors.representativeDesignation = "Representative Designation must be unique";
+        }
+
+        if (!currentEnquiry.requirement) {
+            validationErrors.requirement = "Requirement is required";
+        } else if (newLeadEnquiries.some(enquiry => enquiry.requirement.toLowerCase() === currentEnquiry.requirement.toLowerCase() && enquiry.id !== currentEnquiry.id)) {
+            validationErrors.requirement = "Requirement must be unique";
+        }
+
+        if (!currentEnquiry.assignTo) {
+            validationErrors.assignTo = "Assign To is required";
+        }
+        if (!currentEnquiry.enquiryDate) {
+            validationErrors.enquiryDate = "Enquiry Date is required";
+        }
+        if (!currentEnquiry.status) {
+            validationErrors.status = "Status is required";
+        }
+        if (!currentEnquiry.comments) {
+            validationErrors.comments = "Comments are required";
+        }
+        if (currentEnquiry.technology.length === 0) {
+            validationErrors.technology = "At least one Technology is required";
+        }
+        if (!file) {
+            validationErrors.fileName = "File is required";
+        }
 
         if (Object.keys(validationErrors).length > 0) {
             setErrors(validationErrors);
@@ -145,7 +175,8 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
             enquiryDate: new Date(currentEnquiry.enquiryDate).toISOString(),
             updatedDate: new Date().toISOString(),
             isActive: currentEnquiry.isActive === true,
-            fileName: file.name,
+            fileName: file ? file.name : currentEnquiry.fileName,
+            updatedBy: 'userName',
         };
 
         try {
@@ -153,34 +184,34 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
             if (currentEnquiry.id) {
                 await axios.put(`http://localhost:5054/api/NewLeadEnquiry/${currentEnquiry.id}`, enquiryToSend);
                 newLeadEnquiryId = currentEnquiry.id; // Set the existing ID
+                setNewLeadEnquiries((prevEnquiries) =>
+                    prevEnquiries.map((enquiry) =>
+                        enquiry.id === currentEnquiry.id ? { ...enquiry, ...enquiryToSend } : enquiry
+                    )
+                );
             } else {
                 const response = await axios.post('http://localhost:5054/api/NewLeadEnquiry', enquiryToSend);
                 newLeadEnquiryId = response.data.id; // Get the newly created ID
+                setNewLeadEnquiries((prevEnquiries) => [...prevEnquiries, response.data]);
             }
 
             await Promise.all(currentEnquiry.technology.map(technologyId =>
                 axios.post('http://localhost:5054/api/NewLeadEnquiryTechnology', {
-                    newLeadEnquiryId, 
+                    newLeadEnquiryId,
                     technologyId,
                 })
             ));
 
-            const formData = new FormData();
-            formData.append('fileName', file);
-            formData.append('NewLeadEnquiryId', currentEnquiry.id);
+            if (file) {
+                const formData = new FormData();
+                formData.append('FileName', file);
+                formData.append('Id', currentEnquiry.id);
 
-            const response = await fetch('http://localhost:5054/api/NewLeadEnquiryDocuments', {
-                method: 'POST',
-                body: formData,
-            });            
+                await axios.post('http://localhost:5054/api/NewLeadEnquiryDocuments', formData);
 
-            if (!response.ok) {
-                throw new Error('Failed to upload file');
             }
 
             setOpen(false);
-            const enquiryResponse = await axios.get('http://localhost:5054/api/NewLeadEnquiry');
-            setNewLeadEnquiries(enquiryResponse.data);
         } catch (error) {
             console.error("Error saving the enquiry:", error.response?.data || error.message);
             setError(error.response?.data || error.message);
@@ -190,6 +221,7 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
     const handleChange = (event) => {
         const { name, value, files } = event.target;
 
+        // File validation for `fileName`
         if (name === 'fileName') {
             const selectedFile = files[0];
             setFile(selectedFile);
@@ -200,10 +232,102 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
                 setErrors((prevErrors) => ({ ...prevErrors, fileName: '' }));
             }
         } else {
+            // Update current enquiry field
             setCurrentEnquiry((prev) => ({
                 ...prev,
                 [name]: value,
             }));
+
+            // Field-specific validations
+            if (name === "companyName") {
+                if (!value.trim()) {
+                    setErrors((prevErrors) => ({ ...prevErrors, companyName: "Company Name is required" }));
+                } else if (value.length > 50) {
+                    setErrors((prevErrors) => ({ ...prevErrors, companyName: "Maximum 50 characters allowed" }));
+                } else {
+                    setErrors((prevErrors) => ({ ...prevErrors, companyName: "" }));
+                }
+            }
+
+            if (name === "companyRepresentative") {
+                if (!value.trim()) {
+                    setErrors((prevErrors) => ({ ...prevErrors, companyRepresentative: "Company Representative is required" }));
+                } else if (value.length > 50) {
+                    setErrors((prevErrors) => ({ ...prevErrors, companyRepresentative: "Maximum 50 characters allowed" }));
+                } else {
+                    setErrors((prevErrors) => ({ ...prevErrors, companyRepresentative: "" }));
+                }
+            }
+
+            if (name === "representativeDesignation") {
+                if (!value.trim()) {
+                    setErrors((prevErrors) => ({ ...prevErrors, representativeDesignation: "Representative Designation is required" }));
+                } else if (value.length > 50) {
+                    setErrors((prevErrors) => ({ ...prevErrors, representativeDesignation: "Maximum 50 characters allowed" }));
+                } else {
+                    setErrors((prevErrors) => ({ ...prevErrors, representativeDesignation: "" }));
+                }
+            }
+
+            if (name === "requirement") {
+                if (!value.trim()) {
+                    setErrors((prevErrors) => ({ ...prevErrors, requirement: "Requirement is required" }));
+                } else if (value.length > 50) {
+                    setErrors((prevErrors) => ({ ...prevErrors, requirement: "Maximum 50 characters allowed" }));
+                } else {
+                    setErrors((prevErrors) => ({ ...prevErrors, requirement: "" }));
+                }
+            }
+
+            if (name === "assignTo") {
+                if (!value) {
+                    setErrors((prevErrors) => ({ ...prevErrors, assignTo: "Assign To is required" }));
+                } else {
+                    setErrors((prevErrors) => ({ ...prevErrors, assignTo: "" }));
+                }
+            }
+
+            if (name === "employeeID") {
+                if (!value) {
+                    setErrors((prevErrors) => ({ ...prevErrors, employeeID: "Employee ID is required" }));
+                } else {
+                    setErrors((prevErrors) => ({ ...prevErrors, employeeID: "" }));
+                }
+            }
+
+            if (name === "enquiryDate") {
+                if (!value) {
+                    setErrors((prevErrors) => ({ ...prevErrors, enquiryDate: "Enquiry Date is required" }));
+                } else {
+                    setErrors((prevErrors) => ({ ...prevErrors, enquiryDate: "" }));
+                }
+            }
+
+            if (name === "status") {
+                if (!value) {
+                    setErrors((prevErrors) => ({ ...prevErrors, status: "Status is required" }));
+                } else {
+                    setErrors((prevErrors) => ({ ...prevErrors, status: "" }));
+                }
+            }
+
+            if (name === "comments") {
+                if (!value.trim()) {
+                    setErrors((prevErrors) => ({ ...prevErrors, comments: "Comments are required" }));
+                } else if (value.length > 500) {
+                    setErrors((prevErrors) => ({ ...prevErrors, comments: "Maximum 500 characters allowed" }));
+                } else {
+                    setErrors((prevErrors) => ({ ...prevErrors, comments: "" }));
+                }
+            }
+
+            if (name === "technology") {
+                if (!value) {
+                    setErrors((prevErrors) => ({ ...prevErrors, technology: "Technology selection is required" }));
+                } else {
+                    setErrors((prevErrors) => ({ ...prevErrors, technology: "" }));
+                }
+            }
         }
     };
 
@@ -212,10 +336,24 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
             await axios.patch(`http://localhost:5054/api/NewLeadEnquiry/${id}`);
             const enquiryResponse = await axios.get('http://localhost:5054/api/NewLeadEnquiry');
             setNewLeadEnquiries(enquiryResponse.data);
+            setConfirmOpen(false);
         } catch (error) {
             console.error("Error deleting enquiry:", error);
             setError(error.response?.data || error.message);
         }
+    };
+
+    const handleSort = (property) => {
+        const isAsc = orderBy === property && order === 'asc';
+        const sortedData = [...data].sort((a, b) => {
+            if (a[property] < b[property]) return isAsc ? -1 : 1;
+            if (a[property] > b[property]) return isAsc ? 1 : -1;
+            return 0;
+        });
+
+        setData(sortedData); // Set the sorted data to ensure full dataset is updated
+        setOrder(isAsc ? 'desc' : 'asc');
+        setOrderBy(property);
     };
 
     const handleReactivate = async (id, currentState) => {
@@ -224,20 +362,20 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
             if (!enquiryToUpdate) {
                 throw new Error("Enquiry not found with the provided ID");
             }
-    
+
             const updatedEnquiry = {
                 ...enquiryToUpdate,
                 isActive: !currentState,
-                fileName: enquiryToUpdate.fileName || '',  
-                technology: enquiryToUpdate.technology || [], 
+                fileName: enquiryToUpdate.fileName || '',
+                technology: enquiryToUpdate.technology || [],
             };
-    
+
             await axios.put(`http://localhost:5054/api/NewLeadEnquiry/${id}`, updatedEnquiry, {
                 headers: {
                     'Content-Type': 'application/json',
                 }
             });
-    
+
             setNewLeadEnquiries((prevEnquiries) =>
                 prevEnquiries.map((enquiry) =>
                     enquiry.id === id ? { ...enquiry, isActive: !currentState } : enquiry
@@ -247,12 +385,37 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
             console.error("Error reactivating enquiry:", error.response?.data || error.message);
             setError(error.response?.data || error.message);
         }
-    };       
+    };
+
+    const handleToggleActive = async (enquiry) => {
+        try {
+            // Toggle isActive status and provide default values if necessary
+            const updatedEnquiry = {
+                ...enquiry,
+                isActive: !enquiry.isActive,
+                fileName: enquiry.fileName || '',
+                technology: enquiry.technology || [],
+            };
+
+            console.log("Payload being sent with defaults:", updatedEnquiry); // Log payload with defaults
+
+            const response = await axios.put(`http://localhost:5054/api/NewLeadEnquiry/${enquiry.id}`, updatedEnquiry);
+
+            if (response.status === 200) {
+                setNewLeadEnquiries(prevEnquiries =>
+                    prevEnquiries.map((f) => (f.id === enquiry.id ? updatedEnquiry : f))
+                );
+            } else {
+                console.error("Unexpected response:", response);
+            }
+        } catch (error) {
+            console.error("There was an error updating the active status!", error.response?.data || error.message);
+        }
+    };
 
     const handlePageChange = (event, newPage) => {
         setPage(newPage);
     };
-
     const handleRowsPerPageChange = (event) => {
         setRowsPerPage(parseInt(event.target.value, 10));
         setPage(0);
@@ -266,8 +429,55 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
         return <p>There was an error loading the data: {error.message}</p>;
     }
 
-    const filteredEnquiries = newLeadEnquiries.filter(enquiry =>
-        enquiry.companyName.toLowerCase().includes(searchQuery.toLowerCase())
+    const sortedEnquiries = [...newLeadEnquiries].sort((a, b) => {
+        const valueA = a[orderBy] || '';
+        const valueB = b[orderBy] || '';
+
+        if (typeof valueA === 'string' && typeof valueB === 'string') {
+            return order === 'desc'
+                ? valueB.localeCompare(valueA)
+                : valueA.localeCompare(valueB);
+        } else if (valueA instanceof Date && valueB instanceof Date) {
+            return order === 'desc'
+                ? valueB - valueA
+                : valueA - valueB;
+        } else {
+            return order === 'desc'
+                ? (valueA > valueB ? 1 : -1)
+                : (valueB > valueA ? 1 : -1);
+        }
+    });
+
+
+    const filteredEnquiries = sortedEnquiries.filter((enquiry) =>
+        (enquiry.companyName && typeof enquiry.companyName === 'string' &&
+            enquiry.companyName.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (enquiry.companyRepresentative && typeof enquiry.companyRepresentative === 'string' &&
+            enquiry.companyRepresentative.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (enquiry.representativeDesignation && typeof enquiry.representativeDesignation === 'string' &&
+            enquiry.representativeDesignation.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (enquiry.requirement && typeof enquiry.requirement === 'string' &&
+            enquiry.requirement.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (enquiry.enquiryDate && typeof enquiry.enquiryDate === 'string' &&
+            enquiry.enquiryDate.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (enquiry.employeeID && typeof enquiry.employeeID === 'string' &&
+            enquiry.employeeID.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (enquiry.assignTo && typeof enquiry.assignTo === 'string' &&
+            enquiry.assignTo.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (enquiry.status && typeof enquiry.status === 'string' &&
+            enquiry.status.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (enquiry.comments && typeof enquiry.comments === 'string' &&
+            enquiry.comments.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (enquiry.isActive && typeof enquiry.isActive === 'string' &&
+            enquiry.isActive.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (enquiry.createdBy && typeof enquiry.createdBy === 'string' &&
+            enquiry.createdBy.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (enquiry.createdDate && typeof enquiry.createdDate === 'string' &&
+            enquiry.createdDate.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (enquiry.updatedBy && typeof enquiry.updatedBy === 'string' &&
+            enquiry.updatedBy.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        (enquiry.updatedDate && typeof enquiry.updatedDate === 'string' &&
+            enquiry.updatedDate.toLowerCase().includes(searchQuery.toLowerCase()))
     );
 
     const paginatedEnquiries = filteredEnquiries.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
@@ -291,7 +501,7 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
                                 </InputAdornment>
                             ),
                         }}
-                        style={{ marginRight: '10px', width: '1000px' }}
+                        style={{ marginRight: '10px', flexGrow: 1 }}
                     />
                     <Button variant="contained" onClick={handleAdd}>
                         Add New Enquiry
@@ -302,21 +512,134 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
                     <Table>
                         <TableHead>
                             <TableRow>
-                                <TableCell>Company Name</TableCell>
-                                <TableCell>Company Representative</TableCell>
-                                <TableCell>Representative Designation</TableCell>
-                                <TableCell>Requirement</TableCell>
-                                <TableCell>Enquiry Date</TableCell>
-                                <TableCell>EmployeeID</TableCell>
-                                <TableCell>Assign To</TableCell>
-                                <TableCell>Status</TableCell>
-                                <TableCell>Comments</TableCell>
-                                <TableCell>Is Active</TableCell>
-                                <TableCell>Created By</TableCell>
-                                <TableCell>Created Date</TableCell>
-                                <TableCell>Updated By</TableCell>
-                                <TableCell>Updated Date</TableCell>
-                                <TableCell>Actions</TableCell>
+                                <TableCell>
+                                    <TableSortLabel
+                                        active={orderBy === 'companyName'}
+                                        direction={orderBy === 'companyName' ? order : 'desc'}
+                                        onClick={() => handleSort('companyName')}
+                                    >
+                                        <b>Company Name</b>
+                                    </TableSortLabel>
+                                </TableCell>
+                                <TableCell>
+                                    <TableSortLabel
+                                        active={orderBy === 'companyRepresentative'}
+                                        direction={orderBy === 'companyRepresentative' ? order : 'desc'}
+                                        onClick={() => handleSort('companyRepresentative')}
+                                    >
+                                        <b>Company Representative</b>
+                                    </TableSortLabel>
+                                </TableCell>
+                                <TableCell>
+                                    <TableSortLabel
+                                        active={orderBy === 'representativeDesignation'}
+                                        direction={orderBy === 'representativeDesignation' ? order : 'desc'}
+                                        onClick={() => handleSort('representativeDesignation')}
+                                    >
+                                        <b>Representative Designation</b>
+                                    </TableSortLabel>
+                                </TableCell>
+                                <TableCell>
+                                    <TableSortLabel
+                                        active={orderBy === 'requirement'}
+                                        direction={orderBy === 'requirement' ? order : 'desc'}
+                                        onClick={() => handleSort('requirement')}
+                                    >
+                                        <b>Requirement</b>
+                                    </TableSortLabel>
+                                </TableCell>
+                                <TableCell>
+                                    <TableSortLabel
+                                        active={orderBy === 'enquiryDate'}
+                                        direction={orderBy === 'enquiryDate' ? order : 'desc'}
+                                        onClick={() => handleSort('enquiryDate')}
+                                    >
+                                        <b>Enquiry Date</b>
+                                    </TableSortLabel>
+                                </TableCell>
+                                <TableCell>
+                                    <TableSortLabel
+                                        active={orderBy === 'employeeID'}
+                                        direction={orderBy === 'employeeID' ? order : 'desc'}
+                                        onClick={() => handleSort('employeeID')}
+                                    >
+                                        <b>EmployeeID</b>
+                                    </TableSortLabel>
+                                </TableCell>
+                                <TableCell>
+                                    <TableSortLabel
+                                        active={orderBy === 'assignTo'}
+                                        direction={orderBy === 'assignTo' ? order : 'desc'}
+                                        onClick={() => handleSort('assignTo')}
+                                    >
+                                        <b>Assign To</b>
+                                    </TableSortLabel>
+                                </TableCell>
+                                <TableCell>
+                                    <TableSortLabel
+                                        active={orderBy === 'status'}
+                                        direction={orderBy === 'status' ? order : 'desc'}
+                                        onClick={() => handleSort('status')}
+                                    >
+                                        <b>Status</b>
+                                    </TableSortLabel>
+                                </TableCell>
+                                <TableCell>
+                                    <TableSortLabel
+                                        active={orderBy === 'comments'}
+                                        direction={orderBy === 'comments' ? order : 'desc'}
+                                        onClick={() => handleSort('comments')}
+                                    >
+                                        <b>Comments</b>
+                                    </TableSortLabel>
+                                </TableCell>
+                                <TableCell>
+                                    <TableSortLabel
+                                        active={orderBy === 'isActive'}
+                                        direction={orderBy === 'isActive' ? order : 'desc'}
+                                        onClick={() => handleSort('isActive')}
+                                    >
+                                        <b>Is Active</b>
+                                    </TableSortLabel>
+                                </TableCell>
+                                <TableCell>
+                                    <TableSortLabel
+                                        active={orderBy === 'createdBy'}
+                                        direction={orderBy === 'createdBy' ? order : 'desc'}
+                                        onClick={() => handleSort('createdBy')}
+                                    >
+                                        <b>Created By</b>
+                                    </TableSortLabel>
+                                </TableCell>
+                                <TableCell>
+                                    <TableSortLabel
+                                        active={orderBy === 'createdDate'}
+                                        direction={orderBy === 'createdDate' ? order : 'desc'}
+                                        onClick={() => handleSort('createdDate')}
+                                    >
+                                        <b>Created Date</b>
+                                    </TableSortLabel>
+                                </TableCell>
+                                <TableCell>
+                                    <TableSortLabel
+                                        active={orderBy === 'updatedBy'}
+                                        direction={orderBy === 'updatedBy' ? order : 'desc'}
+                                        onClick={() => handleSort('updatedBy')}
+                                    >
+                                        <b>Updated By</b>
+                                    </TableSortLabel>
+                                </TableCell>
+                                <TableCell>
+                                    <TableSortLabel
+                                        active={orderBy === 'updatedDate'}
+                                        direction={orderBy === 'updatedDate' ? order : 'desc'}
+                                        onClick={() => handleSort('updatedDate')}
+                                    >
+                                        <b>Updated Date</b>
+                                    </TableSortLabel>
+                                </TableCell>
+                                <TableCell><b>Actions</b></TableCell>
+
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -331,7 +654,13 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
                                     <TableCell>{employees.find(employee => employee.id === enquiry.assignTo)?.name}</TableCell>
                                     <TableCell>{enquiry.status}</TableCell>
                                     <TableCell>{enquiry.comments}</TableCell>
-                                    <TableCell>{enquiry.isActive ? 'true' : 'false'}</TableCell>
+                                    <TableCell>
+                                        <Switch
+                                            checked={enquiry.isActive}
+                                            onChange={() => handleToggleActive(enquiry)}
+                                            color="primary"
+                                        />
+                                    </TableCell>
                                     <TableCell>{enquiry.createdBy}</TableCell>
                                     <TableCell>{new Date(enquiry.createdDate).toLocaleDateString()}</TableCell>
                                     <TableCell>{enquiry.updatedBy}</TableCell>
@@ -342,12 +671,12 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
                                                 <IconButton onClick={() => handleUpdate(enquiry)}>
                                                     <EditIcon color="primary" />
                                                 </IconButton>
-                                                <IconButton onClick={() => handleDelete(enquiry.id)}>
+                                                <IconButton onClick={() => setConfirmOpen(true) || setDeleteEnquiry(enquiry.id)}>
                                                     <DeleteIcon color="error" />
                                                 </IconButton>
                                             </>
                                         ) : (
-                                            <IconButton onClick={() => handleReactivate(enquiry.id, enquiry.isActive)}>                                                
+                                            <IconButton onClick={() => handleReactivate(enquiry.id, enquiry.isActive)}>
                                                 <UndoIcon color="action" />
                                             </IconButton>
                                         )}
@@ -358,11 +687,13 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
                     </Table>
                 </TableContainer>
 
-                <PaginationComponent
-                    count={Math.ceil(filteredEnquiries.length / rowsPerPage)}
-                    page={page + 1}
+                <TablePagination
+                    rowsPerPageOptions={[10, 25, 100]}
+                    component="div"
+                    count={filteredEnquiries.length}
+                    rowsPerPage={rowsPerPage}
+                    page={page}
                     onPageChange={handlePageChange}
-                    rowsPerPage={rowsPerPage} // Rows per page
                     onRowsPerPageChange={handleRowsPerPageChange}
                 />
 
@@ -375,9 +706,16 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
                             margin="normal"
                             name="companyName"
                             value={currentEnquiry.companyName}
-                            onChange={handleChange}
+                            onChange={(e) => {
+                                const value = e.target.value;
+                                // Regex to allow letters, numbers, spaces, and the specified special characters
+                                if (/^[A-Za-z\s.\-']*$/.test(value)) {
+                                    handleChange(e);
+                                }
+                            }}
                             error={Boolean(errors.companyName)}
                             helperText={errors.companyName}
+                            inputProps={{ maxLength: 50 }}
                         />
 
                         <InputLabel>CompanyRepresentative</InputLabel>
@@ -386,9 +724,16 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
                             margin="normal"
                             name="companyRepresentative"
                             value={currentEnquiry.companyRepresentative}
-                            onChange={handleChange}
+                            onChange={(e) => {
+                                const value = e.target.value;
+                                // Regex to allow letters, numbers, spaces, and the specified special characters
+                                if (/^[A-Za-z\s.\-']*$/.test(value)) {
+                                    handleChange(e);
+                                }
+                            }}
                             error={Boolean(errors.companyRepresentative)}
                             helperText={errors.companyRepresentative}
+                            inputProps={{ maxLength: 50 }}
                         />
 
                         <InputLabel>RepresentativeDesignation</InputLabel>
@@ -397,9 +742,16 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
                             margin="normal"
                             name="representativeDesignation"
                             value={currentEnquiry.representativeDesignation}
-                            onChange={handleChange}
+                            onChange={(e) => {
+                                const value = e.target.value;
+                                // Regex to allow letters, numbers, spaces, and the specified special characters
+                                if (/^[A-Za-z\s.\-']*$/.test(value)) {
+                                    handleChange(e);
+                                }
+                            }}
                             error={Boolean(errors.representativeDesignation)}
                             helperText={errors.representativeDesignation}
+                            inputProps={{ maxLength: 50 }}
                         />
 
                         <InputLabel>Requirement</InputLabel>
@@ -411,8 +763,9 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
                             onChange={handleChange}
                             error={Boolean(errors.requirement)}
                             helperText={errors.requirement}
+                            inputProps={{ maxLength: 50 }}
                         />
-                        
+
                         <InputLabel>EnquiryDate</InputLabel>
                         <TextField
                             fullWidth
@@ -433,6 +786,7 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
                             value={currentEnquiry.employeeID}
                             onChange={handleChange}
                             error={Boolean(errors.employeeID)}
+                            inputProps={{ maxLength: 36 }}
                         >
                             {employees.map((employee) => (
                                 <MenuItem key={employee.id} value={employee.id}>
@@ -450,6 +804,7 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
                             value={currentEnquiry.assignTo}
                             onChange={handleChange}
                             error={Boolean(errors.assignTo)}
+                            inputProps={{ maxLength: 36 }}
                         >
                             {employees.map((employee) => (
                                 <MenuItem key={employee.id} value={employee.id}>
@@ -468,6 +823,7 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
                             onChange={handleChange}
                             error={Boolean(errors.status)}
                             helperText={errors.status}
+                            inputProps={{ maxLength: 50 }}
                         />
 
                         <InputLabel>Comments</InputLabel>
@@ -479,20 +835,21 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
                             onChange={handleChange}
                             error={Boolean(errors.comments)}
                             helperText={errors.comments}
+                            inputProps={{ maxLength: 500 }}
                         />
-                            <InputLabel id="demo-simple-select-label">Technology</InputLabel>
-                            <FormControl fullWidth>
+                        <InputLabel id="demo-simple-select-label">Technology</InputLabel>
+                        <FormControl fullWidth>
                             <Autocomplete
                                 multiple
                                 id="technologies-autocomplete"
-                                options={technologies.map((tech) => ({ id: tech.id, name: tech.name }))} 
-                                getOptionLabel={(option) => option.name} 
-                                value={currentEnquiry.technology.map(id => technologies.find(tech => tech.id === id) || { name: '' })} 
+                                options={technologies.map((tech) => ({ id: tech.id, name: tech.name }))}
+                                getOptionLabel={(option) => option.name}
+                                value={currentEnquiry.technology.map(id => technologies.find(tech => tech.id === id) || { name: '' })}
                                 onChange={(event, newValue) => {
                                     handleChange({
                                         target: {
                                             name: 'technology',
-                                            value: newValue.map(tech => tech.id), 
+                                            value: newValue.map(tech => tech.id),
                                         },
                                     });
                                 }}
@@ -539,6 +896,17 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
                         <Button onClick={handleSave} color="primary">
                             Save
                         </Button>
+                    </DialogActions>
+                </Dialog>
+
+                <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
+                    <DialogTitle>Confirm Delete</DialogTitle>
+                    <DialogContent>
+                        <Typography>Are you sure you want to delete this follow-up?</Typography>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => setConfirmOpen(false)}>Cancel</Button>
+                        <Button onClick={() => handleDelete(deleteEnquiry)} color="error">Delete</Button>
                     </DialogActions>
                 </Dialog>
             </div>
