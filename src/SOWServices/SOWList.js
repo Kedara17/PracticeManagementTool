@@ -50,7 +50,7 @@ function SOWList({ isDrawerOpen }) {
     useEffect(() => {
         const fetchSOWs = async () => {
             try {
-                const sowResponse = await axios.get('http://172.17.31.61:5041/api/sow');
+                const sowResponse = await axios.get('http://localhost:5541/api/SOW');
                 setSOWs(sowResponse.data);
             } catch (error) {
                 console.error('There was an error fetching the sows!', error);

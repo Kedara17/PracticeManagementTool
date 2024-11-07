@@ -52,7 +52,7 @@ function InterviewList({ isDrawerOpen }) {
     useEffect(() => {
         const fetchInterviews = async () => {
             try {
-                const interviewResponse = await axios.get('http://172.17.31.61:5200/api/interview');
+                const interviewResponse = await axios.get('http://localhost:5500/api/Interview');
                 setInterviews(interviewResponse.data);
             } catch (error) {
                 console.error('There was an error fetching the interviews!', error);

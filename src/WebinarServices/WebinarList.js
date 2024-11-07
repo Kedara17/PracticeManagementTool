@@ -47,7 +47,7 @@ function WebinarList({ isDrawerOpen }) {
     useEffect(() => {
         const fetchWebinars = async () => {
             try {
-                const webResponse = await axios.get('http://172.17.31.61:5017/api/webinars');
+                const webResponse = await axios.get('http://localhost:5517/api/Webinars');
                 setWebinars(webResponse.data);
             } catch (error) {
                 console.error('There was an error fetching the webinars!', error);

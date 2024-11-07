@@ -59,7 +59,7 @@ function ProjectList({isDrawerOpen}) {
     useEffect(() => {
         const fetchProjects = async () => {
             try {
-                const projectResponse = await axios.get('http://172.17.31.61:5151/api/project');
+                const projectResponse = await axios.get('http://localhost:5551/api/Project');
                 setProjects(projectResponse.data);
             } catch (error) {
                 console.error('There was an error fetching the Projects!', error);
@@ -274,6 +274,7 @@ const handleToggleActive = async (id) => {
 
         if (currentProject.id) {
             axios.put(`http://172.17.31.61:5151/api/project/${currentProject.id}`, projectToSave)
+
                 .then(response => {
                     setProjects(Projects.map(tech => tech.id === currentProject.id ? response.data : tech));
                 })

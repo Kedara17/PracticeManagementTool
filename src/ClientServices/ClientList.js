@@ -45,7 +45,7 @@ function ClientList({ isDrawerOpen }) {
     useEffect(() => {
         const fetchClients = async () => {
             try {
-                const clientResponse = await axios.get('http://172.17.31.61:5142/api/client');
+                const clientResponse = await axios.get('http://localhost:5542/api/Client');
                 setClients(clientResponse.data);
             } catch (error) {
                 console.error('There was an error fetching the Clients!', error);
@@ -225,7 +225,6 @@ const handleToggleActive = async (id) => {
         setErrors({});
 
         if (currentClient.id) {
-            // axios.put(`http://localhost:5542/api/Client/${currentClient.id}`, currentClient)
             axios.put(`http://172.17.31.61:5142/api/client/${currentClient.id}`, currentClient)
                 .then(response => {
                     setClients(Clients.map(tech => tech.id === currentClient.id ? response.data : tech));
@@ -236,7 +235,6 @@ const handleToggleActive = async (id) => {
                 });
 
         } else {
-            // axios.post('http://localhost:5542/api/Client', currentClient)
             axios.post('http://172.17.31.61:5142/api/client', currentClient)
                 .then(response => {
                     setClients([...Clients, response.data]);
