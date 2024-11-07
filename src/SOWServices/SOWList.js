@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import {Switch, Select, TablePagination, MenuItem, Table, InputLabel, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
+import { Switch, DialogContentText, Select, TablePagination, MenuItem, Table, InputLabel, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
-import ActivateIcon from '@mui/icons-material/Undo';
+import UndoIcon from '@mui/icons-material/Undo';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -19,12 +19,12 @@ function SOWList({ isDrawerOpen }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [open, setOpen] = useState(false);
-    const [dialogOpen, setDialogOpen] = useState(false);
-    const [confirmAction, setConfirmAction] = useState(null); // 'delete' or 'activate'
-    const [accessDeniedDialogOpen, setAccessDeniedDialogOpen] = useState(false); // New dialog for non-admins
-    const [selectedSOWId, setSelectedSOWId] = useState(null);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [selectedSow, setSelectedSow] = useState(null);
+    const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+    const [accessDeniedDialogOpen, setAccessDeniedDialogOpen] = useState(false);    
+    const [activateConfirmDialogOpen, setActivateConfirmDialogOpen] = useState(false);
     const [currentSOW, setCurrentSOW] = useState({
         title: '',
         client: '',
@@ -34,7 +34,7 @@ function SOWList({ isDrawerOpen }) {
         status: '',
         comments: ''
     });
-    const userRole = localStorage.getItem('userRole'); // Fetch role from localStorage
+    const userRole = localStorage.getItem('userRole');
     const [order, setOrder] = useState('desc'); // Order of sorting: 'asc' or 'desc'
     const [orderBy, setOrderBy] = useState('createdDate'); // Column to sort by
     const [searchQuery, setSearchQuery] = useState(''); // State for search query
@@ -50,7 +50,7 @@ function SOWList({ isDrawerOpen }) {
     useEffect(() => {
         const fetchSOWs = async () => {
             try {
-                const sowResponse = await axios.get('http://172.17.31.61:5041/api/sow');
+                const sowResponse = await axios.get('http://localhost:5541/api/SOW');
                 setSOWs(sowResponse.data);
             } catch (error) {
                 console.error('There was an error fetching the sows!', error);
@@ -152,65 +152,53 @@ function SOWList({ isDrawerOpen }) {
 
     };
 
-     // Toggle the active status of a SOW after confirmation (Only admin has permission)
-     const handleToggleActive = (id, currentStatus) => {
-        if (userRole === 'Admin') {
-            const action = currentStatus ? 'deactivate' : 'activate';
-            axios.patch(`http://172.17.31.61:5041/api/sow/${id}/${action}`)
-                .then(() => {
-                    setSOWs(SOWs.map(sow => sow.id === id ? { ...sow, isActive: !currentStatus } : sow));
-                    setDialogOpen(false);
-                })
-                .catch(error => {
-                    console.error(`Error ${action} sow:`, error);
-                    setError(error);
-                });
-        } else {
-            alert("Only admins can activate records.");
+	const handleToggleActive = async (id) => {
+        try {
+            const response = await axios.patch(`http://localhost:5541/api/SOW/${id}/toggle-active`);
+            setSOWs(SOWs.map(sows =>
+                sows.id === id ? { ...sows, isActive: response.data.isActive } : sows
+            ));
+        } catch (error) {
+            setError(error);
+            console.error('Error toggling status:', error);
         }
     };
 
-    // Handle the deactivation of a sow (soft delete)
-   const handleDelete = () => {
-    if (selectedSOWId) {
-        axios.patch(`http://172.17.31.61:5041/api/sow/${selectedSOWId}`)
-            .then(() => {
-                setSOWs(SOWs.map(sow => sow.id === selectedSOWId ? { ...sow, isActive: false } : sow));
-                setDialogOpen(false);
-            })
-            .catch(error => {
-                console.error('Error deactivating sow:', error);
-                setError(error);
-            });
-    }
-};
-
-// Open dialog for delete or activate confirmation for admin, or access denied dialog for non-admin
-const openConfirmationDialog = (action, SowId) => {
-    setConfirmAction(action);
-    setSelectedSOWId(SowId);
-    
-    if (action === 'activate' && userRole !== 'Admin') {
-        setAccessDeniedDialogOpen(true); // Open access denied dialog for non-admins
-    } else {
-        setDialogOpen(true); // Open confirmation dialog for admins
-    }
-};
- 
-
-  // Handle Confirm in Dialog
-  const handleConfirmDialog = () => {
-    if (confirmAction === 'delete') {
-        handleDelete();
-    } else if (confirmAction === 'activate') {
-        if (userRole === 'Admin') {
-            handleToggleActive(selectedSOWId, false); // Admin can activate
+    const handleActionClick = (sows) => {
+        if (sows.isActive) {
+            setSelectedSow(sows);
+            setConfirmDialogOpen(true); // Open deactivation confirmation dialog
+        } else if (userRole === 'Admin') {
+            setSelectedSow(sows);
+            setActivateConfirmDialogOpen(true); // Open activation confirmation dialog for admins
+        } else {
+            setAccessDeniedDialogOpen(true); // Non-admin trying to activate, show access denied dialog
         }
-    }
-    setDialogOpen(false);
-};
+    };
 
-    const handleSave = async () => {
+   const handleConfirmDialogClose = () => {
+        setConfirmDialogOpen(false);
+        setSelectedSow(null);
+    };
+
+    const handleActivateConfirmDialogClose = () => {
+        setActivateConfirmDialogOpen(false);
+        setSelectedSow(null);
+    };
+
+    const handleConfirmAction = () => {
+        if (selectedSow) {
+            handleToggleActive(selectedSow.id);
+        }
+        setConfirmDialogOpen(false);
+        setActivateConfirmDialogOpen(false);
+    };
+
+    const handleAccessDeniedDialogClose = () => {
+        setAccessDeniedDialogOpen(false);
+    };
+
+    const handleSave = () => {
         let validationErrors = {};
         if (!currentSOW.title) {
             validationErrors.title = "Title is required";
@@ -218,21 +206,21 @@ const openConfirmationDialog = (action, SowId) => {
         }else if(currentSOW.title.length < 3) {      
             validationErrors.title = "Title must be atleast 3 characters";
         }
-        // if (!currentSOW.client) {
-        //     validationErrors.client = "Client is required";
-        // }
-        // if (!currentSOW.project) {
-        //     validationErrors.project = "Project is required";
-        // }
-        // if (!currentSOW.preparedDate) {
-        //     validationErrors.preparedDate = "PreparedDate is required";
-        // }
-        // if (!currentSOW.submittedDate) {
-        //     validationErrors.submittedDate = "SubmittedDate is required";
-        // }
-        // if (!currentSOW.status) {
-        //     validationErrors.status = "Status is required";
-        // }
+        if (!currentSOW.client) {
+            validationErrors.client = "Client is required";
+        }
+        if (!currentSOW.project) {
+            validationErrors.project = "Project is required";
+        }
+        if (!currentSOW.preparedDate) {
+            validationErrors.preparedDate = "PreparedDate is required";
+        }
+        if (!currentSOW.submittedDate) {
+            validationErrors.submittedDate = "SubmittedDate is required";
+        }
+        if (!currentSOW.status) {
+            validationErrors.status = "Status is required";
+        }
         if (!currentSOW.comments) {
             validationErrors.comments = "Comments is required";
 
@@ -249,32 +237,28 @@ const openConfirmationDialog = (action, SowId) => {
         // Clear any previous errors if validation passes
         setErrors({});
 
-        const selectedClient = Clients.find(c => c.name === currentSOW.client);
-        const clientId = selectedClient ? selectedClient.id : null;
-        
-        const selectedProject = Projects.find(p => p.projectName === currentSOW.project);
-        const projectId = selectedProject ? selectedProject.id : null;
-
-        const selectedStatus = SOWStatus.find(s => s.status === currentSOW.status);
-        const statusId = selectedStatus ? selectedStatus.id : null;
-    
-        const SOWToSave = {
-            ...currentSOW,
-            client: clientId,
-            project : projectId,
-            status : statusId,
-        };
-
         if (currentSOW.id) {
-            axios.put(`http://172.17.31.61:5041/api/sow/${currentSOW.id}`, SOWToSave)
-            const res = await axios.get('http://172.17.31.61:5041/api/sow');
-            setSOWs(res.data);                     
+            axios.put(`http://localhost:5541/api/SOW/${currentSOW.id}`, currentSOW)
+                .then(response => {
+                    setSOWs(SOWs.map(tech => tech.id === currentSOW.id ? response.data : tech));
+                })
+                .catch(error => {
+                    console.error('There was an error updating the SOW!', error);
+                    setError(error);
+                });
+
         } else {
-            axios.post('http://172.17.31.61:5041/api/sow', SOWToSave)
-            const res = await axios.get('http://172.17.31.61:5041/api/sow');
-            setSOWs(res.data);
+            axios.post('http://localhost:5541/api/SOW', currentSOW)
+                .then(response => {
+                    setSOWs([...SOWs, response.data]);
+                })
+                .catch(error => {
+                    console.error('There was an error adding the SOW!', error);
+                    setError(error);
+                });
         }
         setOpen(false);
+
     };
 
     const handleChange = (e) => {
@@ -368,11 +352,11 @@ const openConfirmationDialog = (action, SowId) => {
     };
 
     if (loading) {
-        return <p style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop:'200px' }}>Loading...</p>;
+        return <p>Loading...</p>;
     }
 
     if (error) {
-        return <p style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop:'200px' }}>There was an error loading the data: {error.message}</p>;
+        return <p>There was an error loading the data: {error.message}</p>;
     }
 
     return (
@@ -530,11 +514,8 @@ const openConfirmationDialog = (action, SowId) => {
                                 <TableCell>
                                     <Switch
                                         checked={SOW.isActive}
-                                        onChange={() => {
-                                            openConfirmationDialog('activate', SOW.id); // Opens dialog based on role
-                                        }}
+                                        onChange={() => handleActionClick(SOW)}
                                         color="primary"
-                                        disabled={userRole !== 'Admin'}
                                     />
                                 </TableCell>
                                 <TableCell>{SOW.createdBy}</TableCell>
@@ -542,18 +523,18 @@ const openConfirmationDialog = (action, SowId) => {
                                 <TableCell>{SOW.updatedBy || 'N/A'}</TableCell>
                                 <TableCell>{SOW.updatedDate || 'N/A'}</TableCell>
                                 <TableCell>
-                                    {SOW.isActive ? (
-                                        <>
-                                         <IconButton onClick={() => handleUpdate(SOW)}>
-                                             <EditIcon color="primary" />
-                                         </IconButton>
-                                         <IconButton onClick={() => openConfirmationDialog('delete', SOW.id)}>
+                                {SOW.isActive ? (
+                                    <>
+                                        <IconButton onClick={() => handleUpdate(SOW)}>
+                                            <EditIcon color="primary" />
+                                        </IconButton>
+                                        <IconButton onClick={() => handleActionClick(SOW)}>
                                             <DeleteIcon color="error" />
-                                         </IconButton>
-                                         </>
-                                    ) : (
-                                    <IconButton onClick={() => openConfirmationDialog('activate', SOW.id)}>
-                                        <ActivateIcon color="primary" />
+                                        </IconButton>
+                                    </>
+                                ) : (
+                                    <IconButton onClick={() => handleActionClick(SOW)}>
+                                        <UndoIcon color="action" />
                                     </IconButton>
                                 )}
                             </TableCell>
@@ -650,7 +631,7 @@ const openConfirmationDialog = (action, SowId) => {
                     <Select
                         margin="dense"
                         name="status"
-                        value={currentSOW.status}
+                        value={currentSOW.Sowstatus}
                         onChange={handleChange}
                         fullWidth
                         error={!!errors.status}
@@ -682,35 +663,48 @@ const openConfirmationDialog = (action, SowId) => {
                 </DialogActions>
             </Dialog>
 
-            {/* Confirmation Dialog for Admins */}
-            <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
-                <DialogTitle>Confirm Action</DialogTitle>
+            {/* Deactivation Confirmation Dialog */}
+  <Dialog open={confirmDialogOpen} onClose={handleConfirmDialogClose}>
+                <DialogTitle>Confirm Deactivation</DialogTitle>
                 <DialogContent>
-                    <Typography>
-                        {confirmAction === 'delete'
-                            ? "Are you sure you want to deactivate this SOW?"
-                            : "Are you sure you want to activate this SOW?"}
-                    </Typography>
+                    <DialogContentText>
+                        Are you sure you want to mark this record as inactive?
+                    </DialogContentText>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
-                    <Button
-                        onClick={handleConfirmDialog}
-                        color="primary"
-                    >
+                    <Button onClick={handleConfirmDialogClose}>Cancel</Button>
+                    <Button onClick={handleConfirmAction} color="primary">
+                        Confirm
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Activation Confirmation Dialog for Admins */}
+            <Dialog open={activateConfirmDialogOpen} onClose={handleActivateConfirmDialogClose}>
+                <DialogTitle>Confirm Activation</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        Are you sure you want to activate this record?
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleActivateConfirmDialogClose}>Cancel</Button>
+                    <Button onClick={handleConfirmAction} color="primary">
                         Confirm
                     </Button>
                 </DialogActions>
             </Dialog>
 
             {/* Access Denied Dialog for Non-Admins */}
-            <Dialog open={accessDeniedDialogOpen} onClose={() => setAccessDeniedDialogOpen(false)}>
+            <Dialog open={accessDeniedDialogOpen} onClose={handleAccessDeniedDialogClose}>
                 <DialogTitle>Access Denied</DialogTitle>
                 <DialogContent>
-                    <Typography>Only Admins have access to activate this record.</Typography>
+                    <DialogContentText>
+                        Only admins have access to activate a record.
+                    </DialogContentText>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setAccessDeniedDialogOpen(false)} color="primary">
+                    <Button onClick={handleAccessDeniedDialogClose} color="primary">
                         OK
                     </Button>
                 </DialogActions>

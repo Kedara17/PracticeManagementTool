@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import {Switch, Select, TablePagination, MenuItem, Table, InputLabel, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
+import { Switch, Select, DialogContentText, TablePagination, MenuItem, Table, InputLabel, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
-import ActivateIcon from '@mui/icons-material/Undo';
+import UndoIcon from '@mui/icons-material/Undo';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -17,12 +17,12 @@ function WebinarList({ isDrawerOpen }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [open, setOpen] = useState(false);
-    const [dialogOpen, setDialogOpen] = useState(false);
-    const [confirmAction, setConfirmAction] = useState(null); // 'delete' or 'activate'
-    const [accessDeniedDialogOpen, setAccessDeniedDialogOpen] = useState(false); // New dialog for non-admins
-    const [selectedWebinarId, setSelectedWebinarId] = useState(null);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [selectedWebinar, setSelectedWebinar] = useState(null);
+    const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+    const [accessDeniedDialogOpen, setAccessDeniedDialogOpen] = useState(false);    
+    const [activateConfirmDialogOpen, setActivateConfirmDialogOpen] = useState(false);
     const [currentWebinar, setCurrentWebinar] = useState({
         title: '',
         speaker: '',
@@ -30,10 +30,10 @@ function WebinarList({ isDrawerOpen }) {
         webinarDate: '',
         numberOfAudience: ''
     });
-    const userRole = localStorage.getItem('userRole'); // Fetch role from localStorage
-    const [order, setOrder] = useState('desc'); 
-    const [orderBy, setOrderBy] = useState('createdDate'); 
-    const [searchQuery, setSearchQuery] = useState(''); 
+    const userRole = localStorage.getItem('userRole');
+    const [order, setOrder] = useState('desc'); // Order of sorting: 'asc' or 'desc'
+    const [orderBy, setOrderBy] = useState('createdDate'); // Column to sort by
+    const [searchQuery, setSearchQuery] = useState(''); // State for search query
     const options = ['Completed', 'Planned'];
     const [errors, setErrors] = useState({
         title: '',
@@ -47,7 +47,7 @@ function WebinarList({ isDrawerOpen }) {
     useEffect(() => {
         const fetchWebinars = async () => {
             try {
-                const webResponse = await axios.get('http://172.17.31.61:5017/api/webinars');
+                const webResponse = await axios.get('http://localhost:5517/api/Webinars');
                 setWebinars(webResponse.data);
             } catch (error) {
                 console.error('There was an error fetching the webinars!', error);
@@ -55,7 +55,7 @@ function WebinarList({ isDrawerOpen }) {
             }
             setLoading(false);
         };
-        
+
         const fetchSpeakers = async () => {
             try {
                 const speResponse = await axios.get('http://172.17.31.61:5033/api/employee');
@@ -120,70 +120,58 @@ function WebinarList({ isDrawerOpen }) {
     const handleUpdate = (Webinar) => {
         setCurrentWebinar(Webinar);
         setOpen(true);
-
     };
 
-     // Toggle the active status of a webinar after confirmation (Only admin has permission)
-     const handleToggleActive = (id, currentStatus) => {
-        if (userRole === 'Admin') {
-            const action = currentStatus ? 'deactivate' : 'activate';
-            axios.patch(`http://172.17.31.61:5017/api/webinars/${id}/${action}`)
-                .then(() => {
-                    setWebinars(Webinars.map(webinar => webinar.id === id ? { ...webinar, isActive: !currentStatus } : webinar));
-                    setDialogOpen(false);
-                })
-                .catch(error => {
-                    console.error(`Error ${action} webinar:`, error);
-                    setError(error);
-                });
+const handleToggleActive = async (id) => {
+        try {
+            const response = await axios.patch(`http://localhost:5517/api/Webinars/${id}/toggle-active`);
+            setWebinars(Webinars.map(webinar =>
+                webinar.id === id ? { ...webinar, isActive: response.data.isActive } : webinar
+            ));
+        } catch (error) {
+            setError(error);
+            console.error('Error toggling status:', error);
+        }
+    };
+
+    const handleActionClick = (webinar) => {
+        if (webinar.isActive) {
+            setSelectedWebinar(webinar);
+            setConfirmDialogOpen(true); // Open deactivation confirmation dialog
+        } else if (userRole === 'Admin') {
+            setSelectedWebinar(webinar);
+            setActivateConfirmDialogOpen(true); // Open activation confirmation dialog for admins
         } else {
-            alert("Only admins can activate records.");
+            setAccessDeniedDialogOpen(true); // Non-admin trying to activate, show access denied dialog
         }
     };
 
-    // Handle the deactivation of a webinar (soft delete)
-    const handleDelete = () => {
-        if (selectedWebinarId) {
-            axios.patch(`http://172.17.31.61:5017/api/webinars/${selectedWebinarId}`)
-                .then(() => {
-                    setWebinars(Webinars.map(webinar => webinar.id === selectedWebinarId ? { ...webinar, isActive: false } : webinar));
-                    setDialogOpen(false);
-                })
-                .catch(error => {
-                    console.error('Error deactivating webinar:', error);
-                    setError(error);
-                });
-        }
+   const handleConfirmDialogClose = () => {
+        setConfirmDialogOpen(false);
+        setSelectedWebinar(null);
     };
 
-    // Open dialog for delete or activate confirmation for admin, or access denied dialog for non-admin
-    const openConfirmationDialog = (action, WebinarId) => {
-        setConfirmAction(action);
-        setSelectedWebinarId(WebinarId);
-        
-        if (action === 'activate' && userRole !== 'Admin') {
-            setAccessDeniedDialogOpen(true); // Open access denied dialog for non-admins
-        } else {
-            setDialogOpen(true); // Open confirmation dialog for admins
-        }
+    const handleActivateConfirmDialogClose = () => {
+        setActivateConfirmDialogOpen(false);
+        setSelectedWebinar(null);
     };
 
-      // Handle Confirm in Dialog
-      const handleConfirmDialog = () => {
-        if (confirmAction === 'delete') {
-            handleDelete();
-        } else if (confirmAction === 'activate') {
-            if (userRole === 'Admin') {
-                handleToggleActive(selectedWebinarId, false); // Admin can activate
-            }
+    const handleConfirmAction = () => {
+        if (selectedWebinar) {
+            handleToggleActive(selectedWebinar.id);
         }
-        setDialogOpen(false);
+        setConfirmDialogOpen(false);
+        setActivateConfirmDialogOpen(false);
     };
 
+    const handleAccessDeniedDialogClose = () => {
+        setAccessDeniedDialogOpen(false);
+    };
 
-    const handleSave = async () => {
+    const handleSave = () => {
         let validationErrors = {};
 
+        // Title field validation
         if (!currentWebinar.title.trim()) {
             validationErrors.title = "Title is required";
         } else if(currentWebinar.title.length < 3) {
@@ -192,42 +180,49 @@ function WebinarList({ isDrawerOpen }) {
             validationErrors.title = "Title must be unique";
         }
 
-        // if (!currentWebinar.speaker) {
-        //     validationErrors.speaker = "Speaker is required";
-        // }
-        // if (!currentWebinar.status) {
-        //     validationErrors.status = "Status is required";
-        // }
-        // if (!currentWebinar.webinarDate) {
-        //     validationErrors.WebinarDate = "WebinarDate is required";
-        // }
-        // if (!currentWebinar.numberOfAudience) {
-        //     validationErrors.numberOfAudience = "NumberOfAudience is required";
-        // }
+        // Speaker field validation
+        if (!currentWebinar.speaker) {
+            validationErrors.speaker = "Speaker is required";
+        }
+        if (!currentWebinar.status) {
+            validationErrors.status = "Status is required";
+        }
+        if (!currentWebinar.webinarDate) {
+            validationErrors.WebinarDate = "WebinarDate is required";
+        }
+        if (!currentWebinar.numberOfAudience) {
+            validationErrors.numberOfAudience = "NumberOfAudience is required";
+        }
 
+        // If there are validation errors, update the state and prevent save
         if (Object.keys(validationErrors).length > 0) {
             setErrors(validationErrors);
             return;
         }
 
+        // Clear any previous errors if validation passes
         setErrors({});
 
-        const selectedSpeaker = Employees.find(t => t.name === currentWebinar.speaker);
-        const speakerId = selectedSpeaker ? selectedSpeaker.id : null; 
-    
-        const webinarToSave = {
-            ...currentWebinar,
-            speaker: speakerId
-        };
-
         if (currentWebinar.id) {
-           await axios.put(`http://172.17.31.61:5017/api/webinars/${currentWebinar.id}`, webinarToSave)
-            const res= await axios.get('http://172.17.31.61:5017/api/webinars');
-            setWebinars(res.data);    
-      } else {
-             await axios.post('http://172.17.31.61:5017/api/webinars', webinarToSave)
-            const res= await axios.get('http://172.17.31.61:5017/api/webinars');
-            setWebinars(res.data);                
+            axios.put(`http://localhost:5517/api/Webinars/${currentWebinar.id}`, currentWebinar)
+                .then(response => {
+                    console.log(response)
+                    setWebinars(Webinars.map(tech => tech.id === currentWebinar.id ? response.data : tech));
+                })
+                .catch(error => {
+                    console.error('There was an error updating the Webinar!', error);
+                    setError(error);
+                });
+
+        } else {
+            axios.post('http://localhost:5517/api/Webinars', currentWebinar)
+                .then(response => {
+                    setWebinars([...Webinars, response.data]);
+                })
+                .catch(error => {
+                    console.error('There was an error adding the Webinar!', error);
+                    setError(error);
+                });
         }
         setOpen(false);
 
@@ -238,34 +233,41 @@ function WebinarList({ isDrawerOpen }) {
         setCurrentWebinar({ ...currentWebinar, [name]: value });
 
         if (name === "title") {
+            // Check if the title is empty or only whitespace
             if (!value.trim()) {
                 setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
             } else if (value.length < 3) {
                 setErrors((prevErrors) => ({ ...prevErrors, title: "" }))
             }
+            // Check for uniqueness
             else if (Webinars.some(web => web.title.toLowerCase() === value.toLowerCase() && web.id !== currentWebinar.id)) {
                 setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
             } else if (value.length === 200) {
                 setErrors((prevErrors) => ({ ...prevErrors, title: "More than 200 characters are not allowed" }));
             }
+            // Clear the title error if valid
             else {
                 setErrors((prevErrors) => ({ ...prevErrors, title: "" }));
             }
         }
         if (name === "speaker") {
+            // Clear the speaker error if the user selects a value
             if (value) {
                 setErrors((prevErrors) => ({ ...prevErrors, speaker: "" }));
             }
         }
         if (name === "status") {
+            // Clear the status error if the user selects a value
             if (value.length === 50) {
                 setErrors((prevErrors) => ({ ...prevErrors, status: "More than 50 characters are not allowed" }));
             }
+            // Clear the title error if valid
             else {
                 setErrors((prevErrors) => ({ ...prevErrors, status: "" }));
             }
         }
         if (name === "numberOfAudience") {
+            // Clear the numberOfAudience error if the user selects a value
             if (value) {
                 setErrors((prevErrors) => ({ ...prevErrors, numberOfAudience: "" }));
             }
@@ -273,9 +275,9 @@ function WebinarList({ isDrawerOpen }) {
     };
 
     const handleClose = () => {
-        setCurrentWebinar({ title: '', speaker: '', status: '', webinarDate: '', numberOfAudience: '' }); 
-        setErrors({ title: '', speaker: '', status: '', webinarDate: '', numberOfAudience: '' }); 
-        setOpen(false); 
+        setCurrentWebinar({ title: '', speaker: '', status: '', webinarDate: '', numberOfAudience: '' }); // Reset the department fields
+        setErrors({ title: '', speaker: '', status: '', webinarDate: '', numberOfAudience: '' }); // Reset the error state
+        setOpen(false); // Close the dialog
     };
 
     const handlePageChange = (event, newPage) => {
@@ -286,7 +288,7 @@ function WebinarList({ isDrawerOpen }) {
         setRowsPerPage(parseInt(event.target.value, 10));
         setPage(0);
     };
-
+    
     const handleWebinarDateChange = (newDate) => {
         setCurrentWebinar((prevWebinar) => ({
             ...prevWebinar,
@@ -301,11 +303,11 @@ function WebinarList({ isDrawerOpen }) {
     };
 
     if (loading) {
-        return <p style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop:'200px' }}>Loading...</p>;
+        return <p>Loading...</p>;
     }
 
     if (error) {
-        return <p style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop:'200px' }}>There was an error loading the data: {error.message}</p>;
+        return <p>There was an error loading the data: {error.message}</p>;
     }
 
     return (
@@ -441,30 +443,27 @@ function WebinarList({ isDrawerOpen }) {
                                 <TableCell>
                                     <Switch
                                         checked={Webinar.isActive}
-                                        onChange={() => {
-                                            openConfirmationDialog('activate', Webinar.id); // Opens dialog based on role
-                                        }}
+                                        onChange={() => handleActionClick(Webinar)}
                                         color="primary"
-                                        disabled={userRole !== 'Admin'}
                                     />
                                 </TableCell>
-                                <TableCell>{Webinar.createdBy}</TableCell>
+				                <TableCell>{Webinar.createdBy}</TableCell>
                                 <TableCell>{Webinar.createdDate}</TableCell>
                                 <TableCell>{Webinar.updatedBy || 'N/A'}</TableCell>
                                 <TableCell>{Webinar.updatedDate || 'N/A'}</TableCell>
                                 <TableCell>
-                                    {Webinar.isActive ? (
-                                        <>
-                                         <IconButton onClick={() => handleUpdate(Webinar)}>
-                                             <EditIcon color="primary" />
-                                         </IconButton>
-                                         <IconButton onClick={() => openConfirmationDialog('delete', Webinar.id)}>
+                                {Webinar.isActive ? (
+                                    <>
+                                        <IconButton onClick={() => handleUpdate(Webinar)}>
+                                            <EditIcon color="primary" />
+                                        </IconButton>
+                                        <IconButton onClick={() => handleActionClick(Webinar)}>
                                             <DeleteIcon color="error" />
-                                         </IconButton>
-                                         </>
-                                    ) : (
-                                    <IconButton onClick={() => openConfirmationDialog('activate', Webinar.id)}>
-                                        <ActivateIcon color="primary" />
+                                        </IconButton>
+                                    </>
+                                ) : (
+                                    <IconButton onClick={() => handleActionClick(Webinar)}>
+                                        <UndoIcon color="action" />
                                     </IconButton>
                                 )}
                             </TableCell>
@@ -493,13 +492,13 @@ function WebinarList({ isDrawerOpen }) {
                         value={currentWebinar.title}
                         onChange={(e) => {
                             const value = e.target.value;
-                            if (/^[A-Za-z\s!.@#$%^&*()_+=-]*$/.test(value))
+                            if (/^[A-Za-z\s]*$/.test(value))
                                 handleChange(e);
                         }}
                         fullWidth
                         error={!!errors.title}
                         helperText={errors.title}
-                        inputProps={{ maxLength: 200 }}
+                        inputProps={{ maxlength: 200 }}
                     />
                     <InputLabel>Speaker</InputLabel>
                     <Select
@@ -573,36 +572,48 @@ function WebinarList({ isDrawerOpen }) {
                     </Button>
                 </DialogActions>
             </Dialog>
-
-             {/* Confirmation Dialog for Admins */}
-             <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
-                <DialogTitle>Confirm Action</DialogTitle>
+  {/* Deactivation Confirmation Dialog */}
+  <Dialog open={confirmDialogOpen} onClose={handleConfirmDialogClose}>
+                <DialogTitle>Confirm Deactivation</DialogTitle>
                 <DialogContent>
-                    <Typography>
-                        {confirmAction === 'delete'
-                            ? "Are you sure you want to deactivate this Webinar?"
-                            : "Are you sure you want to activate this Webinar?"}
-                    </Typography>
+                    <DialogContentText>
+                        Are you sure you want to mark this webinar as inactive?
+                    </DialogContentText>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
-                    <Button
-                        onClick={handleConfirmDialog}
-                        color="primary"
-                    >
+                    <Button onClick={handleConfirmDialogClose}>Cancel</Button>
+                    <Button onClick={handleConfirmAction} color="primary">
+                        Confirm
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Activation Confirmation Dialog for Admins */}
+            <Dialog open={activateConfirmDialogOpen} onClose={handleActivateConfirmDialogClose}>
+                <DialogTitle>Confirm Activation</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        Are you sure you want to activate this webinar?
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleActivateConfirmDialogClose}>Cancel</Button>
+                    <Button onClick={handleConfirmAction} color="primary">
                         Confirm
                     </Button>
                 </DialogActions>
             </Dialog>
 
             {/* Access Denied Dialog for Non-Admins */}
-            <Dialog open={accessDeniedDialogOpen} onClose={() => setAccessDeniedDialogOpen(false)}>
+            <Dialog open={accessDeniedDialogOpen} onClose={handleAccessDeniedDialogClose}>
                 <DialogTitle>Access Denied</DialogTitle>
                 <DialogContent>
-                    <Typography>Only Admins have access to activate this record.</Typography>
+                    <DialogContentText>
+                        Only admins have access to activate a record.
+                    </DialogContentText>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setAccessDeniedDialogOpen(false)} color="primary">
+                    <Button onClick={handleAccessDeniedDialogClose} color="primary">
                         OK
                     </Button>
                 </DialogActions>
