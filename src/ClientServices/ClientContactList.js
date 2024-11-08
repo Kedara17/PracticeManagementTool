@@ -148,19 +148,19 @@ function ClientContactList({ isDrawerOpen }) {
             setErrors('');
         }
 
-        if (!currentClientContact.contactType) {
-            validationErrors.contactType = "contactType is required";
-        } 
-        // else if (ClientContact.some(conval => conval.contactType === currentClientContact.contactType && conval.id !== currentClientContact.id)) {
+        // if (!currentClientContact.contactType) {
+        //     validationErrors.contactType = "contactType is required";
+        // } 
+        //  else if (ClientContact.some(conval => conval.contactType === currentClientContact.contactType && conval.id !== currentClientContact.id)) {
         //     validationErrors.contactType = "contactType must be unique";
+        //  }
+        // else {
+        //     setErrors('');
         // }
-        else {
-            setErrors('');
-        }
 
-        if (!currentClientContact.client) {
-            validationErrors.client = "Client is required";
-        }
+        // if (!currentClientContact.client) {
+        //     validationErrors.client = "Client is required";
+        // }
 
         // If there are validation errors, update the state and prevent save
         if (Object.keys(validationErrors).length > 0) {

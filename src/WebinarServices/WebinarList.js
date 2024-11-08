@@ -537,7 +537,7 @@ function WebinarList({ isDrawerOpen }) {
                     <InputLabel>WebinarDate</InputLabel>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
-                            className='date'
+                            className='time'
                             value={currentWebinar.webinarDate ? dayjs(currentWebinar.webinarDate) : null}
                             onChange={handleWebinarDateChange}
                             fullWidth
