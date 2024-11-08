@@ -209,29 +209,6 @@ function POCList({ isDrawerOpen }) {
         }
     };
 
-    const handleDownload = async (filename) => {
-        try {
-            const response = await axios.get(`http://localhost:5254/api/POC/download`, {
-                params: { filename },
-                responseType: 'blob', // Important for handling binary data
-            });
-
-            // Create a link element for downloading
-            const url = window.URL.createObjectURL(new Blob([response.data]));
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', filename);
-
-            // Append to the body, trigger download, and clean up
-            document.body.appendChild(link);
-            link.click();
-            link.remove();
-            window.URL.revokeObjectURL(url);
-        } catch (error) {
-            console.error('There was an error downloading the file:', error);
-        }
-    };
-
     const handleChange = (e) => {
         const { name, value } = e.target;
         setCurrentPOC({ ...currentPOC, [name]: value });
@@ -389,14 +366,7 @@ function POCList({ isDrawerOpen }) {
                     style={{ flexGrow: 1, marginRight: '10px' }}
                 />
                 <Button variant="contained" sx={{ backgroundColor: '#00aae7' }} onClick={handleAdd}>Add POC</Button>
-            </div>
-            <div>
-            <TableCell>{currentPOC.document && (
-                <Button onClick={() => handleDownload(currentPOC.document)}>
-                    Download Uploaded File
-                </Button>
-            )}</TableCell>
-            </div>
+            </div>           
             <TableContainer component={Paper} style={{ width: '100%' }}>
                 <Table>
                     <TableHead>
