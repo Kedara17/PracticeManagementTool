@@ -153,18 +153,18 @@ function POCList({ isDrawerOpen }) {
         if (!currentPOC.client) {
             validationErrors.client = "Client is required";
         }
-        if (!currentPOC.status) {
-            validationErrors.status = "Status is required";
-        }
-        if (!currentPOC.targetDate) {
-            validationErrors.targetDate = "TargetDate is required";
-        }
-        if (!currentPOC.completedDate) {
-            validationErrors.completedDate = "ComletedDate is required";
-        }
-        if (!currentPOC.document || errors.document) {
-            validationErrors.document = "Please select a valid PDF or DOC file";
-        }
+        // if (!currentPOC.status) {
+        //     validationErrors.status = "Status is required";
+        // }
+        // if (!currentPOC.targetDate) {
+        //     validationErrors.targetDate = "TargetDate is required";
+        // }
+        // if (!currentPOC.completedDate) {
+        //     validationErrors.completedDate = "ComletedDate is required";
+        // }
+        // if (!currentPOC.document || errors.document) {
+        //     validationErrors.document = "Please select a valid PDF or DOC file";
+        // }
         // If there are validation errors, update the state and prevent save
         if (Object.keys(validationErrors).length > 0) {
             setErrors(validationErrors);
@@ -185,7 +185,7 @@ function POCList({ isDrawerOpen }) {
             if (selectedFile) {
                 const formData = new FormData();
                 formData.append('document', selectedFile);
-                const uploadResponse = await axios.post('http://172.17.31.61:5254/api/poc/uploadFile', formData, {
+                const uploadResponse = await axios.post('http://localhost:5254/api/POC/uploadFile', formData, {
                     headers: { 'Content-Type': 'multipart/form-data' },
                 });
                 documentPath = uploadResponse.data.path;
@@ -196,7 +196,7 @@ function POCList({ isDrawerOpen }) {
                 const response = axios.put(`http://172.17.31.61:5254/api/poc/${currentPOC.id}`, POCToSave)
                 setPOCs(POCs.map(poc => poc.id === currentPOC.id ? response.data : poc));
             } else {
-                const response = axios.post('http://172.17.31.61:5254/api/poc', POCToSave)
+                const response = axios.post('http://localhost:5254/api/POC', POCToSave)
                 // setPOCs([...POCs, response.data]);
                 const res = await axios.get('http://172.17.31.61:5254/api/poc');
                 setPOCs(res.data);
@@ -206,6 +206,29 @@ function POCList({ isDrawerOpen }) {
         } catch (error) {
             console.error('There was an error saving the Poc!', error);
             setError(error);
+        }
+    };
+
+    const handleDownload = async (filename) => {
+        try {
+            const response = await axios.get(`http://localhost:5254/api/POC/download`, {
+                params: { filename },
+                responseType: 'blob', // Important for handling binary data
+            });
+
+            // Create a link element for downloading
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', filename);
+
+            // Append to the body, trigger download, and clean up
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('There was an error downloading the file:', error);
         }
     };
 
@@ -366,6 +389,13 @@ function POCList({ isDrawerOpen }) {
                     style={{ flexGrow: 1, marginRight: '10px' }}
                 />
                 <Button variant="contained" sx={{ backgroundColor: '#00aae7' }} onClick={handleAdd}>Add POC</Button>
+            </div>
+            <div>
+            <TableCell>{currentPOC.document && (
+                <Button onClick={() => handleDownload(currentPOC.document)}>
+                    Download Uploaded File
+                </Button>
+            )}</TableCell>
             </div>
             <TableContainer component={Paper} style={{ width: '100%' }}>
                 <Table>

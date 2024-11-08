@@ -264,9 +264,9 @@ function ProjectList({isDrawerOpen}) {
         // if (!currentProject.sowLastExtendedDate) {
         //     validationErrors.sowLastExtendedDate = "SowLastExtendedDate is required";
         // }
-        if (!currentProject.technology || currentProject.technology.length === 0) {
-            validationErrors.technology = "Technology is required";                  
-        }
+        // if (!currentProject.technology || currentProject.technology.length === 0) {
+        //     validationErrors.technology = "Technology is required";                  
+        // }
 
         // If there are validation errors, update the state and prevent save
         if (Object.keys(validationErrors).length > 0) {
@@ -292,12 +292,7 @@ function ProjectList({isDrawerOpen}) {
             salesContact: salesContactId,
             pmo: pmoId,
             technicalProjectManager: technicalProjectManagerId,
-            technology: technologyIds,               
-            client: clientId,
-            salesContact: salesContactId,           
-            technicalProjectManager: technicalProjectManagerId,
-            pmo: pmoId,
-            technology: technologyIds,
+            technology: technologyIds,                          
         };
 
         if (currentProject.id) {
@@ -711,8 +706,7 @@ function ProjectList({isDrawerOpen}) {
                                 {...params}
                                 variant="outlined"
                                 placeholder="Select technologies"
-                                fullWidth
-                                error={!!errors.technology}
+                                fullWidth                               
                             />
                         )}
                         renderOption={(props, option, { selected }) => (
