@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Table, TableBody, Select, Typography, TableCell, TableContainer, TablePagination, TableHead, TableRow, Paper, IconButton, Dialog, InputAdornment, DialogTitle, DialogContent, TextField, Button, MenuItem, DialogActions, InputLabel } from '@mui/material';
+import { Table, TableBody, Select, Typography, TableCell, TableContainer, TableSortLabel, TablePagination, TableHead, TableRow, Paper, IconButton, Dialog, InputAdornment, DialogTitle, DialogContent, TextField, Button, MenuItem, DialogActions, InputLabel, Switch } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import UndoIcon from '@mui/icons-material/Undo';
 import SearchIcon from '@mui/icons-material/Search';
-import PaginationComponent from '../Components/PaginationComponent';
 import axios from 'axios';
 
 const NewLeadEnquiryFollowUpList = ({ isDrawerOpen }) => {
@@ -15,6 +14,9 @@ const NewLeadEnquiryFollowUpList = ({ isDrawerOpen }) => {
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [searchQuery, setSearchQuery] = useState('');
     const [open, setOpen] = useState(false);
+    const [order, setOrder] = useState('desc'); // Order of sorting: 'asc' or 'desc'
+    const [orderBy, setOrderBy] = useState('createdDate'); // Column to sort by
+    const [data, setData] = useState([]);
     const [confirmOpen, setConfirmOpen] = useState(false); // Dialog for delete confirmation
     const [deleteFollowUpId, setDeleteFollowUpId] = useState(null); // Store ID for deletion
     const [currentFollowUp, setCurrentFollowUp] = useState({
@@ -90,14 +92,23 @@ const NewLeadEnquiryFollowUpList = ({ isDrawerOpen }) => {
 
     const handleSave = async () => {
         let validationErrors = {};
-        if (!currentFollowUp.newLeadEnquiryID) validationErrors.newLeadEnquiryID = "New Lead Enquiry ID is required";
-        if (!currentFollowUp.assignTo) validationErrors.assignTo = "Assign To is required";
-        if (!currentFollowUp.newFollowupDate) validationErrors.newFollowupDate = "New FollowupDate is required";
-        if (!currentFollowUp.comments) validationErrors.comments = "Comments is required";
+
+        // Validation checks for New Lead Follow Up
+        if (!currentFollowUp.newLeadEnquiryID) {
+            validationErrors.newLeadEnquiryID = "New Lead Enquiry ID is required";
+        }
+
+        if (!currentFollowUp.assignTo) {
+            validationErrors.assignTo = "Assign To is required";
+        }
 
         const followUpDate = new Date(currentFollowUp.newFollowupDate);
         if (isNaN(followUpDate.getTime())) {
             validationErrors.newFollowupDate = "Valid date is required";
+        }
+
+        if (!currentFollowUp.comments) {
+            validationErrors.comments = "Comments are required";
         }
 
         if (Object.keys(validationErrors).length > 0) {
@@ -111,6 +122,7 @@ const NewLeadEnquiryFollowUpList = ({ isDrawerOpen }) => {
             ...currentFollowUp,
             newFollowupDate: followUpDate.toISOString(),
             updatedDate: new Date().toISOString(),
+            updatedBy: 'userName',
         };
 
         try {
@@ -140,6 +152,7 @@ const NewLeadEnquiryFollowUpList = ({ isDrawerOpen }) => {
             setFollowUpData(followUpData.filter(f => f.id !== id));
         } catch (error) {
             setConfirmOpen(false);
+            setOpen(false);
         }
     };
 
@@ -170,9 +183,68 @@ const NewLeadEnquiryFollowUpList = ({ isDrawerOpen }) => {
         }
     };
 
+    const handleToggleActive = async (followUp) => {
+        try {
+            // Toggle isActive status and provide default values if necessary
+            const updatedFollowUp = {
+                ...followUp,
+                isActive: !followUp.isActive,
+            };
+
+            console.log("Payload being sent with defaults:", updatedFollowUp); // Log payload with defaults
+
+            const response = await axios.put(`http://localhost:5054/api/NewLeadEnquiryFollowup/${followUp.id}`, updatedFollowUp);
+
+            if (response.status === 200) {
+                setFollowUpData(prevData =>
+                    prevData.map((f) => (f.id === followUp.id ? updatedFollowUp : f))
+                );
+            } else {
+                console.error("Unexpected response:", response);
+            }
+        } catch (error) {
+            console.error("There was an error updating the active status!", error.response?.data || error.message);
+        }
+    };
+
     const handleChange = (event) => {
         const { name, value } = event.target;
+
+        // Update the currentFollowUp state with the new value
         setCurrentFollowUp(prev => ({ ...prev, [name]: value }));
+
+        // Validate based on the field name
+        if (name === "newLeadEnquiryID") {
+            if (!value.trim()) {
+                setErrors((prevErrors) => ({ ...prevErrors, newLeadEnquiryID: "" }));
+            } else {
+                setErrors((prevErrors) => ({ ...prevErrors, newLeadEnquiryID: "" }));
+            }
+        }
+
+        if (name === "assignTo") {
+            if (!value.trim()) {
+                setErrors((prevErrors) => ({ ...prevErrors, assignTo: "" }));
+            } else {
+                setErrors((prevErrors) => ({ ...prevErrors, assignTo: "" }));
+            }
+        }
+
+        if (name === "newFollowupDate") {
+            if (!value) {
+                setErrors((prevErrors) => ({ ...prevErrors, newFollowupDate: "" }));
+            } else {
+                setErrors((prevErrors) => ({ ...prevErrors, newFollowupDate: "" }));
+            }
+        }
+
+        if (name === "comments") {
+            if (value.length > 200) {
+                setErrors((prevErrors) => ({ ...prevErrors, comments: "Comments cannot exceed 200 characters" }));
+            } else {
+                setErrors((prevErrors) => ({ ...prevErrors, comments: "" }));
+            }
+        }
     };
 
     const handleClose = () => {
@@ -210,6 +282,18 @@ const NewLeadEnquiryFollowUpList = ({ isDrawerOpen }) => {
         setPage(0);
     };
 
+    const handleSort = (property) => {
+        const isAsc = orderBy === property && order === 'asc';
+        const sortedData = [...data].sort((a, b) => {
+            if (a[property] < b[property]) return isAsc ? -1 : 1;
+            if (a[property] > b[property]) return isAsc ? 1 : -1;
+            return 0;
+        });
+
+        setData(sortedData); // Set the sorted data to ensure full dataset is updated
+        setOrder(isAsc ? 'desc' : 'asc');
+        setOrderBy(property);
+    };
 
     const filteredfollowUpData = followUpData.filter((followUp) => {
         const assignToName = employees.find(emp => emp.id === followUp.assignTo)?.name || '';
@@ -245,7 +329,7 @@ const NewLeadEnquiryFollowUpList = ({ isDrawerOpen }) => {
                                 </InputAdornment>
                             ),
                         }}
-                        style={{ marginRight: '10px', width: '1000px' }}
+                        style={{ marginRight: '10px', flexGrow: 1 }}
                     />
                     <Button variant="contained" onClick={handleAdd}>
                         Add New FollowUp
@@ -256,26 +340,107 @@ const NewLeadEnquiryFollowUpList = ({ isDrawerOpen }) => {
                     <Table>
                         <TableHead>
                             <TableRow>
-                                <TableCell>NewLeadEnquiryID</TableCell>
-                                <TableCell>AssignTo</TableCell>
-                                <TableCell>New Follow-Up Date</TableCell>
-                                <TableCell>Comments</TableCell>
-                                <TableCell>Is Active</TableCell>
-                                <TableCell>Created By</TableCell>
-                                <TableCell>Created Date</TableCell>
-                                <TableCell>Updated By</TableCell>
-                                <TableCell>Updated Date</TableCell>
-                                <TableCell>Actions</TableCell>
+                                <TableCell>
+                                    <TableSortLabel
+                                        active={orderBy === 'newLeadEnquiryID'}
+                                        direction={orderBy === 'newLeadEnquiryID' ? order : 'desc'}
+                                        onClick={() => handleSort('newLeadEnquiryID')}
+                                    >
+                                        <b>NewLeadEnquiryID</b>
+                                    </TableSortLabel>
+                                </TableCell>
+                                <TableCell>
+                                    <TableSortLabel
+                                        active={orderBy === 'assignTo'}
+                                        direction={orderBy === 'assignTo' ? order : 'desc'}
+                                        onClick={() => handleSort('assignTo')}
+                                    >
+                                        <b>Assign To</b>
+                                    </TableSortLabel>
+                                </TableCell>
+                                <TableCell>
+                                    <TableSortLabel
+                                        active={orderBy === 'newFollowUpDate'}
+                                        direction={orderBy === 'newFollowUpDate' ? order : 'desc'}
+                                        onClick={() => handleSort('newFollowUpDate')}
+                                    >
+                                        <b>New Follow-Up Date</b>
+                                    </TableSortLabel>
+                                </TableCell>
+                                <TableCell>
+                                    <TableSortLabel
+                                        active={orderBy === 'comments'}
+                                        direction={orderBy === 'comments' ? order : 'desc'}
+                                        onClick={() => handleSort('comments')}
+                                    >
+                                        <b>Comments</b>
+                                    </TableSortLabel>
+                                </TableCell>
+                                <TableCell>
+                                    <TableSortLabel
+                                        active={orderBy === 'isActive'}
+                                        direction={orderBy === 'isActive' ? order : 'desc'}
+                                        onClick={() => handleSort('isActive')}
+                                    >
+                                        <b>Is Active</b>
+                                    </TableSortLabel>
+                                </TableCell>
+                                <TableCell>
+                                    <TableSortLabel
+                                        active={orderBy === 'createdBy'}
+                                        direction={orderBy === 'createdBy' ? order : 'desc'}
+                                        onClick={() => handleSort('createdBy')}
+                                    >
+                                        <b>Created By</b>
+                                    </TableSortLabel>
+                                </TableCell>
+                                <TableCell>
+                                    <TableSortLabel
+                                        active={orderBy === 'createdDate'}
+                                        direction={orderBy === 'createdDate' ? order : 'desc'}
+                                        onClick={() => handleSort('createdDate')}
+                                    >
+                                        <b>Created Date</b>
+                                    </TableSortLabel>
+                                </TableCell>
+                                <TableCell>
+                                    <TableSortLabel
+                                        active={orderBy === 'updatedBy'}
+                                        direction={orderBy === 'updatedBy' ? order : 'desc'}
+                                        onClick={() => handleSort('updatedBy')}
+                                    >
+                                        <b>Updated By</b>
+                                    </TableSortLabel>
+                                </TableCell>
+                                <TableCell>
+                                    <TableSortLabel
+                                        active={orderBy === 'updatedDate'}
+                                        direction={orderBy === 'updatedDate' ? order : 'desc'}
+                                        onClick={() => handleSort('updatedDate')}
+                                    >
+                                        <b>Updated Date</b>
+                                    </TableSortLabel>
+                                </TableCell>
+                                <TableCell><b>Actions</b></TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
                             {paginatedfollowUpData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((followUp) => (
                                 <TableRow key={followUp.id} style={{ backgroundColor: followUp.isActive ? 'white' : '#FFCCCB' }}>
-                                    <TableCell>{enquiries.find(newLeadEnquiry => newLeadEnquiry.id === followUp.newLeadEnquiryID)?.id}</TableCell>
-                                    <TableCell>{employees.find(employee => employee.id === followUp.assignTo)?.name}</TableCell>
+                                    <TableCell>
+                                        {enquiries.find(newLeadEnquiry => newLeadEnquiry.id === followUp.newLeadEnquiryID)
+                                            ? `${enquiries.find(newLeadEnquiry => newLeadEnquiry.id === followUp.newLeadEnquiryID).companyName} - ${enquiries.find(newLeadEnquiry => newLeadEnquiry.id === followUp.newLeadEnquiryID).requirement}`
+                                            : 'N/A'}
+                                    </TableCell>                                    <TableCell>{employees.find(employee => employee.id === followUp.assignTo)?.name}</TableCell>
                                     <TableCell>{new Date(followUp.newFollowupDate).toLocaleDateString()}</TableCell>
                                     <TableCell>{followUp.comments}</TableCell>
-                                    <TableCell>{followUp.isActive ? 'true' : 'false'}</TableCell>
+                                    <TableCell>
+                                        <Switch
+                                            checked={followUp.isActive}
+                                            onChange={() => handleToggleActive(followUp)}
+                                            color="primary"
+                                        />
+                                    </TableCell>
                                     <TableCell>{followUp.createdBy}</TableCell>
                                     <TableCell>{new Date(followUp.createdDate).toLocaleDateString()}</TableCell>
                                     <TableCell>{followUp.updatedBy}</TableCell>
@@ -304,12 +469,13 @@ const NewLeadEnquiryFollowUpList = ({ isDrawerOpen }) => {
                 <TablePagination
                     rowsPerPageOptions={[10, 25, 100]}
                     component="div"
-                    count={paginatedfollowUpData.length}
+                    count={filteredfollowUpData.length}
                     rowsPerPage={rowsPerPage}
                     page={page}
                     onPageChange={handlePageChange}
                     onRowsPerPageChange={handleRowsPerPageChange}
                 />
+
 
                 <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
                     <DialogTitle>Confirm Delete</DialogTitle>
@@ -336,11 +502,10 @@ const NewLeadEnquiryFollowUpList = ({ isDrawerOpen }) => {
                         >
                             {enquiries.map((newLeadEnquiry) => (
                                 <MenuItem key={newLeadEnquiry.id} value={newLeadEnquiry.id}>
-                                    {newLeadEnquiry.name}
+                                    {`${newLeadEnquiry.companyName} - ${newLeadEnquiry.requirement}`}
                                 </MenuItem>
                             ))}
                         </Select>
-                        {errors.newLeadEnquiryID && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.newLeadEnquiryID}</Typography>}
 
                         <InputLabel>AssignTo</InputLabel>
                         <Select
@@ -378,8 +543,12 @@ const NewLeadEnquiryFollowUpList = ({ isDrawerOpen }) => {
                             name="comments"
                             value={currentFollowUp.comments}
                             error={Boolean(errors.comments)}
-                            onChange={handleChange}
-                        />
+                            onChange={(e) => {
+                                const value = e.target.value;
+                                if (!/--/.test(value)) {
+                                    handleChange(e);
+                                }
+                            }}                        />
                         {errors.comments && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.comments}</Typography>}
 
                     </DialogContent>
