@@ -110,7 +110,7 @@ const NewLeadEnquiryFollowUpList = ({ isDrawerOpen }) => {
         if (!currentFollowUp.comments) {
             validationErrors.comments = "Comments are required";
         }
-        
+
         if (Object.keys(validationErrors).length > 0) {
             setErrors(validationErrors);
             return;
@@ -207,42 +207,37 @@ const NewLeadEnquiryFollowUpList = ({ isDrawerOpen }) => {
         }
     };
 
-    // const handleChange = (event) => {
-    //     const { name, value } = event.target;
-    //     setCurrentFollowUp(prev => ({ ...prev, [name]: value }));
-    // };
-
     const handleChange = (event) => {
         const { name, value } = event.target;
-    
+
         // Update the currentFollowUp state with the new value
         setCurrentFollowUp(prev => ({ ...prev, [name]: value }));
-    
+
         // Validate based on the field name
         if (name === "newLeadEnquiryID") {
             if (!value.trim()) {
-                setErrors((prevErrors) => ({ ...prevErrors, newLeadEnquiryID: "Lead Enquiry ID is required" }));
+                setErrors((prevErrors) => ({ ...prevErrors, newLeadEnquiryID: "" }));
             } else {
                 setErrors((prevErrors) => ({ ...prevErrors, newLeadEnquiryID: "" }));
             }
         }
-    
+
         if (name === "assignTo") {
             if (!value.trim()) {
-                setErrors((prevErrors) => ({ ...prevErrors, assignTo: "Assignment is required" }));
+                setErrors((prevErrors) => ({ ...prevErrors, assignTo: "" }));
             } else {
                 setErrors((prevErrors) => ({ ...prevErrors, assignTo: "" }));
             }
         }
-    
+
         if (name === "newFollowupDate") {
             if (!value) {
-                setErrors((prevErrors) => ({ ...prevErrors, newFollowupDate: "Follow-up date is required" }));
+                setErrors((prevErrors) => ({ ...prevErrors, newFollowupDate: "" }));
             } else {
                 setErrors((prevErrors) => ({ ...prevErrors, newFollowupDate: "" }));
             }
         }
-    
+
         if (name === "comments") {
             if (value.length > 200) {
                 setErrors((prevErrors) => ({ ...prevErrors, comments: "Comments cannot exceed 200 characters" }));
@@ -250,7 +245,7 @@ const NewLeadEnquiryFollowUpList = ({ isDrawerOpen }) => {
                 setErrors((prevErrors) => ({ ...prevErrors, comments: "" }));
             }
         }
-    };    
+    };
 
     const handleClose = () => {
         setCurrentFollowUp({
@@ -432,8 +427,11 @@ const NewLeadEnquiryFollowUpList = ({ isDrawerOpen }) => {
                         <TableBody>
                             {paginatedfollowUpData.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((followUp) => (
                                 <TableRow key={followUp.id} style={{ backgroundColor: followUp.isActive ? 'white' : '#FFCCCB' }}>
-                                    <TableCell>{enquiries.find(newLeadEnquiry => newLeadEnquiry.id === followUp.newLeadEnquiryID)?.id}</TableCell>
-                                    <TableCell>{employees.find(employee => employee.id === followUp.assignTo)?.name}</TableCell>
+                                    <TableCell>
+                                        {enquiries.find(newLeadEnquiry => newLeadEnquiry.id === followUp.newLeadEnquiryID)
+                                            ? `${enquiries.find(newLeadEnquiry => newLeadEnquiry.id === followUp.newLeadEnquiryID).companyName} - ${enquiries.find(newLeadEnquiry => newLeadEnquiry.id === followUp.newLeadEnquiryID).requirement}`
+                                            : 'N/A'}
+                                    </TableCell>                                    <TableCell>{employees.find(employee => employee.id === followUp.assignTo)?.name}</TableCell>
                                     <TableCell>{new Date(followUp.newFollowupDate).toLocaleDateString()}</TableCell>
                                     <TableCell>{followUp.comments}</TableCell>
                                     <TableCell>
@@ -504,11 +502,10 @@ const NewLeadEnquiryFollowUpList = ({ isDrawerOpen }) => {
                         >
                             {enquiries.map((newLeadEnquiry) => (
                                 <MenuItem key={newLeadEnquiry.id} value={newLeadEnquiry.id}>
-                                    {newLeadEnquiry.name}
+                                    {`${newLeadEnquiry.companyName} - ${newLeadEnquiry.requirement}`}
                                 </MenuItem>
                             ))}
                         </Select>
-                        {errors.newLeadEnquiryID && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.newLeadEnquiryID}</Typography>}
 
                         <InputLabel>AssignTo</InputLabel>
                         <Select
@@ -546,8 +543,12 @@ const NewLeadEnquiryFollowUpList = ({ isDrawerOpen }) => {
                             name="comments"
                             value={currentFollowUp.comments}
                             error={Boolean(errors.comments)}
-                            onChange={handleChange}
-                        />
+                            onChange={(e) => {
+                                const value = e.target.value;
+                                if (!/--/.test(value)) {
+                                    handleChange(e);
+                                }
+                            }}                        />
                         {errors.comments && <Typography fontSize={12} margin="3px 14px 0px" color="error">{errors.comments}</Typography>}
 
                     </DialogContent>

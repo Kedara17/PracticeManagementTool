@@ -44,13 +44,13 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
     const [confirmOpen, setConfirmOpen] = useState(false); // Dialog for delete confirmation
     const [deleteEnquiry, setDeleteEnquiry] = useState(null); // Store ID for deletion
     const [currentEnquiry, setCurrentEnquiry] = useState({
-        id: '',
-        employeeID: '',
-        assignTo: '',
+        id: '',       
         companyName: '',
         companyRepresentative: '',
         representativeDesignation: '',
         requirement: '',
+        employeeID: '',
+        assignTo: '',
         enquiryDate: '',
         status: '',
         comments: '',
@@ -182,22 +182,23 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
         try {
             let newLeadEnquiryId;
             if (currentEnquiry.id) {
+                // Update existing enquiry
                 await axios.put(`http://localhost:5054/api/NewLeadEnquiry/${currentEnquiry.id}`, enquiryToSend);
                 newLeadEnquiryId = currentEnquiry.id; // Set the existing ID
-                setNewLeadEnquiries((prevEnquiries) =>
-                    prevEnquiries.map((enquiry) =>
-                        enquiry.id === currentEnquiry.id ? { ...enquiry, ...enquiryToSend } : enquiry
-                    )
+                setNewLeadEnquiries(prevEnquiries =>
+                    prevEnquiries.map(enquiry => enquiry.id === newLeadEnquiryId.id ? newLeadEnquiryId : enquiry)
                 );
             } else {
-                const response = await axios.post('http://localhost:5054/api/NewLeadEnquiry', enquiryToSend);
+                // Create new enquiry
+               const response = await axios.post('http://localhost:5054/api/NewLeadEnquiry', enquiryToSend);
                 newLeadEnquiryId = response.data.id; // Get the newly created ID
-                setNewLeadEnquiries((prevEnquiries) => [...prevEnquiries, response.data]);
+                setNewLeadEnquiries(prevEnquiries => [...prevEnquiries, newLeadEnquiryId]);
             }
-
+    
+            // Save technology data
             await Promise.all(currentEnquiry.technology.map(technologyId =>
                 axios.post('http://localhost:5054/api/NewLeadEnquiryTechnology', {
-                    newLeadEnquiryId,
+                    newLeadEnquiryId, // Use the newLeadEnquiryId variable
                     technologyId,
                 })
             ));
@@ -205,10 +206,19 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
             if (file) {
                 const formData = new FormData();
                 formData.append('FileName', file);
-                formData.append('Id', currentEnquiry.id);
+                formData.append('Id', newLeadEnquiryId);
 
-                await axios.post('http://localhost:5054/api/NewLeadEnquiryDocuments', formData);
+                const uploadResponse = await axios.post('http://localhost:5054/api/NewLeadEnquiry/uploadFile', formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data',
+                    },
+                });
 
+                if (uploadResponse.status === 200) {
+                    console.log('File uploaded successfully');
+                } else {
+                    throw new Error("File upload failed");
+                }
             }
 
             setOpen(false);
@@ -221,23 +231,16 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
     const handleChange = (event) => {
         const { name, value, files } = event.target;
 
-        // File validation for `fileName`
         if (name === 'fileName') {
             const selectedFile = files[0];
             setFile(selectedFile);
-
-            if (!selectedFile) {
-                setErrors((prevErrors) => ({ ...prevErrors, fileName: 'File is required' }));
-            } else {
-                setErrors((prevErrors) => ({ ...prevErrors, fileName: '' }));
-            }
+            setErrors((prevErrors) => ({ ...prevErrors, fileName: selectedFile ? '' : 'File is required' }));
         } else {
-            // Update current enquiry field
             setCurrentEnquiry((prev) => ({
                 ...prev,
                 [name]: value,
             }));
-
+    
             // Field-specific validations
             if (name === "companyName") {
                 if (!value.trim()) {
@@ -703,16 +706,16 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
                         <InputLabel>CompanyName</InputLabel>
                         <TextField
                             fullWidth
-                            margin="normal"
+                            margin="dense"
                             name="companyName"
                             value={currentEnquiry.companyName}
                             onChange={(e) => {
                                 const value = e.target.value;
-                                // Regex to allow letters, numbers, spaces, and the specified special characters
-                                if (/^[A-Za-z\s.\-']*$/.test(value)) {
+                                if (/^[^0-9]*[.\-'\&]*$/.test(value)) {
                                     handleChange(e);
                                 }
                             }}
+                           // onChange={handleChange}
                             error={Boolean(errors.companyName)}
                             helperText={errors.companyName}
                             inputProps={{ maxLength: 50 }}
@@ -721,16 +724,16 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
                         <InputLabel>CompanyRepresentative</InputLabel>
                         <TextField
                             fullWidth
-                            margin="normal"
+                            margin="dense"
                             name="companyRepresentative"
                             value={currentEnquiry.companyRepresentative}
                             onChange={(e) => {
                                 const value = e.target.value;
-                                // Regex to allow letters, numbers, spaces, and the specified special characters
-                                if (/^[A-Za-z\s.\-']*$/.test(value)) {
+                                if (/^[^0-9]*[.\-'\&]*$/.test(value)) {
                                     handleChange(e);
                                 }
                             }}
+                           // onChange={handleChange}
                             error={Boolean(errors.companyRepresentative)}
                             helperText={errors.companyRepresentative}
                             inputProps={{ maxLength: 50 }}
@@ -739,16 +742,16 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
                         <InputLabel>RepresentativeDesignation</InputLabel>
                         <TextField
                             fullWidth
-                            margin="normal"
+                            margin="dense"
                             name="representativeDesignation"
                             value={currentEnquiry.representativeDesignation}
                             onChange={(e) => {
                                 const value = e.target.value;
-                                // Regex to allow letters, numbers, spaces, and the specified special characters
-                                if (/^[A-Za-z\s.\-']*$/.test(value)) {
+                                if (/^[^0-9]*[.\-'\&]*$/.test(value)) {
                                     handleChange(e);
                                 }
-                            }}
+                             }}
+                           // onChange={handleChange}
                             error={Boolean(errors.representativeDesignation)}
                             helperText={errors.representativeDesignation}
                             inputProps={{ maxLength: 50 }}
@@ -757,10 +760,16 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
                         <InputLabel>Requirement</InputLabel>
                         <TextField
                             fullWidth
-                            margin="normal"
+                            margin="dense"
                             name="requirement"
                             value={currentEnquiry.requirement}
-                            onChange={handleChange}
+                        //    onChange={handleChange}
+                           onChange={(e) => {
+                            const value = e.target.value;
+                            if (/^[^0-9]*[.\-'\&]*$/.test(value)) {
+                                handleChange(e);
+                            }
+                         }}
                             error={Boolean(errors.requirement)}
                             helperText={errors.requirement}
                             inputProps={{ maxLength: 50 }}
@@ -769,7 +778,7 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
                         <InputLabel>EnquiryDate</InputLabel>
                         <TextField
                             fullWidth
-                            margin="normal"
+                            margin="dense"
                             type="date"
                             name="enquiryDate"
                             value={currentEnquiry.enquiryDate}
@@ -781,7 +790,7 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
                         <InputLabel>EmployeeID</InputLabel>
                         <Select
                             fullWidth
-                            margin="normal"
+                            margin="dense"
                             name="employeeID"
                             value={currentEnquiry.employeeID}
                             onChange={handleChange}
@@ -799,7 +808,7 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
                         <InputLabel>AssignTo</InputLabel>
                         <Select
                             fullWidth
-                            margin="normal"
+                            margin="dense"
                             name="assignTo"
                             value={currentEnquiry.assignTo}
                             onChange={handleChange}
@@ -817,7 +826,7 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
                         <InputLabel>Status</InputLabel>
                         <TextField
                             fullWidth
-                            margin="normal"
+                            margin="dense"
                             name="status"
                             value={currentEnquiry.status}
                             onChange={handleChange}
@@ -832,7 +841,12 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
                             margin="normal"
                             name="comments"
                             value={currentEnquiry.comments}
-                            onChange={handleChange}
+                            onChange={(e) => {
+                                const value = e.target.value;
+                                if (!/--/.test(value)) {
+                                    handleChange(e);
+                                }
+                            }} 
                             error={Boolean(errors.comments)}
                             helperText={errors.comments}
                             inputProps={{ maxLength: 500 }}
@@ -883,9 +897,9 @@ function NewLeadEnquiryList({ isDrawerOpen }) {
                             required={!currentEnquiry.id}
                             error={!!errors.fileName}
                             helperText={errors.fileName}
-                            inputProps={{
-                                accept: ".pdf, .doc, .docx"
-                            }}
+                            // inputProps={{
+                            //     accept: ".pdf, .doc, .docx"
+                            // }}
                         />
 
                     </DialogContent>
