@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Select, TablePagination, MenuItem, Table, InputLabel, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography, TableSortLabel, InputAdornment } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
+import DownloadIcon from '@mui/icons-material/Download';
 import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -27,7 +28,8 @@ function POCList({ isDrawerOpen }) {
         status: '',
         targetDate: '',
         completedDate: '',
-        document: ''
+        document: '',
+        download: '',
     });
     const [order, setOrder] = useState('desc'); // Order of sorting: 'asc' or 'desc'
     const [orderBy, setOrderBy] = useState('createdDate'); // Column to sort by
@@ -39,7 +41,8 @@ function POCList({ isDrawerOpen }) {
         status: '',
         targetDate: '',
         completedDate: '',
-        document: ''
+        document: '',
+        download: '',
     }
     );
 
@@ -116,7 +119,8 @@ function POCList({ isDrawerOpen }) {
             status: '',
             targetDate: '',
             completedDate: '',
-            document: ''
+            document: '',
+            download: '',
         });
         setOpen(true);
     };
@@ -144,7 +148,7 @@ function POCList({ isDrawerOpen }) {
         if (!currentPOC.title.trim()) {
             validationErrors.title = "POC title is required";
 
-        }else if(currentPOC.title.length < 3) {
+        } else if (currentPOC.title.length < 3) {
             validationErrors.title = "POC title must be atleast 3 characters";
         }
         else if (POCs.some(tech => tech.title.toLowerCase() === currentPOC.title.toLowerCase() && tech.id !== currentPOC.id)) {
@@ -181,7 +185,7 @@ function POCList({ isDrawerOpen }) {
         }
 
         try {
-            let documentPath = currentPOC.document;           
+            let documentPath = currentPOC.document;
             if (selectedFile) {
                 const formData = new FormData();
                 formData.append('document', selectedFile);
@@ -281,6 +285,39 @@ function POCList({ isDrawerOpen }) {
         }
     };
 
+    const handleDownload = async (documentName) => {
+        if (!documentName) {
+            console.error("No filename provided.");
+            return;
+        }
+
+        try {
+            const response = await axios.get('http://localhost:5254/api/POC/download/', {
+                params: { filename: documentName },
+                responseType: 'blob'
+            });
+
+            if (response.status === 200 && response.data) {
+                const url = window.URL.createObjectURL(new Blob([response.data]));
+                const link = document.createElement('a');
+                link.href = url;
+
+                const filename = documentName.split('/').pop();
+                link.download = filename || 'downloadedFile';
+
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+            } else {
+                console.error("Failed to download file: No data received.");
+            }
+
+        } catch (error) {
+            console.error('Error occurred during file download:', error);
+        }
+    };
+
     const handleClose = () => {
         setCurrentPOC({ title: '', client: '', status: '', targetDate: '', completedDate: '', document: '' }); // Reset the department fields
         setErrors({ title: '', client: '', status: '', targetDate: '', completedDate: '', document: '' }); // Reset the error state
@@ -336,11 +373,11 @@ function POCList({ isDrawerOpen }) {
 
 
     if (loading) {
-        return <p style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop:'200px' }}>Loading...</p>;
+        return <p style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '200px' }}>Loading...</p>;
     }
 
     if (error) {
-        return <p style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop:'200px' }}>There was an error loading the data: {error.message}</p>;
+        return <p style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '200px' }}>There was an error loading the data: {error.message}</p>;
     }
 
     return (
@@ -366,7 +403,7 @@ function POCList({ isDrawerOpen }) {
                     style={{ flexGrow: 1, marginRight: '10px' }}
                 />
                 <Button variant="contained" sx={{ backgroundColor: '#00aae7' }} onClick={handleAdd}>Add POC</Button>
-            </div>           
+            </div>
             <TableContainer component={Paper} style={{ width: '100%' }}>
                 <Table>
                     <TableHead>
@@ -427,6 +464,15 @@ function POCList({ isDrawerOpen }) {
                             </TableCell>
                             <TableCell>
                                 <TableSortLabel
+                                    active={orderBy === 'download'}
+                                    direction={orderBy === 'download' ? order : 'desc'}
+                                    onClick={() => handleSort('download')}
+                                >
+                                    Download
+                                </TableSortLabel>
+                            </TableCell>
+                            <TableCell>
+                                <TableSortLabel
                                     active={orderBy === 'isActive'}
                                     direction={orderBy === 'isActive' ? order : 'desc'}
                                     onClick={() => handleSort('isActive')}
@@ -483,6 +529,12 @@ function POCList({ isDrawerOpen }) {
                                 <TableCell>{poc.targetDate}</TableCell>
                                 <TableCell>{poc.completedDate}</TableCell>
                                 <TableCell>{poc.document}</TableCell>
+                                <TableCell>
+                                    {/* Download Icon Button */}
+                                    <IconButton onClick={() => handleDownload(poc.document)}>
+                                        <DownloadIcon color="primary" />
+                                    </IconButton>
+                                </TableCell>
                                 <TableCell>{poc.isActive ? 'Active' : 'Inactive'}</TableCell>
                                 <TableCell>{poc.createdBy}</TableCell>
                                 <TableCell>{poc.createdDate}</TableCell>
