@@ -42,6 +42,7 @@ import CertificationsList from '../CertificationsServices/CertificationsList';
 import SuccessStoriesList from '../SuccessStoriesServices/SuccessStoriesList';
 import NewLeadEnquiryList from '../NewLeadEnquiryServices/NewLeadEnquiryList';
 import NewLeadEnquiryFollowUpList from '../NewLeadEnquiryServices/NewLeadEnquiryFollowUpList';
+import BestPerformersList from '../BestPerformersServices/BestPerformerList';
 
 function Home() {
   const [isDrawerOpen, setDrawerOpen] = useState(false);
@@ -62,7 +63,7 @@ function Home() {
 
   const handleClientMenu = () => {
       setOpenClientMenu((prev) => !prev);
-  };
+  }; 
   const handleLeadEnquiryMenu = () => {
     setOpenLeadEnquiryMenu((prev) => !prev);
   };
@@ -371,7 +372,7 @@ function Home() {
         <ListItemText primary="Best Performers" />
         <GradeIcon />
       </ListItem>
-
+   
         <ListItem button onClick={handleLeadEnquiryMenu}>
             <ListItemText primary="New Lead Enquiry" />
             <ContactMailIcon />
@@ -548,6 +549,7 @@ function Home() {
           <Route path='successstories' element={<SuccessStoriesList isDrawerOpen={isDrawerOpen} />} />
           <Route path='poc' element={<POCList isDrawerOpen={isDrawerOpen} />} />
           <Route path='certifications' element={<CertificationsList isDrawerOpen={isDrawerOpen} />} />
+          <Route path='bestperformers' element={<BestPerformersList isDrawerOpen={isDrawerOpen} />} />
           <Route path='newLeadEnquiry' element={<NewLeadEnquiryList isDrawerOpen={isDrawerOpen} />} />
           <Route path='newleadenquiry/newleadenquiryfollowuplist' element={<NewLeadEnquiryFollowUpList isDrawerOpen={isDrawerOpen} />} />
         </Routes>
@@ -571,6 +573,7 @@ function Home() {
         {view === 'sowrequirement' && <SOWRequirementList isDrawerOpen={isDrawerOpen} />}
         {view === 'sowstatus' && <SOWStatusList isDrawerOpen={isDrawerOpen} />}
         {view === 'poc' && <POCList isDrawerOpen={isDrawerOpen} />} */}
+        {/* {view === 'bestperformers' && <BestPerformersList isDrawerOpen={isDrawerOpen} />}  */}
         {/* {view === 'newleadenquiry' && <NewLeadEnquiryList isDrawerOpen={isDrawerOpen} />} */}
       </Box>
     </div>

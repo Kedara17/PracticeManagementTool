@@ -10,6 +10,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
 import '../App.css';
+import DownloadIcon from '@mui/icons-material/Download';
 
 function EmployeeList({ isDrawerOpen }) {
     const [Employees, setEmployees] = useState([]);
@@ -40,9 +41,10 @@ function EmployeeList({ isDrawerOpen }) {
         projection: '',
         password: '',
         profile: '',
+        download: '',
         phoneNo: '',
         role: '',
-        technology: []
+        technology: [],       
     });
 
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\W).{8,}$/;
@@ -62,9 +64,10 @@ function EmployeeList({ isDrawerOpen }) {
         projection: '',
         password: '',
         profile: '',
+        download: '',
         phoneNo: '',
         role: '',
-        technology: ''
+        technology: '',
     }
     );
 
@@ -209,6 +212,7 @@ function EmployeeList({ isDrawerOpen }) {
             projection: '',
             password: '',
             profile: '',
+            download: '',
             phoneNo: '',
             role: '',
             technology: []
@@ -237,6 +241,34 @@ function EmployeeList({ isDrawerOpen }) {
                 });
         } else {
             alert("Only admins can activate records.");
+        }
+    };
+
+    const handleDownload = async (profilePath) => {
+        if (!profilePath) {
+            console.error("No filename provided.");
+            return;
+        }
+        try {
+            const response = await axios.get('http://localhost:5533/api/Employee/download/', {
+                params: { filename: profilePath },
+                responseType: 'blob'
+            });
+            if (response.status === 200 && response.data) {
+                const url = window.URL.createObjectURL(new Blob([response.data]));
+                const link = document.createElement('a');
+                link.href = url;
+                const filename = profilePath.split('/').pop();
+                link.download = filename || 'downloadedFile';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+            } else {
+                console.error("Failed to download file: No data received.");
+            }
+        } catch (error) {
+            console.error('Error occurred during file download:', error);
         }
     };
 
@@ -278,6 +310,11 @@ function EmployeeList({ isDrawerOpen }) {
         }
         setDialogOpen(false);
     };
+
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        setSelectedFile(file);
+    }; 
 
     const handleSave = async () => {
 
@@ -329,14 +366,12 @@ function EmployeeList({ isDrawerOpen }) {
             if (selectedFile) {
                 const formData = new FormData();
                 formData.append('profile', selectedFile);
-                formData.append('id', "");
-
-                const uploadResponse = await axios.post('http://172.17.31.61:5033/api/employee/uploadFile', formData, {
+                const uploadResponse = await axios.post('http://localhost:5533/api/Employee/uploadFile', formData, {
                     headers: {
-                        'Content-Type': 'multipart/form-data',
+                        'Content-Type': 'multipart/form-data'
                     },
                 });
-                profilePath = uploadResponse.data; 
+                profilePath = uploadResponse.data.path; 
             }
 
             const technologyIds = currentEmployee.technology.map(tech => {
@@ -355,16 +390,17 @@ function EmployeeList({ isDrawerOpen }) {
                 designation: designationId,
                 department: departmentId,
                 reportingTo: reportingToId,
-                role: roleId,               
+                role: roleId,      
+                profile: profilePath,         
             };
     
 
-            employeeToSave.profile = profilePath.path;
+            // employeeToSave.profile = profilePath;
             if (currentEmployee.id) {
                 const response = await axios.put(`http://172.17.31.61:5033/api/employee/${currentEmployee.id}`, employeeToSave);
                  setEmployees(Employees.map(emp => emp.id === currentEmployee.id ? response.data : emp));
             } else {
-                const response = axios.post('http://172.17.31.61:5033/api/employee', employeeToSave);
+                const response = axios.post('http://localhost:5533/api/Employee', employeeToSave);
                 setEmployees([...Employees, response.data]);                
             }
 
@@ -629,6 +665,15 @@ function EmployeeList({ isDrawerOpen }) {
                             </TableCell>
                             <TableCell>
                                 <TableSortLabel
+                                    active={orderBy === 'download'}
+                                    direction={orderBy === 'download' ? order : 'desc'}
+                                    onClick={() => handleSort('download')}
+                                >
+                                    Download
+                                </TableSortLabel>
+                            </TableCell>
+                            <TableCell>
+                                <TableSortLabel
                                     active={orderBy === 'role'}
                                     direction={orderBy === 'role' ? order : 'desc'}
                                     onClick={() => handleSort('role')}
@@ -706,6 +751,12 @@ function EmployeeList({ isDrawerOpen }) {
                                     ) : (
                                         'N/A'
                                     )}
+                                </TableCell>
+                                <TableCell>
+                                    {/* Download Icon Button */}
+                                    <IconButton onClick={() => handleDownload(Employee.profile)}>
+                                        <DownloadIcon color="primary" />
+                                    </IconButton>
                                 </TableCell>
                                 <TableCell>{Employee.role}</TableCell>
                                 <TableCell>
@@ -969,7 +1020,7 @@ function EmployeeList({ isDrawerOpen }) {
                         type="file"
                         margin="dense"
                         name="profile"
-                        onChange={handleChange}
+                        onChange={handleFileChange}
                         fullWidth
                         required={!currentEmployee.id}
                         error={!!errors.profile}
