@@ -400,7 +400,7 @@ function EmployeeList({ isDrawerOpen }) {
                 const response = await axios.put(`http://172.17.31.61:5033/api/employee/${currentEmployee.id}`, employeeToSave);
                  setEmployees(Employees.map(emp => emp.id === currentEmployee.id ? response.data : emp));
             } else {
-                const response = axios.post('http://localhost:5533/api/Employee', employeeToSave);
+                const response = axios.post('http://172.17.31.61:5033/api/employee', employeeToSave);
                 setEmployees([...Employees, response.data]);                
             }
 
